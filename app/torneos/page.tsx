@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 import { Trophy, Plus, Users, X } from "lucide-react"
-
+import { useState, useEffect } from "react" // <--- Agregá useEffect
+import { Trophy, Plus, Users, X, Star } from "lucide-react" // <--- Agregá Star
+import { createClient } from "@/lib/supabase/client" // <--- Importá tu cliente
 
 
 interface League {
@@ -499,7 +501,39 @@ export default function TorneosPage() {
           </div>
 
         )}
+      {/* --- COMIENZO RANKING GENERAL REAL --- */}
+        <div className="mt-12 mb-8 flex items-center gap-2">
+          <Star className="w-6 h-6 fill-black" />
+          <h2 className="font-display text-2xl italic uppercase">Ranking General</h2>
+        </div>
 
+        <div className="border-2 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-black text-white text-[10px] uppercase tracking-widest">
+                <th className="p-3 w-12 text-center">Pos</th>
+                <th className="p-3">Equipo</th>
+                <th className="p-3 text-right">Puntos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rankingGeneral.map((item) => (
+                <tr key={item.position} className="border-b border-black last:border-0 hover:bg-gray-50">
+                  <td className={`p-3 text-center font-display text-xl italic ${item.position <= 3 ? 'bg-yellow-400' : ''}`}>
+                    #{item.position}
+                  </td>
+                  <td className="p-3 font-bold text-sm uppercase italic">
+                    {item.team || "Sin nombre"}
+                  </td>
+                  <td className="p-3 text-right font-display text-2xl">
+                    {item.total}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {/* --- FIN RANKING GENERAL REAL --- */}
       </main>
 
     </div>
