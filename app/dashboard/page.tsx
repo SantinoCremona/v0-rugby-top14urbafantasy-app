@@ -17,6 +17,7 @@ export default async function DashboardPage() {
   const players: Player[] = (jugadores || []).map((j) => ({
     id: j.id,
     nombre: j.nombre,
+    club: j.club,
     posicion: j.posicion,
     precio: j.precio,
     puntos_totales: j.puntos_totales,
