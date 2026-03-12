@@ -8,6 +8,7 @@ export interface Player {
   nombre: string
   posicion: string
   precio: number
+  club: string
   puntos_totales: number
   foto_url: string | null
   tendencia: "subiendo" | "bajando" | "estable"
