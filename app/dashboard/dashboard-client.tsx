@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { MainHeader } from "@/components/main-header"
 import { RugbyField } from "@/components/rugby-field"
 import { PlayerSelectionPopup } from "@/components/player-selection-popup"
-import { ShoppingCart, Save, Trash2 } from "lucide-react" // Agregamos Trash2
+import { ShoppingCart, Save, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Player } from "@/components/player-card"
 import { createClient } from "@/lib/supabase/client"
@@ -14,9 +14,10 @@ const INITIAL_BUDGET = 10000
 interface DashboardClientProps {
   players: Player[]
   savedTeam?: any[]
+  rankingPos: number // <-- Agregamos la prop que viene del servidor
 }
 
-export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
+export function DashboardClient({ players, savedTeam, rankingPos }: DashboardClientProps) {
   const supabase = createClient()
   const [selectedPlayers, setSelectedPlayers] = useState<Map<number, Player>>(new Map())
   const [isPopupOpen, setIsPopupOpen] = useState(false)
@@ -43,7 +44,6 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
   const playersCount = selectedPlayers.size
   const playersRemaining = 15 - playersCount
 
-  // --- LÓGICA DE LÍMITE POR CLUB ---
   const clubCounts = Array.from(selectedPlayers.values()).reduce((acc, p) => {
     acc[p.club] = (acc[p.club] || 0) + 1
     return acc
@@ -76,7 +76,6 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
     })
   }
 
-  // --- FUNCIÓN LIMPIAR TODO ---
   const handleClearTeam = () => {
     if (confirm("¿Estás seguro de que querés vaciar todo tu equipo?")) {
       setSelectedPlayers(new Map())
@@ -118,7 +117,6 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
     }
   }
 
-  // --- FILTRADO DE DISPONIBLES (Inyectando el límite de 4 por club) ---
   const selectedIds = new Set(Array.from(selectedPlayers.values()).map((p) => p.id))
   
   const availablePlayers = players.filter((p) => {
@@ -140,7 +138,7 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
             <Button 
               onClick={handleClearTeam}
               variant="outline" 
-              className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white h-10 px-4"
+              className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white h-10 px-4 shadow-[2px_2px_0px_0px_rgba(220,38,38,1)]"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               LIMPIAR
@@ -149,7 +147,7 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
               onClick={handleSaveTeam}
               disabled={loading || remainingBudget < 0}
               variant="outline" 
-              className="border-black text-black hover:bg-black hover:text-white h-10 px-4"
+              className="border-black text-black hover:bg-black hover:text-white h-10 px-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
             >
               <Save className="w-4 h-4 mr-2" />
               {remainingBudget < 0 ? "EXCESO $" : loading ? "GUARDANDO..." : "GUARDAR"}
@@ -159,21 +157,27 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
 
         {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white border border-black p-4">
+          <div className="bg-white border border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Puntos</p>
             <p className="font-display text-4xl text-black">{totalPoints}</p>
           </div>
-          <div className="bg-white border border-black p-4">
+          <div className="bg-white border border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Presupuesto</p>
             <p className={`font-display text-4xl ${remainingBudget < 0 ? 'text-red-600' : 'text-black'}`}>
               ${remainingBudget.toLocaleString('es-AR')}
             </p>
           </div>
-          <div className="bg-black text-white p-4">
+          
+          {/* TARJETA DE RANKING DINÁMICA */}
+          <div className="bg-black text-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Ranking</p>
-            <p className="font-display text-4xl italic">#380</p>
+            <p className="font-display text-4xl italic text-white leading-none">
+              #{rankingPos}
+            </p>
+            <p className="text-[10px] text-gray-500 mt-1 uppercase">Puesto Global</p>
           </div>
-          <div className="bg-white border border-black p-4">
+
+          <div className="bg-white border border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Jugadores</p>
             <p className="font-display text-4xl text-black">{playersCount}/15</p>
           </div>
@@ -181,7 +185,7 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
 
         {playersRemaining > 0 && (
           <div className="flex justify-center mb-6">
-            <div className="inline-block border border-black px-6 py-3">
+            <div className="inline-block border border-black px-6 py-3 bg-yellow-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <p className="text-sm text-gray-700">
                 Te faltan <span className="font-bold text-black">{playersRemaining}</span> jugadores para completar tu equipo
               </p>
@@ -199,12 +203,10 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
           onSlotClick={handleSlotClick}
           onRemovePlayer={handleRemovePlayer}
         />
-      {/* Sección de Reglas y Guía */}
+
         <section className="mt-12 border-t-2 border-black pt-8 mb-12">
-          <h2 className="font-display text-2xl mb-6 italic tracking-tight">REGLAS DEL JUEGO</h2>
-          
+          <h2 className="font-display text-2xl mb-6 italic tracking-tight uppercase">Reglas del Juego</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Regla 1: Presupuesto y Límite de Clubes */}
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">1</span>
@@ -215,37 +217,31 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
                 <li>• Límite por club: Máximo <strong>4 jugadores</strong> de un mismo equipo de la URBA.</li>
               </ul>
             </div>
-
-            {/* Regla 2: Puntuación */}
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">2</span>
                 Sumar Puntos
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Tus jugadores suman puntos reales cada fecha por <strong>tries, tackles realizados y victorias</strong> de sus respectivos clubes.
+                Tus jugadores suman puntos por <strong>tries, tackles y victorias</strong> reales de la fecha.
               </p>
             </div>
-
-            {/* Regla 3: Guardado Obligatorio */}
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">3</span>
                 Confirmar Equipo
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Una vez seleccionados tus 15 jugadores, es <strong>obligatorio</strong> apretar el botón <span className="font-bold">"GUARDAR"</span> para registrar tu formación.
+                Es <strong>obligatorio</strong> apretar el botón <span className="font-bold uppercase text-xs border border-black px-1 ml-1">Guardar</span> para registrar tus cambios.
               </p>
             </div>
-
-            {/* Regla 4: Cambios Ilimitados */}
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">4</span>
                 Mercado de Pases
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Podés cambiar jugadores en cualquier momento: quitá con la <span className="font-bold">"X"</span>, elegí al nuevo y dale a <span className="font-bold">"GUARDAR"</span> nuevamente.
+                Podés quitar jugadores con la <span className="font-bold text-red-600">X</span> y elegir nuevos refuerzos en cualquier momento.
               </p>
             </div>
           </div>
