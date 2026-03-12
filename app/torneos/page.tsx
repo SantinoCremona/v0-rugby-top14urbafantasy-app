@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AppShell } from "@/components/app-shell"
+import { MainHeader } from "@/components/main-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Trophy, Plus, Users, X } from "lucide-react"
@@ -38,61 +38,53 @@ const mockRankings: LeagueRanking[] = [
 export default function TorneosPage() {
   const [leagues] = useState<League[]>(mockLeagues)
   const [selectedLeague, setSelectedLeague] = useState<League | null>(null)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showJoinModal, setShowJoinModal] = useState(false)
   const [newLeagueName, setNewLeagueName] = useState("")
   const [joinCode, setJoinCode] = useState("")
 
   const handleCreateLeague = () => {
     if (newLeagueName.trim()) {
       // TODO: Create league via API
+      alert(`Liga "${newLeagueName}" creada!`)
       setNewLeagueName("")
+      setShowCreateModal(false)
     }
   }
 
   const handleJoinLeague = () => {
     if (joinCode.trim()) {
       // TODO: Join league via API
+      alert(`Unido a la liga con codigo: ${joinCode}`)
       setJoinCode("")
+      setShowJoinModal(false)
     }
   }
 
   return (
-    <AppShell>
-      <div className="p-4 md:p-6 max-w-4xl mx-auto">
-        <h1 className="font-display text-3xl md:text-4xl mb-8 tracking-tight">TUS LIGAS</h1>
+    <div className="min-h-screen bg-white">
+      <MainHeader />
+      
+      <main className="max-w-4xl mx-auto px-4 py-6">
+        <h1 className="font-display text-3xl md:text-4xl mb-8 tracking-tight text-black italic">TUS LIGAS</h1>
 
-        {/* Create / Join section */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          {/* Create League */}
-          <div className="bg-muted p-4 border border-border">
-            <h3 className="font-bold text-sm uppercase tracking-wider mb-3">Crear Liga</h3>
-            <div className="flex gap-2">
-              <Input
-                placeholder="NOMBRE DE LA LIGA"
-                value={newLeagueName}
-                onChange={(e) => setNewLeagueName(e.target.value)}
-                className="flex-1 h-10 text-sm tracking-wider"
-              />
-              <Button onClick={handleCreateLeague} className="h-10 px-4">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Join League */}
-          <div className="bg-muted p-4 border border-border">
-            <h3 className="font-bold text-sm uppercase tracking-wider mb-3">Unirse a Liga</h3>
-            <div className="flex gap-2">
-              <Input
-                placeholder="CODIGO DE LIGA"
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value)}
-                className="flex-1 h-10 text-sm tracking-wider uppercase"
-              />
-              <Button onClick={handleJoinLeague} className="h-10 px-4">
-                UNIRSE
-              </Button>
-            </div>
-          </div>
+        {/* Create / Join buttons */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <Button 
+            onClick={() => setShowCreateModal(true)}
+            className="h-14 bg-black text-white hover:bg-gray-800 font-bold tracking-wider"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            CREAR LIGA
+          </Button>
+          <Button 
+            onClick={() => setShowJoinModal(true)}
+            variant="outline"
+            className="h-14 border-2 border-black text-black hover:bg-black hover:text-white font-bold tracking-wider"
+          >
+            <Users className="w-5 h-5 mr-2" />
+            UNIRSE
+          </Button>
         </div>
 
         {/* Leagues list */}
@@ -101,42 +93,118 @@ export default function TorneosPage() {
             <button
               key={league.id}
               onClick={() => setSelectedLeague(league)}
-              className="w-full flex items-center justify-between p-4 bg-muted border border-border hover:bg-accent hover:text-accent-foreground transition-colors text-left"
+              className="w-full flex items-center justify-between p-4 bg-white border border-black hover:bg-gray-100 transition-colors text-left"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-card flex items-center justify-center border border-border">
-                  <Trophy className="w-5 h-5" />
+                <div className="w-12 h-12 bg-black text-white flex items-center justify-center">
+                  <Trophy className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm">{league.name}</p>
-                  <p className="text-xs text-muted-foreground">Codigo: {league.code}</p>
+                  <p className="font-bold text-sm uppercase tracking-wide">{league.name}</p>
+                  <p className="text-xs text-gray-500">Codigo: {league.code}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-muted-foreground">
+              <div className="flex items-center gap-1 text-gray-500">
                 <Users className="w-4 h-4" />
-                <span className="text-sm">{league.members}</span>
+                <span className="text-sm font-bold">{league.members}</span>
               </div>
             </button>
           ))}
         </div>
 
+        {/* Create League Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setShowCreateModal(false)}
+            />
+            <div className="relative w-full max-w-md bg-white border border-black">
+              <div className="flex items-center justify-between p-4 border-b border-black bg-black text-white">
+                <h2 className="font-display text-lg tracking-tight">CREAR LIGA</h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="p-2 hover:bg-gray-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2">Nombre de la liga</label>
+                  <Input
+                    placeholder="Ej: Los Pumas Fantasy"
+                    value={newLeagueName}
+                    onChange={(e) => setNewLeagueName(e.target.value)}
+                    className="h-12 border-black"
+                  />
+                </div>
+                <Button 
+                  onClick={handleCreateLeague}
+                  className="w-full h-12 bg-black text-white hover:bg-gray-800 font-bold tracking-wider"
+                >
+                  CREAR LIGA
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Join League Modal */}
+        {showJoinModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              onClick={() => setShowJoinModal(false)}
+            />
+            <div className="relative w-full max-w-md bg-white border border-black">
+              <div className="flex items-center justify-between p-4 border-b border-black bg-black text-white">
+                <h2 className="font-display text-lg tracking-tight">UNIRSE A LIGA</h2>
+                <button
+                  onClick={() => setShowJoinModal(false)}
+                  className="p-2 hover:bg-gray-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-2">Codigo de la liga</label>
+                  <Input
+                    placeholder="Ej: PUMAS24"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    className="h-12 border-black uppercase"
+                  />
+                </div>
+                <Button 
+                  onClick={handleJoinLeague}
+                  className="w-full h-12 bg-black text-white hover:bg-gray-800 font-bold tracking-wider"
+                >
+                  UNIRSE
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* League ranking modal */}
         {selectedLeague && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
               onClick={() => setSelectedLeague(null)}
             />
-            <div className="relative w-full max-w-lg bg-background border border-border max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="relative w-full max-w-lg bg-white border border-black max-h-[80vh] overflow-hidden flex flex-col">
               {/* Modal header */}
-              <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center justify-between p-4 border-b border-black bg-black text-white">
                 <div>
                   <h2 className="font-display text-xl tracking-tight">{selectedLeague.name}</h2>
-                  <p className="text-xs text-muted-foreground">Ranking de la liga</p>
+                  <p className="text-xs text-gray-400">Ranking de la liga</p>
                 </div>
                 <button
                   onClick={() => setSelectedLeague(null)}
-                  className="p-2 hover:bg-muted transition-colors"
+                  className="p-2 hover:bg-gray-800 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -145,7 +213,7 @@ export default function TorneosPage() {
               {/* Ranking table */}
               <div className="flex-1 overflow-y-auto">
                 <table className="w-full">
-                  <thead className="sticky top-0 bg-card text-card-foreground">
+                  <thead className="sticky top-0 bg-black text-white">
                     <tr className="text-xs uppercase tracking-wider">
                       <th className="text-left p-3 font-bold">#</th>
                       <th className="text-left p-3 font-bold">Equipo</th>
@@ -157,10 +225,10 @@ export default function TorneosPage() {
                     {mockRankings.map((rank) => (
                       <tr
                         key={rank.position}
-                        className="border-b border-border hover:bg-muted/50 transition-colors"
+                        className="border-b border-gray-200 hover:bg-gray-100 transition-colors"
                       >
                         <td className="p-3">
-                          <span className={`font-bold ${rank.position === 1 ? "text-foreground" : "text-muted-foreground"}`}>
+                          <span className={`font-bold ${rank.position === 1 ? "text-black" : "text-gray-500"}`}>
                             {rank.position === 1 && (
                               <Trophy className="w-4 h-4 inline mr-1" />
                             )}
@@ -168,11 +236,11 @@ export default function TorneosPage() {
                           </span>
                         </td>
                         <td className="p-3">
-                          <p className="font-medium text-sm">{rank.team}</p>
-                          <p className="text-xs text-muted-foreground">{rank.manager}</p>
+                          <p className="font-medium text-sm text-black">{rank.team}</p>
+                          <p className="text-xs text-gray-500">{rank.manager}</p>
                         </td>
                         <td className="p-3 text-right font-medium text-sm">{rank.lastWeek}</td>
-                        <td className="p-3 text-right font-bold">{rank.total}</td>
+                        <td className="p-3 text-right font-bold text-black">{rank.total}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -181,7 +249,7 @@ export default function TorneosPage() {
             </div>
           </div>
         )}
-      </div>
-    </AppShell>
+      </main>
+    </div>
   )
 }
