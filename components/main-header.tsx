@@ -39,7 +39,7 @@ export function MainHeader() {
   // 2. Función para cerrar sesión
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push("/login")
+    router.push("/")
   }
 
   return (
