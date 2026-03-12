@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { supabase } from "@/lib/supabase/server.ts" // <-- Asegurate que la ruta sea correcta
+import { supabase } from "@/lib/supabase/server" // <-- Asegurate que la ruta sea correcta
 
 export default function LoginPage() {
   const router = useRouter()
