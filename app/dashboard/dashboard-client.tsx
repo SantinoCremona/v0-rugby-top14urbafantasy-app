@@ -65,7 +65,7 @@ export function DashboardClient({ players }: DashboardClientProps) {
             </div>
             <div className="bg-card text-card-foreground p-4 border border-border">
               <p className="text-xs text-card-foreground/60 uppercase tracking-wider mb-1">Presupuesto</p>
-              <p className="font-display text-3xl md:text-4xl">${remainingBudget.toLocaleString()}</p>
+              <p className="font-display text-3xl md:text-4xl">${remainingBudget.toLocaleString('es-AR')}</p>
             </div>
           </div>
 
