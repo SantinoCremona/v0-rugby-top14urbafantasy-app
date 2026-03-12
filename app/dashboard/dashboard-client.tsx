@@ -167,20 +167,19 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
         )}
 
        <RugbyField
-        selectedPlayers={new Map(
-        Array.from(selectedPlayers.entries()).map(([pos, player]) => [
-        pos,
+  selectedPlayers={new Map(
+    Array.from(selectedPlayers.entries()).map(([pos, player]) => [
+      pos,
       { 
         id: player.id, 
         nombre: player.nombre, 
-        club: player.club // <-- IMPORTANTE: Agregar esto
-                },
-              ])
-            )}
-            onSlotClick={handleSlotClick}
-            onRemovePlayer={handleRemovePlayer}
-          />Player={handleRemovePlayer}
-        />
+        club: player.club // <-- AGREGAMOS ESTA LÍNEA
+      },
+    ])
+  )}
+  onSlotClick={handleSlotClick}
+  onRemovePlayer={handleRemovePlayer}
+/>
       </main>
 
       <PlayerSelectionPopup
