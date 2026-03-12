@@ -422,7 +422,7 @@ export default function TorneosPage() {
 
               </div>
 
-
+        
 
               {/* Ranking table */}
 
@@ -501,6 +501,30 @@ export default function TorneosPage() {
           </div>
 
         )}
+        const supabase = createClient()
+  const [rankingGeneral, setRankingGeneral] = useState<any[]>([])
+
+  useEffect(() => {
+    async function cargarRanking() {
+      // Traemos puntos de jugadores, equipos de usuarios y nombres de equipos
+      const { data: jug } = await supabase.from("jugadores").select("id, puntos_totales")
+      const { data: eq } = await supabase.from('equipos_usuarios').select('user_id, jugador_id')
+      const { data: perf } = await supabase.from('perfiles').select('id, nombre_equipo')
+
+      const puntosMap = new Map(jug?.map(j => [j.id, j.puntos_totales || 0]))
+      
+      const ranking = (perf || []).map(p => {
+        const misJugadores = (eq || []).filter(e => e.user_id === p.id)
+        const total = misJugadores.reduce((acc, curr) => acc + (puntosMap.get(curr.jugador_id) || 0), 0)
+        return { team: p.nombre_equipo, total }
+      })
+      .sort((a, b) => b.total - a.total)
+      .map((item, index) => ({ ...item, position: index + 1 }))
+
+      setRankingGeneral(ranking)
+    }
+    cargarRanking()
+  }, [])
       {/* --- COMIENZO RANKING GENERAL REAL --- */}
         <div className="mt-12 mb-8 flex items-center gap-2">
           <Star className="w-6 h-6 fill-black" />
