@@ -4,17 +4,16 @@ import { useState, useEffect } from "react"
 import { MainHeader } from "@/components/main-header"
 import { RugbyField } from "@/components/rugby-field"
 import { PlayerSelectionPopup } from "@/components/player-selection-popup"
-import { ShoppingCart, Save } from "lucide-react"
+import { ShoppingCart, Save, Trash2 } from "lucide-react" // Agregamos Trash2
 import { Button } from "@/components/ui/button"
 import type { Player } from "@/components/player-card"
-// Importamos el cliente de navegador de Supabase
 import { createClient } from "@/lib/supabase/client"
 
 const INITIAL_BUDGET = 10000
 
 interface DashboardClientProps {
   players: Player[]
-  savedTeam?: any[] // Nueva prop para recibir el equipo de la base de datos
+  savedTeam?: any[]
 }
 
 export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
@@ -25,14 +24,12 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
   const [targetPositionType, setTargetPositionType] = useState<string>("")
   const [loading, setLoading] = useState(false)
 
-  // EFECTO PARA CARGAR EL EQUIPO GUARDADO AL ENTRAR
   useEffect(() => {
     if (savedTeam && savedTeam.length > 0) {
       const newMap = new Map()
       savedTeam.forEach(item => {
         const player = players.find(p => p.id === item.jugador_id)
         if (player) {
-          // Convertimos la posición de texto a número para el Map
           newMap.set(parseInt(item.posicion_en_campo), player)
         }
       })
@@ -45,6 +42,12 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
   const totalPoints = Array.from(selectedPlayers.values()).reduce((sum, p) => sum + p.puntos_totales, 0)
   const playersCount = selectedPlayers.size
   const playersRemaining = 15 - playersCount
+
+  // --- LÓGICA DE LÍMITE POR CLUB ---
+  const clubCounts = Array.from(selectedPlayers.values()).reduce((acc, p) => {
+    acc[p.club] = (acc[p.club] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
 
   const handleSlotClick = (position: number, positionType: string) => {
     setTargetPosition(position)
@@ -73,8 +76,19 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
     })
   }
 
-  // FUNCIÓN PARA GUARDAR EN SUPABASE
+  // --- FUNCIÓN LIMPIAR TODO ---
+  const handleClearTeam = () => {
+    if (confirm("¿Estás seguro de que querés vaciar todo tu equipo?")) {
+      setSelectedPlayers(new Map())
+    }
+  }
+
   const handleSaveTeam = async () => {
+    if (remainingBudget < 0) {
+      alert("No podés guardar un equipo que exceda el presupuesto.")
+      return
+    }
+
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -85,17 +99,14 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
     }
 
     try {
-      // 1. Limpiar equipo anterior
       await supabase.from('equipos_usuarios').delete().eq('user_id', user.id)
 
-      // 2. Preparar los 15 (o los que haya) para insertar
       const updates = Array.from(selectedPlayers.entries()).map(([pos, player]) => ({
         user_id: user.id,
         jugador_id: player.id,
         posicion_en_campo: pos.toString()
       }))
 
-      // 3. Insertar en la tabla
       const { error } = await supabase.from('equipos_usuarios').insert(updates)
       
       if (error) throw error
@@ -107,8 +118,14 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
     }
   }
 
+  // --- FILTRADO DE DISPONIBLES (Inyectando el límite de 4 por club) ---
   const selectedIds = new Set(Array.from(selectedPlayers.values()).map((p) => p.id))
-  const availablePlayers = players.filter((p) => !selectedIds.has(p.id))
+  
+  const availablePlayers = players.filter((p) => {
+    const isNotSelected = !selectedIds.has(p.id)
+    const clubLimitNotReached = (clubCounts[p.club] || 0) < 4
+    return isNotSelected && clubLimitNotReached
+  })
 
   return (
     <div className="min-h-screen bg-white">
@@ -120,39 +137,45 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
             <p className="text-sm text-gray-600">Arma tu XV ideal del Top 14 URBA</p>
           </div>
           <div className="flex gap-2">
-            <Button className="bg-black text-white hover:bg-gray-800 h-10 px-4">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              MERCADO
+            <Button 
+              onClick={handleClearTeam}
+              variant="outline" 
+              className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white h-10 px-4"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              LIMPIAR
             </Button>
             <Button 
               onClick={handleSaveTeam}
-              disabled={loading}
+              disabled={loading || remainingBudget < 0}
               variant="outline" 
               className="border-black text-black hover:bg-black hover:text-white h-10 px-4"
             >
               <Save className="w-4 h-4 mr-2" />
-              {loading ? "GUARDANDO..." : "GUARDAR"}
+              {remainingBudget < 0 ? "EXCESO $" : loading ? "GUARDANDO..." : "GUARDAR"}
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Stats cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white border border-black p-4">
             <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Puntos</p>
-            <p className="font-display text-4xl md:text-5xl text-black">{totalPoints}</p>
+            <p className="font-display text-4xl text-black">{totalPoints}</p>
           </div>
           <div className="bg-white border border-black p-4">
             <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Presupuesto</p>
-            <p className="font-display text-4xl md:text-5xl text-black">${remainingBudget.toLocaleString('es-AR')}</p>
-            <div className="h-1 bg-black mt-2 w-full" />
+            <p className={`font-display text-4xl ${remainingBudget < 0 ? 'text-red-600' : 'text-black'}`}>
+              ${remainingBudget.toLocaleString('es-AR')}
+            </p>
           </div>
           <div className="bg-black text-white p-4">
             <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Ranking</p>
-            <p className="font-display text-4xl md:text-5xl italic">#380</p>
+            <p className="font-display text-4xl italic">#380</p>
           </div>
           <div className="bg-white border border-black p-4">
             <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Jugadores</p>
-            <p className="font-display text-4xl md:text-5xl text-black">{playersCount}/15</p>
+            <p className="font-display text-4xl text-black">{playersCount}/15</p>
           </div>
         </div>
 
@@ -166,66 +189,37 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
           </div>
         )}
 
-       <RugbyField
-  selectedPlayers={new Map(
-    Array.from(selectedPlayers.entries()).map(([pos, player]) => [
-      pos,
-      { 
-        id: player.id, 
-        nombre: player.nombre, 
-        club: player.club // <-- AGREGAMOS ESTA LÍNEA
-      },
-    ])
-  )}
-  onSlotClick={handleSlotClick}
-  onRemovePlayer={handleRemovePlayer}
-/>
-        {/* Sección de Reglas y Guía */}
+        <RugbyField
+          selectedPlayers={new Map(
+            Array.from(selectedPlayers.entries()).map(([pos, player]) => [
+              pos,
+              { id: player.id, nombre: player.nombre, club: player.club },
+            ])
+          )}
+          onSlotClick={handleSlotClick}
+          onRemovePlayer={handleRemovePlayer}
+        />
+
+        {/* Sección de Reglas */}
         <section className="mt-12 border-t-2 border-black pt-8 mb-12">
           <h2 className="font-display text-2xl mb-6 italic tracking-tight">REGLAS DEL JUEGO</h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Regla 1: Presupuesto */}
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">1</span>
-                Presupuesto Limitado
+                Presupuesto y Clubes
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Tu XV ideal debe valer <strong>$10.000</strong> o menos. Administrá tus recursos para tener cracks en todas las líneas.
+                Máximo <strong>$10.000</strong> y hasta <strong>4 jugadores</strong> de un mismo club.
               </p>
             </div>
-
-            {/* Regla 2: Puntuación */}
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">2</span>
                 Sumar Puntos
               </h3>
               <p className="text-sm text-gray-700 leading-relaxed">
-                Tus jugadores suman puntos reales cada fecha por <strong>tries, tackles realizados y victorias</strong> de sus respectivos clubes.
-              </p>
-            </div>
-
-            {/* Regla 3: Guardado */}
-            <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
-                <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">3</span>
-                Confirmar Equipo
-              </h3>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                Una vez seleccionados tus 15 jugadores, es <strong>obligatorio</strong> apretar el botón <span className="font-bold">"GUARDAR"</span> para que tu formación quede registrada.
-              </p>
-            </div>
-
-            {/* Regla 4: Cambios */}
-            <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
-                <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">4</span>
-                Mercado de Pases
-              </h3>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                ¿Querés cambiar a alguien? Simplemente quitalo con la <span className="font-bold">"X"</span>, elegí al nuevo refuerzo y dale a <span className="font-bold">"GUARDAR"</span> nuevamente.
+                Puntos por tries, tackles y victorias reales de la fecha URBA.
               </p>
             </div>
           </div>
