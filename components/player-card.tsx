@@ -1,6 +1,5 @@
 "use client"
 
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, Minus, Plus, Check } from "lucide-react"
 
@@ -20,52 +19,37 @@ interface PlayerCardProps {
   onToggleSelect: (player: Player) => void
 }
 
-const positionColors: Record<string, string> = {
-  "Pilar": "bg-red-500",
-  "Hooker": "bg-red-600",
-  "Segunda Línea": "bg-orange-500",
-  "Ala": "bg-yellow-500",
-  "Octavo": "bg-yellow-600",
-  "Medio Scrum": "bg-emerald-500",
-  "Apertura": "bg-teal-500",
-  "Centro": "bg-cyan-500",
-  "Wing": "bg-blue-500",
-  "Fullback": "bg-indigo-500",
-}
-
 export function PlayerCard({ player, isSelected, onToggleSelect }: PlayerCardProps) {
   const getTrendIcon = () => {
     switch (player.tendencia) {
       case "subiendo":
-        return <TrendingUp className="h-4 w-4 text-primary" />
+        return <TrendingUp className="h-4 w-4" />
       case "bajando":
-        return <TrendingDown className="h-4 w-4 text-destructive" />
+        return <TrendingDown className="h-4 w-4 text-muted-foreground" />
       default:
         return <Minus className="h-4 w-4 text-muted-foreground" />
     }
   }
 
-  const positionColor = positionColors[player.posicion] || "bg-muted"
-
   return (
-    <Card 
-      className={`relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/10 ${
-        isSelected ? "ring-2 ring-primary shadow-lg shadow-primary/20" : ""
+    <div 
+      className={`relative overflow-hidden border transition-all hover:bg-muted ${
+        isSelected ? "border-foreground bg-muted" : "border-border"
       }`}
     >
       {/* Header with position badge */}
-      <div className="relative h-32 bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-        <div className={`absolute top-2 left-2 ${positionColor} text-primary-foreground text-xs font-bold px-2 py-1 rounded`}>
+      <div className="relative h-28 bg-card flex items-center justify-center">
+        <div className="absolute top-2 left-2 bg-foreground text-background text-xs font-bold px-2 py-1 uppercase tracking-wider">
           {player.posicion}
         </div>
         
         {/* Price trend indicator */}
-        <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded px-2 py-1 flex items-center gap-1">
+        <div className="absolute top-2 right-2 flex items-center gap-1">
           {getTrendIcon()}
         </div>
 
-        {/* Player silhouette/avatar */}
-        <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-border">
+        {/* Player avatar */}
+        <div className="w-16 h-16 bg-muted flex items-center justify-center overflow-hidden border border-border">
           {player.foto_url ? (
             <img 
               src={player.foto_url} 
@@ -73,31 +57,29 @@ export function PlayerCard({ player, isSelected, onToggleSelect }: PlayerCardPro
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
-              <span className="text-2xl font-bold text-muted-foreground">
-                {player.nombre.split(' ').map(n => n[0]).join('')}
-              </span>
-            </div>
+            <span className="font-display text-2xl text-card-foreground">
+              {player.nombre.split(' ').map(n => n[0]).join('')}
+            </span>
           )}
         </div>
       </div>
 
       {/* Player info */}
-      <div className="p-4 space-y-3">
-        <h3 className="font-bold text-lg text-foreground truncate text-balance">
+      <div className="p-4 space-y-3 bg-background">
+        <h3 className="font-bold text-sm uppercase tracking-wide truncate">
           {player.nombre}
         </h3>
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Precio</p>
-            <p className="text-xl font-bold text-primary">
-              ${player.precio.toLocaleString('es-AR')}M
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Precio</p>
+            <p className="font-display text-lg">
+              ${player.precio.toLocaleString('es-AR')}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">Puntos</p>
-            <p className="text-xl font-bold text-foreground">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Puntos</p>
+            <p className="font-display text-lg">
               {player.puntos_totales}
             </p>
           </div>
@@ -106,11 +88,7 @@ export function PlayerCard({ player, isSelected, onToggleSelect }: PlayerCardPro
         <Button 
           onClick={() => onToggleSelect(player)}
           variant={isSelected ? "default" : "outline"}
-          className={`w-full transition-all ${
-            isSelected 
-              ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-              : "border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-          }`}
+          className="w-full h-9 text-xs font-bold uppercase tracking-wider"
         >
           {isSelected ? (
             <>
@@ -125,6 +103,6 @@ export function PlayerCard({ player, isSelected, onToggleSelect }: PlayerCardPro
           )}
         </Button>
       </div>
-    </Card>
+    </div>
   )
 }
