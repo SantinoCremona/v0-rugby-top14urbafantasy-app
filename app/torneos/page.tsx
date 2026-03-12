@@ -10,6 +10,10 @@ import { Button } from "@/components/ui/button"
 
 import { Input } from "@/components/ui/input"
 
+import { Trophy, Plus, Users, X } from "lucide-react"
+
+
+
 interface League {
 
   id: string
@@ -416,7 +420,7 @@ export default function TorneosPage() {
 
               </div>
 
-        
+
 
               {/* Ranking table */}
 
@@ -495,6 +499,7 @@ export default function TorneosPage() {
           </div>
 
         )}
+
       </main>
 
     </div>
