@@ -180,6 +180,56 @@ export function DashboardClient({ players, savedTeam }: DashboardClientProps) {
   onSlotClick={handleSlotClick}
   onRemovePlayer={handleRemovePlayer}
 />
+        {/* Sección de Reglas y Guía */}
+        <section className="mt-12 border-t-2 border-black pt-8 mb-12">
+          <h2 className="font-display text-2xl mb-6 italic tracking-tight">REGLAS DEL JUEGO</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Regla 1: Presupuesto */}
+            <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
+                <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">1</span>
+                Presupuesto Limitado
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Tu XV ideal debe valer <strong>$10.000</strong> o menos. Administrá tus recursos para tener cracks en todas las líneas.
+              </p>
+            </div>
+
+            {/* Regla 2: Puntuación */}
+            <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
+                <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">2</span>
+                Sumar Puntos
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Tus jugadores suman puntos reales cada fecha por <strong>tries, tackles realizados y victorias</strong> de sus respectivos clubes.
+              </p>
+            </div>
+
+            {/* Regla 3: Guardado */}
+            <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
+                <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">3</span>
+                Confirmar Equipo
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Una vez seleccionados tus 15 jugadores, es <strong>obligatorio</strong> apretar el botón <span className="font-bold">"GUARDAR"</span> para que tu formación quede registrada.
+              </p>
+            </div>
+
+            {/* Regla 4: Cambios */}
+            <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
+                <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">4</span>
+                Mercado de Pases
+              </h3>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                ¿Querés cambiar a alguien? Simplemente quitalo con la <span className="font-bold">"X"</span>, elegí al nuevo refuerzo y dale a <span className="font-bold">"GUARDAR"</span> nuevamente.
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
 
       <PlayerSelectionPopup
