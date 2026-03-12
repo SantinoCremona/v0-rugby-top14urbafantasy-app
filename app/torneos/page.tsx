@@ -10,12 +10,6 @@ import { Button } from "@/components/ui/button"
 
 import { Input } from "@/components/ui/input"
 
-import { Trophy, Plus, Users, X } from "lucide-react"
-import { useState, useEffect } from "react" // <--- Agregá useEffect
-import { Trophy, Plus, Users, X, Star } from "lucide-react" // <--- Agregá Star
-import { createClient } from "@/lib/supabase/client" // <--- Importá tu cliente
-
-
 interface League {
 
   id: string
@@ -501,63 +495,6 @@ export default function TorneosPage() {
           </div>
 
         )}
-        const supabase = createClient()
-  const [rankingGeneral, setRankingGeneral] = useState<any[]>([])
-
-  useEffect(() => {
-    async function cargarRanking() {
-      // Traemos puntos de jugadores, equipos de usuarios y nombres de equipos
-      const { data: jug } = await supabase.from("jugadores").select("id, puntos_totales")
-      const { data: eq } = await supabase.from('equipos_usuarios').select('user_id, jugador_id')
-      const { data: perf } = await supabase.from('perfiles').select('id, nombre_equipo')
-
-      const puntosMap = new Map(jug?.map(j => [j.id, j.puntos_totales || 0]))
-      
-      const ranking = (perf || []).map(p => {
-        const misJugadores = (eq || []).filter(e => e.user_id === p.id)
-        const total = misJugadores.reduce((acc, curr) => acc + (puntosMap.get(curr.jugador_id) || 0), 0)
-        return { team: p.nombre_equipo, total }
-      })
-      .sort((a, b) => b.total - a.total)
-      .map((item, index) => ({ ...item, position: index + 1 }))
-
-      setRankingGeneral(ranking)
-    }
-    cargarRanking()
-  }, [])
-      {/* --- COMIENZO RANKING GENERAL REAL --- */}
-        <div className="mt-12 mb-8 flex items-center gap-2">
-          <Star className="w-6 h-6 fill-black" />
-          <h2 className="font-display text-2xl italic uppercase">Ranking General</h2>
-        </div>
-
-        <div className="border-2 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-black text-white text-[10px] uppercase tracking-widest">
-                <th className="p-3 w-12 text-center">Pos</th>
-                <th className="p-3">Equipo</th>
-                <th className="p-3 text-right">Puntos</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rankingGeneral.map((item) => (
-                <tr key={item.position} className="border-b border-black last:border-0 hover:bg-gray-50">
-                  <td className={`p-3 text-center font-display text-xl italic ${item.position <= 3 ? 'bg-yellow-400' : ''}`}>
-                    #{item.position}
-                  </td>
-                  <td className="p-3 font-bold text-sm uppercase italic">
-                    {item.team || "Sin nombre"}
-                  </td>
-                  <td className="p-3 text-right font-display text-2xl">
-                    {item.total}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {/* --- FIN RANKING GENERAL REAL --- */}
       </main>
 
     </div>
