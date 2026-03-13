@@ -2,67 +2,79 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainHeader } from "@/components/main-header"
-import { Save, Search, TrendingUp } from "lucide-react"
 
-export default function AdminPuntos() {
+export default function AdminPuntosMasivos() {
   const supabase = createClient()
-  const [jugadores, setJugadores] = useState<any[]>([])
-  const [busqueda, setBusqueda] = useState("")
-  const [cargando, setCargando] = useState(false)
+  const [jugadores, setJugadores] = useState([])
+  const [clubSeleccionado, setClubSeleccionado] = useState("CASI") // Ejemplo
+  const [fechaActual, setFechaActual] = useState(1)
+  const [puntosTemp, setPuntosTemp] = useState({}) // Guarda lo que vas escribiendo
 
-  useEffect(() => { fetchJugadores() }, [])
+  // 1. Buscás los jugadores de UN SOLO CLUB para no volverte loco
+  useEffect(() => {
+    async function getJugadores() {
+      const { data } = await supabase
+        .from("jugadores")
+        .select("*")
+        .eq("club", clubSeleccionado)
+      setJugadores(data)
+    }
+    getJugadores()
+  }, [clubSeleccionado])
 
-  async function fetchJugadores() {
-    const { data } = await supabase.from("jugadores").select("*").order("apellido")
-    if (data) setJugadores(data)
+  // 2. Función para guardar toda la fecha junta
+  async function guardarPlanilla() {
+    const inserts = Object.entries(puntosTemp).map(([id, pts]) => ({
+      jugador_id: id,
+      fecha_numero: fechaActual,
+      puntos: parseInt(pts)
+    }))
+
+    const { error } = await supabase.from("puntos_fecha").insert(inserts)
+    
+    if (!error) {
+      alert("¡Puntos de la fecha cargados con éxito!")
+      // Opcional: Una función en Supabase debería sumar esto al total del jugador
+    }
   }
-
-  async function actualizarPuntos(id: string, pts: number) {
-    setCargando(true)
-    await supabase.from("jugadores").update({ puntos_totales: pts }).eq("id", id)
-    setCargando(false)
-    // Opcional: mostrar un check de "guardado"
-  }
-
-  const filtrados = jugadores.filter(j => 
-    `${j.nombre} ${j.apellido}`.toLowerCase().includes(busqueda.toLowerCase())
-  )
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans">
+    <div className="min-h-screen bg-white text-black">
       <MainHeader />
-      <main className="max-w-2xl mx-auto px-4 py-10">
-        <div className="flex items-center gap-3 mb-8 border-b-4 border-black pb-4">
-          <TrendingUp className="w-8 h-8" />
-          <h1 className="font-display text-4xl italic uppercase tracking-tighter">Carga de Puntos</h1>
+      <main className="max-w-4xl mx-auto px-4 py-10">
+        <div className="flex justify-between items-center mb-8 border-b-4 border-black pb-4">
+          <h1 className="font-display text-4xl italic uppercase italic">Carga por Club</h1>
+          <select 
+            className="border-2 border-black p-2 font-bold"
+            onChange={(e) => setClubSeleccionado(e.target.value)}
+          >
+            <option value="CASI">CASI</option>
+            <option value="SIC">SIC</option>
+            <option value="HINDU">HINDU</option>
+            {/* ... todos los clubes */}
+          </select>
         </div>
 
-        <input 
-          type="text" 
-          placeholder="BUSCAR JUGADOR..." 
-          className="w-full p-4 border-4 border-black mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none focus:bg-yellow-50 font-bold uppercase"
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
-
-        <div className="space-y-4">
-          {filtrados.map(j => (
-            <div key={j.id} className="border-4 border-black p-4 flex items-center justify-between shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-              <div>
-                <p className="font-display text-xl italic uppercase">{j.apellido}, {j.nombre}</p>
-                <p className="text-xs font-bold text-gray-500 uppercase">{j.club} • {j.posicion}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <input 
-                  type="number" 
-                  className="w-20 p-2 border-2 border-black text-center font-display text-2xl"
-                  defaultValue={j.puntos_totales || 0}
-                  onBlur={(e) => actualizarPuntos(j.id, parseInt(e.target.value) || 0)}
-                />
-                <span className="font-bold text-xs uppercase">Pts</span>
-              </div>
+        <div className="grid gap-2">
+          {jugadores.map(j => (
+            <div key={j.id} className="flex items-center justify-between border-2 border-black p-3">
+              <span className="font-bold uppercase text-sm">{j.apellido}, {j.nombre}</span>
+              <input 
+                type="number" 
+                placeholder="0"
+                className="w-20 border-2 border-black p-1 text-center font-display text-xl"
+                onChange={(e) => setPuntosTemp({...puntosTemp, [j.id]: e.target.value})}
+              />
             </div>
           ))}
         </div>
+
+        <button 
+          onClick={guardarPlanilla}
+          className="mt-8 w-full bg-black text-white p-4 font-display text-2xl italic hover:bg-yellow-400 hover:text-black transition-colors"
+        >
+          GUARDAR PUNTOS FECHA {fechaActual}
+        </button>
       </main>
     </div>
   )
