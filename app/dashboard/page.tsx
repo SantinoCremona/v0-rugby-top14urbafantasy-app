@@ -36,6 +36,7 @@ export default async function DashboardPage() {
       .from('equipos_usuarios')
       .select('posicion_en_campo, jugador_id')
       .eq('user_id', user.id)
+      .eq('fecha_num', fechaActual) // <-- Filtramos por fecha activa para mostrar el equipo correcto
     
     savedTeamData = teamData || []
 
@@ -53,24 +54,16 @@ export default async function DashboardPage() {
     }
   }
 
-  // --- LÓGICA DE RANKING DINÁMICO (Global Acumulado) ---
-  const puntosMap = new Map((jugadores || []).map(j => [j.id, j.puntos_totales || 0]))
-  const { data: todosLosEquipos } = await supabase
-    .from('equipos_usuarios')
-    .select('user_id, jugador_id')
+  // --- LÓGICA DE RANKING ACTUALIZADA (Basada en Perfiles) ---
+  // 1. Traemos los puntos acumulados de todos los perfiles ordenados por puntaje
+  const { data: rankings } = await supabase
+    .from('perfiles')
+    .select('id, puntos_acumulados')
+    .order('puntos_acumulados', { ascending: false })
 
-  const puntosPorUsuario: Record<string, number> = {}
-  todosLosEquipos?.forEach(item => {
-    const pts = puntosMap.get(item.jugador_id) || 0
-    puntosPorUsuario[item.user_id] = (puntosPorUsuario[item.user_id] || 0) + pts
-  })
-
-  const rankingOrdenado = Object.entries(puntosPorUsuario)
-    .map(([id, pts]) => ({ id, pts }))
-    .sort((a, b) => b.pts - a.pts)
-
-  const miPosicion = rankingOrdenado.findIndex(u => u.id === user?.id) + 1
-  const rankingFinal = miPosicion > 0 ? miPosicion : (rankingOrdenado.length + 1)
+  // 2. Encontrar la posición del usuario actual en esa lista ordenada
+  const miPosicion = rankings?.findIndex(p => p.id === user?.id) + 1
+  const rankingFinal = miPosicion > 0 ? miPosicion : (rankings?.length || 0) + 1
   // --- FIN LÓGICA RANKING ---
 
   const players: Player[] = (jugadores || []).map((j) => ({
