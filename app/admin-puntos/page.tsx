@@ -58,7 +58,7 @@ export default function AdminPuntosMasivos() {
         <div className="grid gap-2">
           {jugadores.map(j => (
             <div key={j.id} className="flex items-center justify-between border-2 border-black p-3">
-              <span className="font-bold uppercase text-sm">{j.apellido}, {j.nombre}</span>
+              <span className="font-bold uppercase text-sm">{j.apellido} {j.nombre}</span>
               <input 
                 type="number" 
                 placeholder="0"
