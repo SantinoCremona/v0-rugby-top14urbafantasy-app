@@ -9,120 +9,89 @@ export default function AdminPuntosMasivos() {
   const [clubSeleccionado, setClubSeleccionado] = useState("CASI") 
   const [fechaActual, setFechaActual] = useState(1)
   const [puntosTemp, setPuntosTemp] = useState({}) 
-  const [cargando, setCargando] = useState(false)
 
-  const CLUBES = ["CASI", "SIC", "Hindu", "Belgrano", "Alumni", "BIEI", "Atletico del Rosario", "Los Matreros", "Regatas BV", "Champagnat", "La Plata", "Los Tilos", "CUBA", "Newman"]
-
-  // 1. Cargar jugadores del club seleccionado
+  // 1. Carga de jugadores (Volvemos a la lógica que te funcionaba)
   useEffect(() => {
     async function getJugadores() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("jugadores")
         .select("*")
-        .ilike("club", clubSeleccionado)
-        .order("apellido", { ascending: true })
+        .eq("club", clubSeleccionado) // Usamos .eq de nuevo si te funcionaba mejor
       
-      setJugadores(data || [])
+      if (data) setJugadores(data)
+      if (error) console.error("Error:", error)
     }
     getJugadores()
   }, [clubSeleccionado])
 
-  // 2. Función para guardar puntos en la tabla puntos_fecha
+  // 2. Función para guardar (Ajustada para puntos_fecha e int8)
   async function guardarPlanilla() {
-    setCargando(true)
-    
-    // Creamos el array de objetos para insertar
-    const inserts = Object.entries(puntosTemp)
-      .filter(([_, pts]) => pts !== "" && pts !== "0") 
-      .map(([id, pts]) => ({
-        jugador_id: parseInt(id), // Convertimos el ID (string) a número (int8)
-        fecha_num: fechaActual,   // Columna en tu tabla SQL
-        puntos: parseInt(pts)
-      }))
+    const inserts = Object.entries(puntosTemp).map(([id, pts]) => ({
+      jugador_id: parseInt(id), // ID a número
+      fecha_num: fechaActual,   // Nombre columna SQL
+      puntos: parseInt(pts) || 0
+    }))
 
-    if (inserts.length === 0) {
-      alert("No hay puntos para guardar.")
-      setCargando(false)
-      return
-    }
+    if (inserts.length === 0) return alert("No hay datos")
 
-    // Insertamos en la tabla puntos_fecha
     const { error } = await supabase.from("puntos_fecha").insert(inserts)
     
-    if (error) {
-      alert("Error de Supabase: " + error.message)
-      console.error(error)
+    if (!error) {
+      alert("¡Puntos cargados con éxito!")
+      setPuntosTemp({}) 
     } else {
-      alert(`¡Éxito! Puntos de ${clubSeleccionado} (Fecha ${fechaActual}) guardados.`)
-      setPuntosTemp({}) // Limpiamos los inputs después de guardar
+      alert("Error: " + error.message)
     }
-    setCargando(false)
   }
 
   return (
     <div className="min-h-screen bg-white text-black">
       <MainHeader />
       <main className="max-w-4xl mx-auto px-4 py-10">
-        
-        {/* Header de control */}
-        <div className="flex justify-between items-center mb-8 border-b-4 border-black pb-4 bg-gray-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <div className="flex flex-col gap-2">
-            <h1 className="font-display text-3xl italic uppercase leading-none">Carga de Puntos</h1>
-            <div className="flex items-center gap-2 font-bold text-sm">
-               <span>JORNADA:</span>
-               <input 
-                type="number" 
-                value={fechaActual}
-                onChange={(e) => setFechaActual(parseInt(e.target.value))}
-                className="w-14 border-2 border-black text-center bg-white"
-               />
-            </div>
-          </div>
-          
+        <div className="flex justify-between items-center mb-8 border-b-4 border-black pb-4">
+          <h1 className="font-display text-4xl italic uppercase">Carga por Club</h1>
           <select 
-            className="border-2 border-black p-2 font-bold uppercase bg-white cursor-pointer hover:bg-yellow-50"
+            className="border-2 border-black p-2 font-bold"
             value={clubSeleccionado}
             onChange={(e) => setClubSeleccionado(e.target.value)}
           >
-            {CLUBES.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
+            <option value="CASI">CASI</option>
+            <option value="SIC">SIC</option>
+            <option value="Hindu">Hindu</option>
+            <option value="Belgrano">Belgrano</option>
+            <option value="Alumni">Alumni</option>
+            <option value="CUBA">CUBA</option>
+            <option value="Newman">Newman</option>
+            {/* Agregá el resto tal cual están en tu base de datos */}
           </select>
         </div>
 
-        {/* Lista de Jugadores */}
-        <div className="grid gap-2 mb-24">
-          {jugadores.map(j => (
-            <div key={j.id} className="flex items-center justify-between border-2 border-black p-4 bg-white hover:border-yellow-400 transition-all">
-              <div className="flex flex-col">
-                <span className="font-display text-xl uppercase italic leading-none">{j.apellido}, {j.nombre}</span>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{j.posicion}</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-gray-400">PTS</span>
-                <input 
-                  type="number" 
-                  placeholder="0"
-                  value={puntosTemp[j.id] || ""}
-                  className="w-24 border-2 border-black p-2 text-center font-display text-2xl outline-none focus:bg-yellow-400 focus:border-black"
-                  onChange={(e) => setPuntosTemp({...puntosTemp, [j.id]: e.target.value})}
-                />
-              </div>
+        <div className="grid gap-2">
+          {jugadores.length > 0 ? jugadores.map(j => (
+            <div key={j.id} className="flex items-center justify-between border-2 border-black p-3">
+              <span className="font-bold uppercase text-sm">{j.apellido}, {j.nombre}</span>
+              <input 
+                type="number" 
+                placeholder="0"
+                className="w-20 border-2 border-black p-1 text-center font-display text-xl"
+                // No usamos "value" aquí para evitar que React bloquee el input si el estado se lía
+                onChange={(e) => setPuntosTemp({...puntosTemp, [j.id]: e.target.value})}
+              />
             </div>
-          ))}
+          )) : (
+            <p className="text-center py-10 italic text-gray-400">
+              No hay jugadores para {clubSeleccionado}. 
+              Fijate si el nombre en el "option" es igual al de la base de datos.
+            </p>
+          )}
         </div>
 
-        {/* Botón flotante para guardar */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent">
-          <button 
-            onClick={guardarPlanilla}
-            disabled={cargando}
-            className="max-w-4xl mx-auto w-full bg-black text-white p-5 font-display text-3xl italic uppercase border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)] hover:bg-yellow-400 hover:text-black active:translate-y-1 transition-all disabled:opacity-50"
-          >
-            {cargando ? "GUARDANDO DATOS..." : `CONFIRMAR FECHA ${fechaActual} - ${clubSeleccionado}`}
-          </button>
-        </div>
+        <button 
+          onClick={guardarPlanilla}
+          className="mt-8 w-full bg-black text-white p-4 font-display text-2xl italic hover:bg-yellow-400 hover:text-black transition-colors"
+        >
+          GUARDAR PUNTOS FECHA {fechaActual}
+        </button>
       </main>
     </div>
   )
