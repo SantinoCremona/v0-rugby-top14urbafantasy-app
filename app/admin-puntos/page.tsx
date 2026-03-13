@@ -137,7 +137,7 @@ export default function AdminPuntosMasivos() {
               value={clubSeleccionado}
               onChange={(e) => setClubSeleccionado(e.target.value)}
             >
-              {["CASI", "SIC", "Hindu", "Belgrano", "Alumni", "CUBA", "Newman", "BIEI", "Atletico del Rosario", "Los Matreros", "Regatas BV", "Champagnat", "La Plata", "Los Tilos"].map(club => (
+              {["CASI", "SIC", "Hindu", "Belgrano", "Alumni", "CUBA", "Newman", "BIEI", "Atletico del Rosario", "Los Matreros", "Regatas", "Champagnat", "La Plata", "Los Tilos"].map(club => (
                 <option key={club} value={club}>{club}</option>
               ))}
             </select>
