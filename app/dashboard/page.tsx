@@ -1,3 +1,5 @@
+export const revalidate = 0; // Fuerza a Next.js a leer datos frescos siempre
+
 import { createClient } from "@/lib/supabase/server"
 import { DashboardClient } from "./dashboard-client"
 import type { Player } from "@/components/player-card"
@@ -12,6 +14,8 @@ export default async function DashboardPage() {
     .eq("id", 1)
     .single()
 
+  const fechaActual = config?.fecha_activa ?? 1
+
   // 2. Traer todos los jugadores
   const { data: jugadores, error } = await supabase
     .from("jugadores")
@@ -22,9 +26,10 @@ export default async function DashboardPage() {
     console.error("Error fetching players:", error)
   }
 
-  // 3. Traer el usuario actual
+  // 3. Traer el usuario actual y su equipo
   const { data: { user } } = await supabase.auth.getUser()
   let savedTeamData = []
+  let totalPuntosFechaActual = 0
   
   if (user) {
     const { data: teamData } = await supabase
@@ -33,9 +38,22 @@ export default async function DashboardPage() {
       .eq('user_id', user.id)
     
     savedTeamData = teamData || []
+
+    // --- LÓGICA DE PUNTOS DE LA FECHA ACTUAL ---
+    if (savedTeamData.length > 0) {
+      const idsMisJugadores = savedTeamData.map(item => item.jugador_id)
+      
+      const { data: puntosData } = await supabase
+        .from("puntos_fecha")
+        .select("puntos")
+        .in("jugador_id", idsMisJugadores)
+        .eq("fecha_num", fechaActual)
+
+      totalPuntosFechaActual = puntosData?.reduce((acc, curr) => acc + curr.puntos, 0) || 0
+    }
   }
 
-  // --- LÓGICA DE RANKING DINÁMICO ---
+  // --- LÓGICA DE RANKING DINÁMICO (Global Acumulado) ---
   const puntosMap = new Map((jugadores || []).map(j => [j.id, j.puntos_totales || 0]))
   const { data: todosLosEquipos } = await supabase
     .from('equipos_usuarios')
@@ -66,14 +84,15 @@ export default async function DashboardPage() {
     tendencia: j.tendencia as "subiendo" | "bajando" | "estable",
   }))
 
-  // Pasamos todos los datos al Client Component, incluyendo el estado del mercado
+  // Pasamos todos los datos al Client Component
   return (
     <DashboardClient 
       players={players} 
       savedTeam={savedTeamData} 
       rankingPos={rankingFinal}
-      mercadoAbierto={config?.mercado_abierto ?? true} // Nuevo prop
-      fechaActiva={config?.fecha_activa ?? 1}        // Nuevo prop
+      mercadoAbierto={config?.mercado_abierto ?? true}
+      fechaActiva={fechaActual}
+      puntosFecha={totalPuntosFechaActual} // Enviamos el total de la fecha
     />
   )
 }
