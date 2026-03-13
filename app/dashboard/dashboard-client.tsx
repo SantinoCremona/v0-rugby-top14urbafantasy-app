@@ -110,12 +110,19 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
     }
 
     try {
-      await supabase.from('equipos_usuarios').delete().eq('user_id', user.id)
+      // 1. Borramos el equipo anterior del usuario para la fecha específica
+      await supabase
+        .from('equipos_usuarios')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('fecha_num', fechaActiva)
 
+      // 2. Preparamos los nuevos datos incluyendo la fecha_num
       const updates = Array.from(selectedPlayers.entries()).map(([pos, player]) => ({
         user_id: user.id,
         jugador_id: player.id,
-        posicion_en_campo: pos.toString()
+        posicion_en_campo: pos.toString(),
+        fecha_num: fechaActiva
       }))
 
       const { error } = await supabase.from('equipos_usuarios').insert(updates)
