@@ -5,7 +5,14 @@ import type { Player } from "@/components/player-card"
 export default async function DashboardPage() {
   const supabase = await createClient()
   
-  // 1. Traer todos los jugadores de la base de datos
+  // 1. Traer la configuración del juego (Mercado y Fecha Activa)
+  const { data: config } = await supabase
+    .from("config_juego")
+    .select("*")
+    .eq("id", 1)
+    .single()
+
+  // 2. Traer todos los jugadores
   const { data: jugadores, error } = await supabase
     .from("jugadores")
     .select("*")
@@ -15,7 +22,7 @@ export default async function DashboardPage() {
     console.error("Error fetching players:", error)
   }
 
-  // 2. Traer el usuario actual
+  // 3. Traer el usuario actual
   const { data: { user } } = await supabase.auth.getUser()
   let savedTeamData = []
   
@@ -29,34 +36,23 @@ export default async function DashboardPage() {
   }
 
   // --- LÓGICA DE RANKING DINÁMICO ---
-  
-  // A. Crear un mapa de puntos por ID de jugador para calcular rápido
   const puntosMap = new Map((jugadores || []).map(j => [j.id, j.puntos_totales || 0]))
-
-  // B. Traer TODOS los equipos de TODOS los usuarios
   const { data: todosLosEquipos } = await supabase
     .from('equipos_usuarios')
     .select('user_id, jugador_id')
 
-  // C. Calcular la sumatoria de puntos por cada DT
   const puntosPorUsuario: Record<string, number> = {}
-  
   todosLosEquipos?.forEach(item => {
     const pts = puntosMap.get(item.jugador_id) || 0
     puntosPorUsuario[item.user_id] = (puntosPorUsuario[item.user_id] || 0) + pts
   })
 
-  // D. Convertir a array, ordenar de mayor a menor y encontrar la posición
   const rankingOrdenado = Object.entries(puntosPorUsuario)
     .map(([id, pts]) => ({ id, pts }))
     .sort((a, b) => b.pts - a.pts)
 
-  // Encontrar el índice del usuario actual en el ranking (sumamos 1 porque el índice empieza en 0)
   const miPosicion = rankingOrdenado.findIndex(u => u.id === user?.id) + 1
-  
-  // Si el usuario no tiene equipo aún, lo ponemos al final de la lista
   const rankingFinal = miPosicion > 0 ? miPosicion : (rankingOrdenado.length + 1)
-
   // --- FIN LÓGICA RANKING ---
 
   const players: Player[] = (jugadores || []).map((j) => ({
@@ -70,12 +66,14 @@ export default async function DashboardPage() {
     tendencia: j.tendencia as "subiendo" | "bajando" | "estable",
   }))
 
-  // Pasamos los jugadores, el equipo guardado y la POSICIÓN DEL RANKING
+  // Pasamos todos los datos al Client Component, incluyendo el estado del mercado
   return (
     <DashboardClient 
       players={players} 
       savedTeam={savedTeamData} 
-      rankingPos={rankingFinal} 
+      rankingPos={rankingFinal}
+      mercadoAbierto={config?.mercado_abierto ?? true} // Nuevo prop
+      fechaActiva={config?.fecha_activa ?? 1}        // Nuevo prop
     />
   )
 }
