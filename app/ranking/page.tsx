@@ -1,29 +1,22 @@
 import { createClient } from "@/lib/supabase/server"
 import { MainHeader } from "@/components/main-header"
-import { Trophy, Star, Shield } from "lucide-react"
+import { Trophy, Shield } from "lucide-react"
 
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
-  // 1. Buscamos los datos básicos
-  const { data: jugadores } = await supabase.from("jugadores").select("id, puntos_totales")
-  const { data: equipos } = await supabase.from('equipos_usuarios').select('user_id, jugador_id')
-  const { data: perfiles } = await supabase.from('perfiles').select('id, nombre_equipo')
+  // 1. Buscamos los datos directamente de la tabla perfiles
+  // Usamos puntos_acumulados que es la "fuente de verdad" histórica
+  const { data: rankingData, error } = await supabase
+    .from('perfiles')
+    .select('nombre_equipo, puntos_acumulados')
+    .order('puntos_acumulados', { ascending: false })
 
-  // 2. Mapeamos puntos para acceso rápido
-  const puntosMap = new Map(jugadores?.map(j => [j.id, j.puntos_totales || 0]))
+  if (error) {
+    console.error("Error fetching ranking:", error)
+  }
 
-  // 3. Calculamos el ranking
-  const ranking = (perfiles || []).map(perfil => {
-    const jugadoresDelEquipo = (equipos || []).filter(e => e.user_id === perfil.id)
-    const totalPuntos = jugadoresDelEquipo.reduce((acc, curr) => acc + (puntosMap.get(curr.jugador_id) || 0), 0)
-    
-    return {
-      nombre: perfil.nombre_equipo || "XV Sin Nombre",
-      puntos: totalPuntos
-    }
-  })
-  .sort((a, b) => b.puntos - a.puntos) // Ordenamos de mayor a menor
+  const ranking = rankingData || []
 
   return (
     <div className="min-h-screen bg-white">
@@ -66,11 +59,13 @@ export default async function RankingGeneralPage() {
                       <div className="w-8 h-8 bg-gray-100 border border-black flex items-center justify-center">
                         <Shield className="w-4 h-4 text-black text-opacity-30" />
                       </div>
-                      <span className="font-display text-xl uppercase italic leading-none">{equipo.nombre}</span>
+                      <span className="font-display text-xl uppercase italic leading-none">
+                        {equipo.nombre_equipo || "XV Sin Nombre"}
+                      </span>
                       {index === 0 && <Trophy className="w-5 h-5 text-yellow-600 ml-auto" />}
                     </td>
                     <td className="p-4 text-right font-display text-4xl bg-gray-50/50">
-                      {equipo.puntos}
+                      {equipo.puntos_acumulados || 0}
                     </td>
                   </tr>
                 )
@@ -89,9 +84,11 @@ export default async function RankingGeneralPage() {
   )
 }
 
-// Icono faltante para el badge de usuarios
+// Icono para el badge de usuarios
 function Users({ className }: { className?: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
   )
 }
