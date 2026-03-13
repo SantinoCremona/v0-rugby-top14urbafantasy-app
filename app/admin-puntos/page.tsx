@@ -141,7 +141,7 @@ export default function AdminPuntosMasivos() {
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 border-b-4 border-black pb-4 gap-4">
           <div className="flex items-center gap-4">
             <select className="border-2 border-black p-2 font-bold bg-white" value={clubSeleccionado} onChange={(e) => setClubSeleccionado(e.target.value)}>
-              {["CASI", "SIC", "Hindu", "Belgrano", "Alumni", "CUBA", "Newman", "BIEI", "Atletico del Rosario", "Los Matreros", "Regatas BV", "Champagnat", "La Plata", "Los Tilos"].map(c => <option key={c} value={c}>{c}</option>)}
+              {["CASI", "SIC", "Hindu", "Belgrano", "Alumni", "CUBA", "Newman", "BIEI", "Atletico del Rosario", "Los Matreros", "Regatas", "Champagnat", "La Plata", "Los Tilos"].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div className="flex gap-2">
