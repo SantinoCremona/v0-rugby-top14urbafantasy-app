@@ -17,9 +17,10 @@ interface DashboardClientProps {
   rankingPos: number
   mercadoAbierto: boolean // <-- Nueva prop
   fechaActiva: number     // <-- Nueva prop
+  puntosFecha: number    // <-- NUEVA PROP sugerida para puntos de la fecha
 }
 
-export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto, fechaActiva }: DashboardClientProps) {
+export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto, fechaActiva, puntosFecha }: DashboardClientProps) {
   const supabase = createClient()
   const [selectedPlayers, setSelectedPlayers] = useState<Map<number, Player>>(new Map())
   const [isPopupOpen, setIsPopupOpen] = useState(false)
@@ -42,6 +43,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
 
   const totalSpent = Array.from(selectedPlayers.values()).reduce((sum, p) => sum + p.precio, 0)
   const remainingBudget = INITIAL_BUDGET - totalSpent
+  // Mantenemos totalPoints por si lo usas en otro lado, pero en el cartel usaremos puntosFecha
   const totalPoints = Array.from(selectedPlayers.values()).reduce((sum, p) => sum + p.puntos_totales, 0)
   const playersCount = selectedPlayers.size
   const playersRemaining = 15 - playersCount
@@ -178,8 +180,8 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white border border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Puntos</p>
-            <p className="font-display text-4xl text-black">{totalPoints}</p>
+            <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Puntos Fecha {fechaActiva}</p>
+            <p className="font-display text-4xl text-black">{puntosFecha}</p>
           </div>
           <div className="bg-white border border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <p className="text-xs text-gray-600 uppercase tracking-wider font-bold mb-1">Presupuesto</p>
@@ -211,92 +213,52 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           )}
           onSlotClick={handleSlotClick}
           onRemovePlayer={handleRemovePlayer}
-          // Si el mercado está cerrado, pasamos una prop visual al campo si es necesario
         />
 
-        {/* ... Resto del código (Reglas, etc.) se mantiene IGUAL ... */}
-               <section className="mt-12 border-t-2 border-black pt-8 mb-12">
-
+        <section className="mt-12 border-t-2 border-black pt-8 mb-12">
           <h2 className="font-display text-2xl mb-6 italic tracking-tight uppercase">Reglas del Juego</h2>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
-
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">1</span>
-
                 Armado del Plantel
-
               </h3>
-
               <ul className="text-sm text-gray-700 space-y-2">
-
                 <li>• Presupuesto máximo: <strong>$10.000</strong>.</li>
-
                 <li>• Límite por club: Máximo <strong>4 jugadores</strong> de un mismo equipo de la URBA.</li>
-
               </ul>
-
             </div>
-
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
-
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">2</span>
-
                 Sumar Puntos
-
               </h3>
-
               <p className="text-sm text-gray-700 leading-relaxed">
-
                 Tus jugadores suman puntos por <strong>tries, tackles y victorias</strong> reales de la fecha.
-
               </p>
-
             </div>
-
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
-
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">3</span>
-
                 Confirmar Equipo
-
               </h3>
-
               <p className="text-sm text-gray-700 leading-relaxed">
-
                 Es <strong>obligatorio</strong> apretar el botón <span className="font-bold uppercase text-xs border border-black px-1 ml-1">Guardar</span> para registrar tus cambios.
-
               </p>
-
             </div>
-
             <div className="border border-black p-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-
               <h3 className="font-bold text-sm mb-2 uppercase tracking-wider flex items-center">
-
                 <span className="bg-black text-white w-5 h-5 flex items-center justify-center mr-2 text-[10px]">4</span>
-
                 Mercado de Pases
-
               </h3>
-
               <p className="text-sm text-gray-700 leading-relaxed">
-
-                Podés quitar jugadores con la <span className="font-bold text-red-600">X</span> y elegir nuevos refuerzos en cualquier momento.
-
+                {mercadoAbierto 
+                  ? "Podés quitar jugadores con la X y elegir nuevos refuerzos en cualquier momento."
+                  : "El mercado se encuentra CERRADO. No se pueden realizar cambios hasta la próxima fecha."
+                }
               </p>
-
             </div>
-
           </div>
-
         </section>
       </main>
 
