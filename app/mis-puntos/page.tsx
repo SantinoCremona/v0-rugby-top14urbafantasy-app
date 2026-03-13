@@ -3,108 +3,91 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainHeader } from "@/components/main-header"
 
-export default function MisPuntos() {
+export default function MisPuntosPage() {
   const supabase = createClient()
-  const [user, setUser] = useState<any>(null)
-  const [fechaVisualizada, setFechaVisualizada] = useState(1)
-  const [detallesFecha, setDetallesFecha] = useState<any[]>([])
-  const [puntosTotales, setPuntosTotales] = useState(0)
+  const [jugadoresConPuntos, setJugadoresConPuntos] = useState([])
+  const [fechaActual, setFechaActual] = useState(1)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function getData() {
+    async function cargarDetallePuntos() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      setUser(user)
 
-      // 1. Obtener los jugadores que el usuario tiene HOY (o los que tenía fijados para la fecha)
-      const { data: misJugadores } = await supabase
+      // 1. Traer los jugadores del equipo del usuario
+      const { data: equipo } = await supabase
         .from("equipos_usuarios")
         .select(`
           jugador_id,
           jugadores (
-            id,
-            nombre,
-            apellido,
-            club,
-            posicion,
-            puntos_totales
+            id, nombre, apellido, club, posicion
           )
         `)
         .eq("user_id", user.id)
 
-      if (!misJugadores) return
+      if (!equipo) return
 
-      // 2. Obtener los puntos que esos jugadores hicieron específicamente en la fecha seleccionada
-      const ids = misJugadores.map(m => m.jugador_id)
-      const { data: puntosDeLaFecha } = await supabase
+      const idsJugadores = equipo.map(e => e.jugador_id)
+
+      // 2. Traer los puntos de esos jugadores para la fecha seleccionada
+      const { data: puntos } = await supabase
         .from("puntos_fecha")
         .select("*")
-        .in("jugador_id", ids)
-        .eq("fecha_num", fechaVisualizada)
+        .in("jugador_id", idsJugadores)
+        .eq("fecha_num", fechaActual)
 
-      // 3. Cruzar los datos para mostrar la tabla
-      const resumen = misJugadores.map(m => {
-        const puntosEnFecha = puntosDeLaFecha?.find(p => p.jugador_id === m.jugador_id)?.puntos || 0
+      // 3. Unir la información
+      const detalle = equipo.map(e => {
+        const p = puntos?.find(p => p.jugador_id === e.jugador_id)
         return {
-          ...m.jugadores,
-          puntosEnFecha
+          ...e.jugadores,
+          puntosEnFecha: p ? p.puntos : 0
         }
       })
 
-      setDetallesFecha(resumen)
-
-      // 4. Calcular acumulado total del equipo (suma de los puntos_totales de sus jugadores actuales)
-      const total = resumen.reduce((acc, curr) => acc + (curr.puntos_totales || 0), 0)
-      setPuntosTotales(total)
+      setJugadoresConPuntos(detalle)
+      setLoading(false)
     }
-    getData()
-  }, [fechaVisualizada])
+    cargarDetallePuntos()
+  }, [fechaActual])
+
+  const totalFecha = jugadoresConPuntos.reduce((acc, j) => acc + j.puntosEnFecha, 0)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <MainHeader />
-      <main className="max-w-4xl mx-auto px-4 py-10">
-        
-        <div className="bg-black text-white p-6 mb-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <h1 className="font-display text-4xl italic uppercase">Resumen de Equipo</h1>
-          <p className="text-yellow-400 font-bold uppercase tracking-widest text-sm">Puntos Acumulados: {puntosTotales}</p>
-        </div>
-
-        {/* Selector de Fecha */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {[1, 2, 3, 4].map(f => (
-            <button 
-              key={f}
-              onClick={() => setFechaVisualizada(f)}
-              className={`px-6 py-2 font-bold border-2 border-black transition-all ${fechaVisualizada === f ? 'bg-black text-white' : 'bg-white hover:bg-gray-100'}`}
-            >
-              FECHA {f}
-            </button>
-          ))}
-        </div>
-
-        <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-gray-100 border-b-2 border-black">
-                <th className="p-4 font-display italic uppercase">Jugador</th>
-                <th className="p-4 font-display italic uppercase text-center">Pts Fecha {fechaVisualizada}</th>
-                <th className="p-4 font-display italic uppercase text-center">Total Global</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {detallesFecha.map((j) => (
-                <tr key={j.id} className="hover:bg-yellow-50">
-                  <td className="p-4">
-                    <p className="font-bold uppercase text-sm">{j.apellido}, {j.nombre}</p>
-                    <p className="text-[10px] text-gray-400 uppercase">{j.club} - {j.posicion}</p>
-                  </td>
-                  <td className="p-4 text-center font-display text-2xl italic">{j.puntosEnFecha}</td>
-                  <td className="p-4 text-center font-bold text-gray-400">{j.puntos_totales}</td>
-                </tr>
+      <main className="max-w-2xl mx-auto px-4 py-10">
+        <div className="flex justify-between items-end mb-8 border-b-4 border-black pb-4">
+          <div>
+            <h1 className="font-display text-4xl italic uppercase">Mi Puntaje</h1>
+            <div className="flex gap-2 mt-2">
+              {[1, 2, 3].map(n => (
+                <button 
+                  key={n} 
+                  onClick={() => setFechaActual(n)}
+                  className={`px-3 py-1 border-2 border-black font-bold text-xs ${fechaActual === n ? 'bg-black text-white' : ''}`}
+                >
+                  F{n}
+                </button>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-bold uppercase">Total Fecha {fechaActual}</p>
+            <p className="font-display text-5xl italic leading-none">{totalFecha}</p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {jugadoresConPuntos.map(j => (
+            <div key={j.id} className="flex justify-between border-2 border-black p-3 items-center">
+              <div>
+                <p className="font-bold uppercase text-sm">{j.apellido}, {j.nombre}</p>
+                <p className="text-[10px] text-gray-500 uppercase">{j.club}</p>
+              </div>
+              <span className="font-display text-2xl italic">+{j.puntosEnFecha}</span>
+            </div>
+          ))}
         </div>
       </main>
     </div>
