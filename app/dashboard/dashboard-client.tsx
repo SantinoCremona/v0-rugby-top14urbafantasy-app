@@ -125,7 +125,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           <div className="flex justify-between items-end">
             <div>
               <span className="bg-black text-white px-2 py-1 text-xs font-black uppercase tracking-widest italic">
-                Temporada 2024 / Fecha {fechaActiva}
+                Temporada 2026 / Fecha {fechaActiva}
               </span>
               <h1 className="font-display text-5xl md:text-7xl text-black font-black italic tracking-tighter mt-2 leading-none">
                 MI EQUIPO <span className="text-stroke-black text-transparent">XV</span>
