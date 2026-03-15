@@ -163,12 +163,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
                 <Trash2 className="w-5 h-5 text-red-600" />
               </Button>
            </div>
-
-           {!mercadoAbierto && (
-              <div className="flex items-center gap-4 bg-white border-2 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] italic font-black uppercase text-red-600">
-                <Lock className="w-5 h-5" /> Mercado Bloqueado
-              </div>
-           )}
         </div>
 
         {/* DASHBOARD GRID */}
