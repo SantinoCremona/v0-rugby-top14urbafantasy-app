@@ -4,20 +4,20 @@ import { useState, useEffect } from "react"
 import { MainHeader } from "@/components/main-header"
 import { RugbyField } from "@/components/rugby-field"
 import { PlayerSelectionPopup } from "@/components/player-selection-popup"
-import { ShoppingCart, Save, Trash2, Lock } from "lucide-react"
+import { Save, Trash2, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Player } from "@/components/player-card"
 import { createClient } from "@/lib/supabase/client"
 
 const INITIAL_BUDGET = 10000
 
-// Extendemos la interfaz Player para asegurarnos de que acepte puntos_fecha
+// Interfaz extendida para manejar los puntos inyectados
 interface PlayerWithPoints extends Player {
-  puntos_fecha?: { puntos: number; fecha_num: number }[]
+  puntos_actuales?: number
 }
 
 interface DashboardClientProps {
-  players: PlayerWithPoints[] // Usamos la interfaz extendida
+  players: PlayerWithPoints[]
   savedTeam?: any[]
   rankingPos: number
   mercadoAbierto: boolean
@@ -33,29 +33,52 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
   const [targetPositionType, setTargetPositionType] = useState<string>("")
   const [loading, setLoading] = useState(false)
 
-  // Sincronizar el equipo guardado y sus puntos
+  // --- LÓGICA DE CARGA DE PUNTOS ---
   useEffect(() => {
-    if (savedTeam && savedTeam.length > 0) {
-      const newMap = new Map()
-      savedTeam.forEach(item => {
-        const player = players.find(p => p.id === item.jugador_id)
-        if (player) {
-          newMap.set(parseInt(item.posicion_en_campo), player)
-        }
-      })
-      setSelectedPlayers(newMap)
-    }
-  }, [savedTeam, players])
+    async function cargarEquipoYVincularPuntos() {
+      if (savedTeam && savedTeam.length > 0) {
+        // 1. Buscamos los puntos de la fecha activa directamente en puntos_fecha
+        const { data: puntosData } = await supabase
+          .from("puntos_fecha")
+          .select("jugador_id, puntos")
+          .eq("fecha_num", fechaActiva)
 
+        const newMap = new Map()
+
+        savedTeam.forEach(item => {
+          const playerInfo = players.find(p => p.id === item.jugador_id)
+          if (playerInfo) {
+            // Buscamos si el jugador tiene puntos en esta fecha
+            const puntosDeEsteJugador = puntosData?.find(pd => pd.jugador_id === playerInfo.id)?.puntos || 0
+            
+            newMap.set(parseInt(item.posicion_en_campo), {
+              ...playerInfo,
+              puntos_actuales: puntosDeEsteJugador // Inyectamos el punto
+            })
+          }
+        })
+        setSelectedPlayers(newMap)
+      }
+    }
+
+    cargarEquipoYVincularPuntos()
+  }, [savedTeam, players, fechaActiva, supabase])
+
+  // --- CÁLCULOS ---
   const totalSpent = Array.from(selectedPlayers.values()).reduce((sum, p) => sum + p.precio, 0)
   const remainingBudget = INITIAL_BUDGET - totalSpent
   const playersCount = selectedPlayers.size
+  
+  // Calculamos la suma de puntos de los que están en cancha actualmente
+  const puntosEnCanchaTotal = Array.from(selectedPlayers.values())
+    .reduce((sum, p) => sum + (p.puntos_actuales || 0), 0)
 
   const clubCounts = Array.from(selectedPlayers.values()).reduce((acc, p) => {
     acc[p.club] = (acc[p.club] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
+  // --- HANDLERS ---
   const handleSlotClick = (position: number, positionType: string) => {
     if (!mercadoAbierto) return 
     setTargetPosition(position)
@@ -93,8 +116,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
   }
 
   const handleSaveTeam = async () => {
-    if (!mercadoAbierto) return
-    if (remainingBudget < 0) return
+    if (!mercadoAbierto || remainingBudget < 0) return
 
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
@@ -130,12 +152,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
   }
 
   const selectedIds = new Set(Array.from(selectedPlayers.values()).map((p) => p.id))
-  
-  const availablePlayers = players.filter((p) => {
-    const isNotSelected = !selectedIds.has(p.id)
-    const clubLimitNotReached = (clubCounts[p.club] || 0) < 4
-    return isNotSelected && clubLimitNotReached
-  })
+  const availablePlayers = players.filter((p) => !selectedIds.has(p.id) && (clubCounts[p.club] || 0) < 4)
 
   return (
     <div className="min-h-screen bg-white">
@@ -151,35 +168,25 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl md:text-4xl tracking-tight text-black italic text-shadow-sm">MI EQUIPO</h1>
-            <p className="text-sm text-gray-600 font-bold uppercase tracking-widest">FECHA {fechaActiva}</p>
+            <h1 className="font-display text-3xl md:text-4xl tracking-tight text-black italic text-shadow-sm uppercase">Mi Equipo</h1>
+            <p className="text-sm text-gray-600 font-bold uppercase tracking-widest">Fecha {fechaActiva}</p>
           </div>
           <div className="flex gap-2">
-            <Button 
-              onClick={handleClearTeam}
-              variant="outline" 
-              disabled={!mercadoAbierto}
-              className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white h-10 px-4 shadow-[2px_2px_0px_0px_rgba(220,38,38,1)]"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              LIMPIAR
+            <Button onClick={handleClearTeam} variant="outline" disabled={!mercadoAbierto} className="border-red-600 text-red-600 shadow-[2px_2px_0px_0px_rgba(220,38,38,1)]">
+              <Trash2 className="w-4 h-4 mr-2" /> LIMPIAR
             </Button>
-            <Button 
-              onClick={handleSaveTeam}
-              disabled={loading || remainingBudget < 0 || !mercadoAbierto}
-              variant="outline" 
-              className="border-black text-black hover:bg-black hover:text-white h-10 px-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-            >
+            <Button onClick={handleSaveTeam} disabled={loading || remainingBudget < 0 || !mercadoAbierto} variant="outline" className="border-black text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               <Save className="w-4 h-4 mr-2" />
-              {!mercadoAbierto ? "MERCADO CERRADO" : loading ? "GUARDANDO..." : "GUARDAR"}
+              {loading ? "GUARDANDO..." : "GUARDAR EQUIPO"}
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {/* Stats cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center">
           <div className="bg-yellow-400 border-2 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-[10px] text-black uppercase font-black mb-1">Puntos Fecha {fechaActiva}</p>
-            <p className="font-display text-4xl text-black leading-none">{puntosFecha}</p>
+            <p className="text-[10px] text-black uppercase font-black mb-1 tracking-tighter">Puntos en Cancha</p>
+            <p className="font-display text-4xl text-black leading-none">{puntosEnCanchaTotal}</p>
           </div>
           <div className="bg-white border-2 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <p className="text-[10px] text-gray-600 uppercase font-black mb-1">Presupuesto</p>
@@ -199,28 +206,19 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
 
         <RugbyField
           selectedPlayers={new Map(
-            Array.from(selectedPlayers.entries()).map(([pos, player]) => {
-              // BUSCAMOS LOS PUNTOS AQUÍ:
-              // Filtramos los puntos de la fecha activa que vienen en el objeto player
-              const puntosObj = player.puntos_fecha?.find(pf => pf.fecha_num === fechaActiva);
-              const puntosFinales = puntosObj ? puntosObj.puntos : 0;
-
-              return [
-                pos,
-                { 
-                  id: player.id, 
-                  nombre: player.nombre, 
-                  club: player.club,
-                  puntos: puntosFinales 
-                },
-              ]
-            })
+            Array.from(selectedPlayers.entries()).map(([pos, player]) => [
+              pos,
+              { 
+                id: player.id, 
+                nombre: player.nombre, 
+                club: player.club,
+                puntos: player.puntos_actuales || 0 // Usamos el dato inyectado
+              },
+            ])
           )}
           onSlotClick={handleSlotClick}
           onRemovePlayer={handleRemovePlayer}
         />
-
-        {/* REGLAS SECCION ... (se mantiene igual) */}
       </main>
 
       <PlayerSelectionPopup
