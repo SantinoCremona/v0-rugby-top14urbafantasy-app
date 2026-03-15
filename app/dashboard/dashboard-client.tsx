@@ -281,7 +281,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
       <div className="bg-black text-white w-10 h-10 flex items-center justify-center font-black italic text-xl mb-4">04</div>
       <h3 className="font-black uppercase tracking-tight text-xl mb-3 italic">Sistema de Puntos</h3>
       <p className="text-sm leading-relaxed font-medium text-gray-800">
-        Tus jugadores suman por lo que hacen en la vida real: <span className="font-bold">Tries (8pts), Conversiones (2pts), Penales (3pts)</span> y bonificaciones por victoria de su club.
+        Tus jugadores suman por lo que hacen en la vida real: <span className="font-bold">Tries (5pts), Conversiones (2pts), Penales (3pts), Victoria del equipo (2pts)</span> y bonificaciones por victoria de su club.
       </p>
     </div>
 
