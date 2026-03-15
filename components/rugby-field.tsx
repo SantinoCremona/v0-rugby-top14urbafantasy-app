@@ -9,8 +9,8 @@ interface PlayerSlot {
 }
 
 interface RugbyFieldProps {
-  // Añadimos 'club' a la interfaz para que se pueda mostrar
-  selectedPlayers: Map<number, { id: number; nombre: string; club?: string }>
+  // Agregamos 'puntos' a la interfaz
+  selectedPlayers: Map<number, { id: number; nombre: string; club?: string; puntos?: number }>
   onSlotClick: (position: number, positionType: string, label: string) => void
   onRemovePlayer: (position: number) => void
 }
@@ -77,35 +77,52 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                 {row.players.map((slot) => {
                   const player = selectedPlayers.get(slot.position)
                   const hasPlayer = !!player
+                  const puntos = player?.puntos ?? 0
 
                   return (
                     <div key={slot.position} className="flex flex-col items-center w-20 md:w-24">
-                      {hasPlayer ? (
-                        <button
-                          onClick={() => onRemovePlayer(slot.position)}
-                          className="group relative w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-black rounded-full flex items-center justify-center transition-all hover:bg-red-600 hover:border-white shadow-lg"
-                        >
-                          {/* Muestra el número de posición */}
-                          <span className="text-black text-lg md:text-xl font-black group-hover:hidden">
-                            {slot.position}
-                          </span>
-                          <X className="w-6 h-6 text-white hidden group-hover:block" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => onSlotClick(slot.position, slot.positionType, slot.label)}
-                          className="w-12 h-12 md:w-14 md:h-14 border-2 border-dashed border-white/40 rounded-full flex items-center justify-center transition-all hover:border-white hover:bg-white/10 group"
-                        >
-                          <Plus className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
-                        </button>
-                      )}
+                      <div className="relative"> {/* Contenedor relativo para el Badge */}
+                        
+                        {/* BADGE DE PUNTOS: Solo se muestra si hay un jugador */}
+                        {hasPlayer && (
+                          <div className={`
+                            absolute -top-2 -right-2 z-20
+                            w-7 h-7 md:w-8 md:h-8 flex items-center justify-center
+                            border-2 border-black rounded-full
+                            font-black text-[10px] md:text-xs italic
+                            shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+                            ${puntos >= 0 ? 'bg-yellow-400 text-black' : 'bg-red-500 text-white'}
+                          `}>
+                            {puntos}
+                          </div>
+                        )}
+
+                        {hasPlayer ? (
+                          <button
+                            onClick={() => onRemovePlayer(slot.position)}
+                            className="group relative w-12 h-12 md:w-14 md:h-14 bg-white border-2 border-black rounded-full flex items-center justify-center transition-all hover:bg-red-600 hover:border-white shadow-lg"
+                          >
+                            <span className="text-black text-lg md:text-xl font-black group-hover:hidden">
+                              {slot.position}
+                            </span>
+                            <X className="w-6 h-6 text-white hidden group-hover:block" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onSlotClick(slot.position, slot.positionType, slot.label)}
+                            className="w-12 h-12 md:w-14 md:h-14 border-2 border-dashed border-white/40 rounded-full flex items-center justify-center transition-all hover:border-white hover:bg-white/10 group"
+                          >
+                            <Plus className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
+                          </button>
+                        )}
+                      </div>
 
                       {/* Etiquetas debajo del jugador */}
                       <div className="mt-2 flex flex-col items-center text-center">
                         {hasPlayer ? (
                           <>
                             <span className="text-[9px] md:text-[10px] text-white font-bold uppercase leading-tight drop-shadow-md">
-                              {player.nombre.split(" ").slice(-1)[0]} {/* Solo el apellido */}
+                              {player.nombre.split(" ").slice(-1)[0]}
                             </span>
                             <span className="text-[7px] md:text-[8px] text-white/70 uppercase tracking-tighter">
                               {player.club}
