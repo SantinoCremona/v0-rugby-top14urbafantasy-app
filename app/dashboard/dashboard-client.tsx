@@ -212,15 +212,21 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         </div>
 
         <RugbyField
-          selectedPlayers={new Map(
-            Array.from(selectedPlayers.entries()).map(([pos, player]) => [
-              pos,
-              { id: player.id, nombre: player.nombre, club: player.club },
-            ])
-          )}
-          onSlotClick={handleSlotClick}
-          onRemovePlayer={handleRemovePlayer}
-        />
+  selectedPlayers={new Map(
+    Array.from(selectedPlayers.entries()).map(([pos, player]) => [
+      pos,
+      { 
+        id: player.id, 
+        nombre: player.nombre, 
+        club: player.club,
+        // Agregamos los puntos aquí (buscando en el array de la relación)
+        puntos: player.puntos_fecha?.[0]?.puntos || 0 
+      },
+    ])
+  )}
+  onSlotClick={handleSlotClick}
+  onRemovePlayer={handleRemovePlayer}
+/>
 
         <section className="mt-12 border-t-2 border-black pt-8 mb-12">
           <h2 className="font-display text-2xl mb-6 italic tracking-tight uppercase">Reglas del Juego</h2>
