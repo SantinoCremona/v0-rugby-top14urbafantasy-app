@@ -241,6 +241,76 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             </div>
           </div>
         </div>
+        {/* SECCIÓN REGLAS - ESTILO MANUAL TÁCTICO */}
+<section className="mt-20 mb-20">
+  <div className="flex items-center gap-4 mb-10">
+    <div className="h-1 w-full bg-black"></div>
+    <h2 className="font-display text-4xl md:text-5xl font-black italic tracking-tighter whitespace-nowrap">
+      MANUAL DE <span className="text-stroke-black text-transparent">JUEGO</span>
+    </h2>
+    <div className="h-1 w-full bg-black"></div>
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    {/* REGLA 1 */}
+    <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
+      <div className="bg-black text-white w-10 h-10 flex items-center justify-center font-black italic text-xl mb-4">01</div>
+      <h3 className="font-black uppercase tracking-tight text-xl mb-3 italic">Armá tu XV</h3>
+      <p className="text-sm leading-relaxed font-medium text-gray-800">
+        Tenés un presupuesto de <span className="bg-yellow-400 px-1 font-bold">$10.000</span> para elegir a tus 15 titulares. 
+        No podés excederte ni un centavo si querés confirmar tu equipo.
+      </p>
+    </div>
+
+    {/* REGLA 2 */}
+    <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
+      <div className="bg-black text-white w-10 h-10 flex items-center justify-center font-black italic text-xl mb-4">02</div>
+      <h3 className="font-black uppercase tracking-tight text-xl mb-3 italic">Límite por Club</h3>
+      <p className="text-sm leading-relaxed font-medium text-gray-800">
+        Para asegurar la variedad, solo podés elegir un máximo de <span className="bg-black text-white px-1 font-bold">4 jugadores</span> de un mismo club de la URBA. 
+      </p>
+    </div>
+
+    {/* REGLA 3 */}
+    <div className="bg-yellow-400 border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
+      <div className="bg-black text-white w-10 h-10 flex items-center justify-center font-black italic text-xl mb-4">03</div>
+      <h3 className="font-black uppercase tracking-tight text-xl mb-3 italic">Cierre de Mercado</h3>
+      <p className="text-sm leading-relaxed font-black text-black">
+        El mercado cierra <span className="uppercase underline">antes del primer partido</span> de cada fecha. 
+        Una vez cerrado, no podrás mover ni un pelo de tu equipo hasta que termine la jornada.
+      </p>
+    </div>
+
+    {/* REGLA 4 */}
+    <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
+      <div className="bg-black text-white w-10 h-10 flex items-center justify-center font-black italic text-xl mb-4">04</div>
+      <h3 className="font-black uppercase tracking-tight text-xl mb-3 italic">Sistema de Puntos</h3>
+      <p className="text-sm leading-relaxed font-medium text-gray-800">
+        Tus jugadores suman por lo que hacen en la vida real: <span className="font-bold">Tries (5pts), Conversiones (2pts), Penales (3pts)</span> y bonificaciones por victoria de su club.
+      </p>
+    </div>
+
+    {/* REGLA 5 */}
+    <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-transform">
+      <div className="bg-black text-white w-10 h-10 flex items-center justify-center font-black italic text-xl mb-4">05</div>
+      <h3 className="font-black uppercase tracking-tight text-xl mb-3 italic">Confirmación</h3>
+      <p className="text-sm leading-relaxed font-medium text-gray-800">
+        Cada vez que hagas un cambio, <span className="font-bold underline">DEBES darle al botón GUARDAR</span>. Si refrescás la página sin guardar, tus refuerzos se perderán en el vestuario.
+      </p>
+    </div>
+
+    {/* REGLA 6 */}
+    <div className="bg-black text-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(100,100,100,1)] hover:-translate-y-1 transition-transform">
+      <div className="bg-white text-black w-10 h-10 flex items-center justify-center font-black italic text-xl mb-4">06</div>
+      <h3 className="font-black uppercase tracking-tight text-xl mb-3 italic">Puntos en Directo</h3>
+      <p className="text-sm leading-relaxed font-medium text-gray-400">
+        Los puntos que ves en el Dashboard son de la <span className="text-white">Fecha Actual</span>. Tu posición en el Ranking Global se actualiza al finalizar todos los partidos.
+      </p>
+    </div>
+
+  </div>
+</section>
       </main>
 
       <PlayerSelectionPopup
