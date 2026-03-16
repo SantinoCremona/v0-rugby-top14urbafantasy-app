@@ -51,7 +51,7 @@ export function MainHeader() {
           <Link href="/dashboard" className="flex items-center gap-3 group">
             <div className="flex flex-col">
               <span className="font-black text-xl  tracking-tighter leading-none text-white">
-                GRAN<span className="text-white/20">DT</span>
+                HEAD<span className="text-white/20">COACH</span>
               </span>
               <span className="text-[8px] text-gray-500 font-bold tracking-[0.3em] uppercase">
                 URBA 2026
