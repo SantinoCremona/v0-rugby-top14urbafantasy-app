@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { MainHeader } from "@/components/main-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Trophy, Plus, Users, X, Copy, Share2, Loader2, ArrowLeft } from "lucide-react"
+import { Trophy, Plus, Users, X, Share2, Loader2, ArrowLeft, Shield, Hash, Star } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 interface League {
@@ -56,13 +56,10 @@ export default function TorneosPage() {
     setFetching(false)
   }
 
-  // FUNCIÓN PARA VER EL RANKING REAL
   const handleViewRanking = async (league: League) => {
     setSelectedLeague(league)
     setLoadingRanking(true)
-    
     try {
-      // Llamamos a la VIEW que creamos en el paso anterior
       const { data: rankingReal, error } = await supabase
         .from('liga_miembros')
         .select(`
@@ -73,21 +70,17 @@ export default function TorneosPage() {
           )
         `)
         .eq('liga_id', league.id)
-        // @ts-ignore (Supabase type helper)
+        // @ts-ignore
         .order('puntos_totales', { foreignTable: 'ranking_usuarios', ascending: false })
 
       if (error) throw error
-
       const formatted = rankingReal.map((item: any) => ({
         user_id: item.user_id,
         nombre_equipo: item.ranking_usuarios.nombre_equipo || "Equipo sin nombre",
         puntos_totales: item.ranking_usuarios.puntos_totales || 0
       }))
-
       setRanking(formatted)
     } catch (e) {
-      console.error(e)
-      // Si la VIEW aún no existe o falla, cargamos un ranking vacío
       setRanking([])
     } finally {
       setLoadingRanking(false)
@@ -99,7 +92,7 @@ export default function TorneosPage() {
     setLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error("Debes iniciar sesión")
+      if (!user) throw new Error("Inicia sesión")
       const code = Math.random().toString(36).substring(2, 8).toUpperCase()
       const { data: liga, error: errorLiga } = await supabase
         .from('ligas')
@@ -118,9 +111,9 @@ export default function TorneosPage() {
     setLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error("Debes iniciar sesión")
+      if (!user) throw new Error("Inicia sesión")
       const { data: liga } = await supabase.from('ligas').select('id, nombre').eq('codigo_invitacion', joinCode.toUpperCase()).single()
-      if (!liga) throw new Error("Código no válido")
+      if (!liga) throw new Error("Código inválido")
       const { error: errorJoin } = await supabase.from('liga_miembros').insert([{ liga_id: liga.id, user_id: user.id }])
       if (errorJoin) throw new Error("Ya estás en esta liga")
       setJoinCode("")
@@ -130,121 +123,131 @@ export default function TorneosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F0F0F0] text-black pb-20">
+    <div className="min-h-screen bg-[#0A0A0B] text-white">
       <MainHeader />
       
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-5xl mx-auto px-6 py-12">
         {selectedLeague ? (
-          /* VISTA DETALLE DEL RANKING */
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          /* --- VISTA DETALLE LIGA --- */
+          <div className="animate-in fade-in zoom-in duration-300">
             <button 
               onClick={() => setSelectedLeague(null)}
-              className="flex items-center gap-2 font-black uppercase text-sm mb-8 hover:bg-black hover:text-white border-2 border-black px-4 py-2 transition-colors w-fit shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none bg-white"
+              className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors mb-8"
             >
-              <ArrowLeft className="w-4 h-4" /> Volver a mis ligas
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+              Volver a mis torneos
             </button>
             
-            <div className="bg-black text-white p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(253,224,71,1)] mb-12">
-              <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none">
-                {selectedLeague.nombre}
-              </h2>
-              <p className="text-yellow-400 font-bold tracking-[0.2em] uppercase text-xs mt-4 italic">Tabla de Posiciones</p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Trophy className="w-4 h-4 text-emerald-400" />
+                  <span className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.3em]">Liga Privada</span>
+                </div>
+                <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none">
+                  {selectedLeague.nombre}
+                </h2>
+              </div>
+              <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl backdrop-blur-md">
+                <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1 text-center">Código Invitación</p>
+                <p className="text-2xl font-black text-white tracking-widest uppercase">{selectedLeague.codigo_invitacion}</p>
+              </div>
             </div>
 
             {loadingRanking ? (
-              <div className="flex justify-center py-20"><Loader2 className="animate-spin w-12 h-12" /></div>
+              <div className="flex flex-col items-center justify-center py-24 gap-4">
+                <Loader2 className="animate-spin w-10 h-10 text-white/20" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">Actualizando Puntos...</p>
+              </div>
             ) : (
-              <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-black text-white uppercase text-xs font-black">
-                      <th className="p-4 border-r border-white/20 w-20 text-center">Pos</th>
-                      <th className="p-4">Manager / Equipo</th>
-                      <th className="p-4 text-right">Pts Totales</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ranking.length === 0 ? (
-                       <tr><td colSpan={3} className="p-10 text-center font-bold text-gray-400 uppercase">No hay datos de puntos aún</td></tr>
-                    ) : ranking.map((res, idx) => (
-                      <tr 
-                        key={res.user_id} 
-                        className={`border-b-4 border-black transition-colors ${idx === 0 ? 'bg-yellow-400' : 'bg-white hover:bg-gray-50'}`}
-                      >
-                        <td className="p-4 font-black text-3xl italic border-r-4 border-black text-center">
-                          {idx + 1 === 1 ? '🥇' : `#${idx + 1}`}
-                        </td>
-                        <td className="p-4">
-                          <p className="font-black uppercase italic text-xl leading-none">{res.nombre_equipo}</p>
-                        </td>
-                        <td className="p-4 text-right">
-                           <span className="text-3xl font-black italic leading-none">{res.puntos_totales}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-3">
+                {ranking.map((res, idx) => (
+                  <div 
+                    key={res.user_id} 
+                    className={`flex items-center justify-between p-6 rounded-2xl border transition-all ${
+                      idx === 0 
+                      ? "bg-white text-black border-white shadow-[0_0_30px_rgba(255,255,255,0.05)]" 
+                      : "bg-white/[0.02] border-white/5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-6">
+                      <span className={`text-2xl font-black italic ${idx === 0 ? "text-black" : "text-white/20"}`}>
+                        #{idx + 1}
+                      </span>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                        idx === 0 ? "bg-black text-white border-black" : "bg-white/5 border-white/10 text-white"
+                      }`}>
+                        <Shield className="w-5 h-5" />
+                      </div>
+                      <span className="text-lg md:text-2xl font-black italic uppercase tracking-tighter">{res.nombre_equipo}</span>
+                    </div>
+                    <span className={`text-3xl font-black italic ${idx === 0 ? "text-black" : "text-emerald-400"}`}>
+                      {res.puntos_totales}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         ) : (
-          /* VISTA PRINCIPAL (LISTA DE LIGAS) */
+          /* --- VISTA LISTA DE LIGAS --- */
           <>
-            <div className="border-b-8 border-black pb-6 mb-12">
-              <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter leading-none">
-                TUS <span className="text-transparent" style={{ WebkitTextStroke: '2px black' }}>LIGAS</span>
-              </h1>
-              <p className="text-sm font-bold uppercase tracking-widest mt-4 flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-yellow-500" /> Compite por la gloria
-              </p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+              <div>
+                <h1 className="text-7xl md:text-8xl font-black italic tracking-tighter leading-none uppercase">
+                  Tor<span className="text-white/20">neos</span>
+                </h1>
+                <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-4 flex items-center gap-2">
+                  <Star className="w-3 h-3 text-emerald-400 fill-emerald-400" /> Gestiona tus ligas privadas
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => setShowJoinModal(true)}
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl px-6 h-14 font-black uppercase tracking-widest text-[11px] transition-all"
+                >
+                  <Share2 className="w-4 h-4 mr-2" /> Unirse
+                </Button>
+                <Button 
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-white text-black hover:bg-gray-200 rounded-2xl px-8 h-14 font-black uppercase tracking-widest text-[11px] transition-all shadow-xl"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Crear Liga
+                </Button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-              <Button 
-                onClick={() => setShowCreateModal(true)}
-                className="h-20 bg-yellow-400 text-black border-4 border-black hover:bg-black hover:text-white transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 font-black italic text-xl"
-              >
-                <Plus className="w-6 h-6 mr-3 stroke-[3px]" />
-                CREAR LIGA
-              </Button>
-              <Button 
-                onClick={() => setShowJoinModal(true)}
-                className="h-20 bg-white text-black border-4 border-black hover:bg-black hover:text-white transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 font-black italic text-xl"
-              >
-                <Share2 className="w-6 h-6 mr-3 stroke-[3px]" />
-                UNIRSE A LIGA
-              </Button>
-            </div>
-
-            <div className="grid gap-6">
+            <div className="grid gap-4">
               {fetching ? (
-                <div className="flex justify-center p-12"><Loader2 className="animate-spin w-10 h-10" /></div>
+                <div className="py-24 flex justify-center"><Loader2 className="animate-spin w-10 h-10 text-white/10" /></div>
               ) : leagues.length === 0 ? (
-                <div className="bg-white border-4 border-black border-dashed p-16 text-center">
-                  <p className="font-black italic text-gray-400 text-2xl uppercase">No hay ligas activas</p>
+                <div className="py-24 border border-dashed border-white/5 rounded-[40px] text-center bg-white/[0.01]">
+                   <Trophy className="w-12 h-12 text-white/5 mx-auto mb-4" />
+                   <p className="text-gray-600 font-bold uppercase tracking-widest text-xs">No participas en ligas privadas</p>
                 </div>
               ) : (
                 leagues.map((league) => (
                   <div 
                     key={league.id}
-                    className="group flex flex-col md:flex-row items-center justify-between p-6 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+                    className="group bg-white/[0.02] border border-white/5 p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300 shadow-lg"
                   >
-                    <div className="flex items-center gap-6 mb-4 md:mb-0">
-                      <div className="w-16 h-16 bg-black text-white flex items-center justify-center rotate-[-3deg]">
-                        <Trophy className="w-8 h-8" />
+                    <div className="flex items-center gap-8 mb-6 md:mb-0">
+                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform">
+                        <Trophy className="w-8 h-8 text-black" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-black italic uppercase leading-none mb-2">{league.nombre}</h3>
-                        <span className="text-[11px] font-black bg-yellow-400 border border-black px-2 py-0.5 uppercase">
-                          CÓDIGO: {league.codigo_invitacion}
-                        </span>
+                        <h3 className="text-3xl font-black italic uppercase tracking-tighter group-hover:text-emerald-400 transition-colors">{league.nombre}</h3>
+                        <div className="flex items-center gap-2 mt-2">
+                           <Hash className="w-3 h-3 text-gray-600" />
+                           <span className="text-[11px] font-black text-gray-500 tracking-[0.2em] uppercase">Código: {league.codigo_invitacion}</span>
+                        </div>
                       </div>
                     </div>
                     <Button 
                       onClick={() => handleViewRanking(league)}
-                      className="w-full md:w-auto bg-black text-white font-black uppercase italic h-12 px-8 border-2 border-black hover:bg-yellow-400 hover:text-black transition-colors"
+                      className="w-full md:w-auto bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 rounded-2xl px-10 h-14 font-black uppercase tracking-widest text-[11px] transition-all"
                     >
-                      VER RANKING
+                      Ver Tabla
                     </Button>
                   </div>
                 ))
@@ -254,59 +257,36 @@ export default function TorneosPage() {
         )}
       </main>
 
-      {/* MODAL CREAR LIGA */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white border-4 border-black p-8 w-full max-w-md shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter text-stroke-black">NUEVA LIGA</h2>
-              <button onClick={() => setShowCreateModal(false)}><X className="w-8 h-8"/></button>
+      {/* --- MODALES --- */}
+      {(showCreateModal || showJoinModal) && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="bg-[#0A0A0B] border border-white/10 p-10 w-full max-w-md rounded-[32px] shadow-2xl">
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">
+                {showCreateModal ? "Nueva" : "Unirse a"} <span className="text-white/20">Liga</span>
+              </h2>
+              <button onClick={() => {setShowCreateModal(false); setShowJoinModal(false)}} className="p-2 hover:bg-white/5 rounded-full"><X className="w-6 h-6"/></button>
             </div>
+            
             <Input 
-              placeholder="EJ: LIGA DE LOS SÁBADOS" 
-              value={newLeagueName}
-              onChange={(e) => setNewLeagueName(e.target.value)}
-              className="h-14 border-4 border-black font-black mb-6 text-lg"
+              placeholder={showCreateModal ? "NOMBRE DE LA LIGA" : "CÓDIGO DE ACCESO"}
+              value={showCreateModal ? newLeagueName : joinCode}
+              onChange={(e) => showCreateModal ? setNewLeagueName(e.target.value) : setJoinCode(e.target.value.toUpperCase())}
+              className="h-16 bg-white/5 border-white/10 rounded-2xl font-black text-center text-lg focus:border-white transition-all mb-8 uppercase tracking-widest"
             />
+
             <Button 
-              onClick={handleCreateLeague} 
+              onClick={showCreateModal ? handleCreateLeague : handleJoinLeague} 
               disabled={loading}
-              className="w-full h-16 bg-yellow-400 text-black font-black italic uppercase text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+              className={`w-full h-16 rounded-2xl font-black italic uppercase text-lg shadow-2xl transition-all ${
+                showCreateModal ? "bg-white text-black hover:bg-gray-200" : "bg-emerald-500 text-black hover:bg-emerald-400"
+              }`}
             >
-              {loading ? "CREANDO..." : "CONFIRMAR LIGA"}
+              {loading ? <Loader2 className="animate-spin" /> : showCreateModal ? "CREAR TORNEO" : "INGRESAR AL XV"}
             </Button>
           </div>
         </div>
       )}
-
-      {/* MODAL UNIRSE A LIGA */}
-      {showJoinModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white border-4 border-black p-8 w-full max-w-md shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter text-stroke-black">UNIRSE</h2>
-              <button onClick={() => setShowJoinModal(false)}><X className="w-8 h-8"/></button>
-            </div>
-            <Input 
-              placeholder="CÓDIGO" 
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              className="h-14 border-4 border-black font-black mb-6 text-2xl text-center uppercase"
-            />
-            <Button 
-              onClick={handleJoinLeague}
-              disabled={loading}
-              className="w-full h-16 bg-black text-white font-black italic uppercase text-xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
-            >
-              {loading ? "BUSCANDO..." : "ENTRAR AL XV"}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <style jsx global>{`
-        .text-stroke-black { -webkit-text-stroke: 1.5px black; color: transparent; }
-      `}</style>
     </div>
   )
 }
