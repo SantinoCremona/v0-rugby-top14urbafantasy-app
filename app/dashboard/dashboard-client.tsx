@@ -151,7 +151,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
                 className="h-14 bg-black text-white px-8 border-2 border-black hover:bg-white hover:text-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[3px] active:translate-y-[3px]"
               >
                 <Save className="w-5 h-5 mr-3" />
-                <span className="font-black italic uppercase">Confirmar XV</span>
+                <span className="font-black italic uppercase">Guardar</span>
               </Button>
               
               <Button 
