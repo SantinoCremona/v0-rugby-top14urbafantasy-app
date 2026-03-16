@@ -74,15 +74,11 @@ export default function LoginPage() {
 
       {/* HEADER: LOGO TIPO TOP 12 */}
       <div className="mb-10 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl mb-6 shadow-2xl rotate-[-3deg]">
-          <Shield className="w-8 h-8 text-black" />
-        </div>
-        <h1 className="text-6xl font-black italic uppercase tracking-tighter leading-none text-white">
+        <h1 className="text-6xl font-black uppercase tracking-tighter leading-none text-white">
           GRAN<span className="text-white/20">DT</span>
         </h1>
         <div className="flex items-center justify-center gap-2 mt-2 text-gray-500">
-          <Star className="w-3 h-3 text-emerald-400 fill-emerald-400" />
-          <p className="text-[10px] font-black uppercase tracking-[0.4em]">URBA TOP 12</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em]">URBA TOP 14</p>
         </div>
       </div>
 
