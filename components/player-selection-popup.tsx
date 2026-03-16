@@ -119,7 +119,7 @@ export function PlayerSelectionPopup({
                             {player.club}
                           </span>
                           <div className="flex items-center gap-1">
-                            <span className="text-[10px] font-black text-white">{player.puntos_totales}</span>
+                            <span className="text-[10px] font-black text-white">{player.puntos_totales} pts.</span>
                             {getTrendIcon(player.tendencia)}
                           </div>
                         </div>
