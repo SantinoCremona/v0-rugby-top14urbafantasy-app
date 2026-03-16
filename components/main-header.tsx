@@ -48,10 +48,10 @@ export function MainHeader() {
         {/* LOGO: Tipografía Pesada */}
         <Link href="/dashboard" className="flex flex-col group">
           <span className="font-black text-xl md:text-2xl tracking-tighter leading-none italic group-hover:text-gray-300 transition-colors">
-            GRAN<span className="text-white not-italic">DT</span>
+            GRAN<span className="text-white not-italic"> DT</span>
           </span>
           <span className="text-[9px] text-gray-500 font-bold tracking-[0.3em] uppercase">
-            URBA TOP 12
+            URBA TOP 14
           </span>
         </Link>
 
@@ -106,15 +106,6 @@ export function MainHeader() {
                     {nombreDT ? nombreDT.toUpperCase() : "CARGANDO..."}
                   </p>
                 </div>
-                
-                <Link 
-                  href="/perfil" 
-                  className="flex items-center gap-3 px-4 py-3 text-[11px] font-bold text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all uppercase tracking-wider"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <User className="w-4 h-4" />
-                  Editar Perfil
-                </Link>
 
                 <button
                   onClick={handleLogout}
