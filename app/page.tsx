@@ -75,7 +75,7 @@ export default function LoginPage() {
       {/* HEADER: LOGO TIPO TOP 12 */}
       <div className="mb-10 text-center animate-in fade-in slide-in-from-top-4 duration-700">
         <h1 className="text-6xl font-black uppercase tracking-tighter leading-none text-white">
-          GRAN<span className="text-white/20">DT</span>
+          HEAD<span className="text-white/20">COACH</span>
         </h1>
         <div className="flex items-center justify-center gap-2 mt-2 text-gray-500">
           <p className="text-[10px] font-black uppercase tracking-[0.4em]">URBA TOP 14</p>
