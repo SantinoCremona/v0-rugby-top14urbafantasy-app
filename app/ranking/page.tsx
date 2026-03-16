@@ -40,7 +40,7 @@ export default async function RankingGeneralPage() {
             </div>
             <div>
               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none">Comunidad</p>
-              <p className="text-xl font-black italic">{ranking.length} <span className="text-sm not-italic font-medium text-gray-400">DTS</span></p>
+              <p className="text-xl font-black italic">{ranking.length} <span className="text-sm not-italic font-medium text-gray-400">HC</span></p>
             </div>
           </div>
         </div>
