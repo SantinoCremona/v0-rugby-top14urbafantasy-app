@@ -47,7 +47,7 @@ export function MainHeader() {
         
         {/* LOGO: Tipografía Pesada */}
         <Link href="/dashboard" className="flex flex-col group">
-          <span className="font-black text-xl md:text-2xl tracking-tighter leading-none italic group-hover:text-gray-300 transition-colors">
+          <span className="font-black text-xl md:text-2xl tracking-tighter leading-none group-hover:text-gray-300 transition-colors">
             GRAN<span className="text-white not-italic"> DT</span>
           </span>
           <span className="text-[9px] text-gray-500 font-bold tracking-[0.3em] uppercase">
