@@ -273,21 +273,95 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           <h2 className="text-xl font-bold uppercase tracking-tight italic mb-8 border-l-2 border-white pl-4 text-gray-300">
             Reglamento y Puntuación
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {[
-              { t: "Presupuesto", d: "$10.000" },
-              { t: "Límite Club", d: "Máximo 4" },
-              { t: "Cierre", d: "1h previa" },
-              { t: "Try", d: "5 Pts" },
-              { t: "Patada", d: "2/3 Pts" },
-              { t: "Victoria", d: "2 Pts Bonus" },
-            ].map((r, i) => (
-              <div key={i} className="bg-[#141416] p-5 rounded-[20px] border border-white/5 text-center transition-hover hover:border-white/20">
-                <h3 className="font-black uppercase text-[11px] mb-1 italic text-white">{r.t}</h3>
-                <p className="text-[10px] font-medium text-gray-500 tracking-tighter">{r.d}</p>
-              </div>
-            ))}
+         {/* HEADER */}
+        <div className="text-center space-y-4">
+          <h1 className="text-6xl font-black italic tracking-tighter uppercase">Reglas <span className="text-white/20">del Juego</span></h1>
+          <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em]">Temporada 2026 - Urba Top 12</p>
+        </div>
+
+        {/* MERCADO CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white/[0.02] border border-white/10 p-8 rounded-[32px] space-y-4">
+            <div className="flex items-center gap-3 text-emerald-400">
+              <Clock className="w-5 h-5" />
+              <h3 className="font-black italic uppercase tracking-widest text-sm">Calendario</h3>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed uppercase font-bold tracking-tight">
+              El mercado abre los <span className="text-white">Lunes</span>. Cierra los <span className="text-white">Viernes noche</span> hasta el <span className="text-white">Domingo</span> (Carga de puntos).
+            </p>
           </div>
+
+          <div className="bg-white/[0.02] border border-white/10 p-8 rounded-[32px] space-y-4">
+            <div className="flex items-center gap-3 text-emerald-400">
+              <DollarSign className="w-5 h-5" />
+              <h3 className="font-black italic uppercase tracking-widest text-sm">Presupuesto</h3>
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed uppercase font-bold tracking-tight">
+              Presupuesto máximo de <span className="text-white">$10.000</span>. Límite de <span className="text-white">4 jugadores</span> por club.
+            </p>
+          </div>
+        </div>
+
+        {/* TABLA DE PUNTOS */}
+        <div className="bg-white/[0.02] border border-white/10 rounded-[40px] overflow-hidden">
+          <div className="bg-white/5 px-8 py-6 border-b border-white/10">
+            <h3 className="font-black italic uppercase tracking-[0.2em] text-center">Tabla de Puntuación</h3>
+          </div>
+          
+          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+            {/* SUMA */}
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Aciertos (Suma)</h4>
+              <ul className="space-y-3">
+                {[
+                  ["Base por jugar", "+10"],
+                  ["Ganar Partido", "+2"],
+                  ["Ganar con Bonus", "+8"],
+                  ["Try Apoyado", "+5"],
+                  ["Penal / Conversión", "+3 / +2"],
+                  ["Try Penal (Gordos)", "+3"],
+                  ["Try 1° Fase (Backs)", "+3"]
+                ].map(([label, pts]) => (
+                  <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
+                    <span className="text-gray-400">{label}</span>
+                    <span className="text-white italic font-black">{pts}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* RESTA */}
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Penalizaciones (Resta)</h4>
+              <ul className="space-y-3">
+                {[
+                  ["Tarjeta Amarilla", "-5"],
+                  ["Perder con Bonus / Goleada", "-3"],
+                  ["Mercado Cerrado", "Locked"]
+                ].map(([label, pts]) => (
+                  <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
+                    <span className="text-gray-400">{label}</span>
+                    <span className="text-rose-500 italic font-black">{pts}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* ADVERTENCIA FINAL */}
+        <div className="bg-emerald-500 p-8 rounded-[32px] flex items-center gap-6 text-black shadow-[0_20px_40px_rgba(16,185,129,0.2)] animate-pulse">
+          <CheckCircle2 className="w-12 h-12 flex-shrink-0" />
+          <div>
+            <p className="font-black italic uppercase text-xl leading-none mb-1">Confirmar XV</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest leading-tight">
+              Debes presionar el botón de confirmar para que los cambios tengan validez en la fecha activa.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
         </section>
       </main>
 
