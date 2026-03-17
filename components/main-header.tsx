@@ -129,9 +129,6 @@ export function MainHeader() {
         <div className="fixed inset-0 z-[110] bg-[#0A0A0B] animate-in fade-in slide-in-from-right duration-300 md:hidden flex flex-col p-8">
           <div className="flex items-center justify-between mb-12">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-black" />
-              </div>
               <span className="font-black italic text-2xl uppercase tracking-tighter text-white">Menú</span>
             </div>
             <button 
