@@ -57,40 +57,53 @@ export default function TorneosPage() {
   }
 
   const handleViewRanking = async (league: League) => {
-    setSelectedLeague(league)
-    setLoadingRanking(true)
-    
-    try {
-      // 1. Traemos TODOS los miembros de la liga, sus nombres de perfil y sus puntos de la VIEW
-      // IMPORTANTE: Quitamos el !inner para que aparezcan aunque no tengan puntos
-      const { data, error } = await supabase
-        .from('liga_miembros')
-        .select(`
-          user_id,
-          perfiles:user_id ( nombre_equipo ),
-          ranking_usuarios ( puntos_totales )
-        `)
-        .eq('liga_id', league.id);
+  setSelectedLeague(league)
+  setLoadingRanking(true)
+  
+  try {
+    // 1. Traemos los miembros, sus perfiles y sus puntos
+    const { data, error } = await supabase
+      .from('liga_miembros')
+      .select(`
+        user_id,
+        perfiles:user_id ( nombre_equipo ),
+        ranking_usuarios ( puntos_totales )
+      `)
+      .eq('liga_id', league.id);
 
-      if (error) throw error
+    if (error) throw error
 
-      // 2. Formateamos: Si no tiene equipo armado o nombre, usamos fallbacks
-      const formattedRanking = data.map((item: any) => ({
+    // 2. Formateo con validación estricta
+    const formattedRanking = (data || []).map((item: any) => {
+      // Extraemos el nombre del equipo del perfil
+      const nombre = item.perfiles?.nombre_equipo || "Equipo en formación";
+      
+      // Extraemos los puntos. 
+      // Si ranking_usuarios es un array (a veces pasa por la relación), tomamos el primero.
+      // Si es un objeto, tomamos puntos_totales. Si no hay nada, 0.
+      let puntos = 0;
+      if (Array.isArray(item.ranking_usuarios)) {
+        puntos = item.ranking_usuarios[0]?.puntos_totales || 0;
+      } else {
+        puntos = item.ranking_usuarios?.puntos_totales || 0;
+      }
+
+      return {
         user_id: item.user_id,
-        nombre_equipo: item.perfiles?.nombre_equipo || `Manager ${item.user_id.substring(0, 4).toUpperCase()}`,
-        puntos_totales: item.ranking_usuarios?.puntos_totales || 0
-      }))
-      // Ordenamos por puntos de mayor a menor
-      .sort((a, b) => b.puntos_totales - a.puntos_totales);
+        nombre_equipo: nombre,
+        puntos_totales: puntos
+      }
+    })
+    .sort((a, b) => b.puntos_totales - a.puntos_totales);
 
-      setRanking(formattedRanking)
-    } catch (e) {
-      console.error("Error al cargar la tabla:", e)
-      setRanking([])
-    } finally {
-      setLoadingRanking(false)
-    }
+    setRanking(formattedRanking)
+  } catch (e) {
+    console.error("Error detallado:", e)
+    setRanking([])
+  } finally {
+    setLoadingRanking(false)
   }
+}
 
   const handleCreateLeague = async () => {
     if (!newLeagueName.trim()) return
