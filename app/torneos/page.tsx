@@ -61,47 +61,38 @@ export default function TorneosPage() {
   setLoadingRanking(true)
   
   try {
-    // 1. Traemos los miembros de la liga y sus datos de perfil
-    // Buscamos 'nombre_equipo' que es como me confirmaste que se llama
+    // 1. Buscamos los miembros de esta liga
     const { data: miembros, error: errorMiembros } = await supabase
       .from('liga_miembros')
-      .select(`
-        user_id,
-        perfiles:user_id ( nombre_equipo )
-      `)
+      .select('user_id')
       .eq('liga_id', league.id);
 
-    if (errorMiembros) {
-      console.error("Error en miembros:", errorMiembros);
-      throw errorMiembros;
-    }
+    if (errorMiembros) throw errorMiembros;
 
-    // 2. Traemos los puntos de la View (Independiente para que no filtre a nadie)
+    // 2. Buscamos los datos de la View para esos usuarios
+    // Como la View ya tiene el nombre_equipo, la consulta es simple
     const { data: puntosData, error: errorPuntos } = await supabase
       .from('ranking_usuarios')
-      .select('user_id, puntos_totales');
+      .select('user_id, nombre_equipo, puntos_totales');
 
-    if (errorPuntos) console.warn("Aviso: No se pudieron cargar puntos, se mostrarán en 0");
+    if (errorPuntos) throw errorPuntos;
 
-    // 3. Cruzamos los datos manualmente en el cliente
+    // 3. Cruzamos los datos
     const formattedRanking = (miembros || []).map((m: any) => {
-      // Buscamos si este miembro tiene puntos en la View
-      const stats = puntosData?.find(p => p.user_id === m.user_id);
+      const datosUsuario = puntosData?.find(p => p.user_id === m.user_id);
       
       return {
         user_id: m.user_id,
-        // Usamos nombre_equipo de la tabla perfiles
-        nombre_equipo: m.perfiles?.nombre_equipo || "Manager sin nombre",
-        puntos_totales: stats?.puntos_totales || 0
+        nombre_equipo: datosUsuario?.nombre_equipo || "Manager sin XV",
+        puntos_totales: datosUsuario?.puntos_totales || 0
       }
     })
-    // Ordenamos: el que tiene más puntos arriba
     .sort((a, b) => b.puntos_totales - a.puntos_totales);
 
     setRanking(formattedRanking);
 
   } catch (e) {
-    console.error("Error crítico en ranking de liga:", e);
+    console.error("Error al cargar ranking:", e);
     setRanking([]);
   } finally {
     setLoadingRanking(false);
