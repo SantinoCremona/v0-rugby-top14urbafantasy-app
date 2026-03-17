@@ -112,7 +112,7 @@ export default function LoginPage() {
         <h1 className="text-6xl font-black uppercase tracking-tighter leading-none">
           HEAD<span className="text-white/20">COACH</span>
         </h1>
-        <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-2">URBA TOP 12 • 2026</p>
+        <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-2">URBA TOP 14 • 2026</p>
       </div>
 
       {/* CARD */}
@@ -222,7 +222,7 @@ export default function LoginPage() {
       </div>
 
       <footer className="mt-12 text-[9px] text-gray-700 font-black uppercase tracking-[0.6em]">
-        LIGA OFICIAL 2026
+        FANTASY TOP 14 2026
       </footer>
     </div>
   )
