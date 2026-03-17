@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { MainHeader } from "@/components/main-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Trophy, Plus, Users, X, Share2, Loader2, ArrowLeft, Shield, Hash, Star } from "lucide-react"
+import { Trophy, Plus, Users, X, Share2, Loader2, ArrowLeft, Shield, Hash, Star, ChevronLeft } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 interface League {
@@ -59,28 +59,33 @@ export default function TorneosPage() {
   const handleViewRanking = async (league: League) => {
     setSelectedLeague(league)
     setLoadingRanking(true)
+    
     try {
-      const { data: rankingReal, error } = await supabase
+      // 1. Traemos TODOS los miembros de la liga, sus nombres de perfil y sus puntos de la VIEW
+      // IMPORTANTE: Quitamos el !inner para que aparezcan aunque no tengan puntos
+      const { data, error } = await supabase
         .from('liga_miembros')
         .select(`
           user_id,
-          ranking_usuarios!inner (
-            nombre_equipo,
-            puntos_totales
-          )
+          perfiles:user_id ( nombre_equipo ),
+          ranking_usuarios ( puntos_totales )
         `)
-        .eq('liga_id', league.id)
-        // @ts-ignore
-        .order('puntos_totales', { foreignTable: 'ranking_usuarios', ascending: false })
+        .eq('liga_id', league.id);
 
       if (error) throw error
-      const formatted = rankingReal.map((item: any) => ({
+
+      // 2. Formateamos: Si no tiene equipo armado o nombre, usamos fallbacks
+      const formattedRanking = data.map((item: any) => ({
         user_id: item.user_id,
-        nombre_equipo: item.ranking_usuarios.nombre_equipo || "Equipo sin nombre",
-        puntos_totales: item.ranking_usuarios.puntos_totales || 0
+        nombre_equipo: item.perfiles?.nombre_equipo || `Manager ${item.user_id.substring(0, 4).toUpperCase()}`,
+        puntos_totales: item.ranking_usuarios?.puntos_totales || 0
       }))
-      setRanking(formatted)
+      // Ordenamos por puntos de mayor a menor
+      .sort((a, b) => b.puntos_totales - a.puntos_totales);
+
+      setRanking(formattedRanking)
     } catch (e) {
+      console.error("Error al cargar la tabla:", e)
       setRanking([])
     } finally {
       setLoadingRanking(false)
@@ -128,13 +133,13 @@ export default function TorneosPage() {
       
       <main className="max-w-5xl mx-auto px-6 py-12">
         {selectedLeague ? (
-          /* --- VISTA DETALLE LIGA --- */
-          <div className="animate-in fade-in zoom-in duration-300">
+          /* --- VISTA DETALLE LIGA (RANKING) --- */
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <button 
               onClick={() => setSelectedLeague(null)}
               className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors mb-8"
             >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
+              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
               Volver a mis torneos
             </button>
             
@@ -157,11 +162,13 @@ export default function TorneosPage() {
             {loadingRanking ? (
               <div className="flex flex-col items-center justify-center py-24 gap-4">
                 <Loader2 className="animate-spin w-10 h-10 text-white/20" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">Actualizando Puntos...</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-600">Actualizando Tabla...</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {ranking.map((res, idx) => (
+                {ranking.length === 0 ? (
+                   <p className="text-center py-20 text-gray-600 font-black uppercase tracking-widest">Sin miembros activos</p>
+                ) : ranking.map((res, idx) => (
                   <div 
                     key={res.user_id} 
                     className={`flex items-center justify-between p-6 rounded-2xl border transition-all ${
@@ -198,7 +205,7 @@ export default function TorneosPage() {
                   Tor<span className="text-white/20">neos</span>
                 </h1>
                 <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-4 flex items-center gap-2">
-                  <Star className="w-3 h-3 text-emerald-400 fill-emerald-400" /> Gestiona tus ligas privadas
+                  <Star className="w-3 h-3 text-emerald-400 fill-emerald-400" /> Compite en tus propias ligas
                 </p>
               </div>
               <div className="flex gap-3">
@@ -223,7 +230,7 @@ export default function TorneosPage() {
               ) : leagues.length === 0 ? (
                 <div className="py-24 border border-dashed border-white/5 rounded-[40px] text-center bg-white/[0.01]">
                    <Trophy className="w-12 h-12 text-white/5 mx-auto mb-4" />
-                   <p className="text-gray-600 font-bold uppercase tracking-widest text-xs">No participas en ligas privadas</p>
+                   <p className="text-gray-600 font-bold uppercase tracking-widest text-xs">Aún no participas en ligas privadas</p>
                 </div>
               ) : (
                 leagues.map((league) => (
@@ -236,7 +243,7 @@ export default function TorneosPage() {
                         <Trophy className="w-8 h-8 text-black" />
                       </div>
                       <div>
-                        <h3 className="text-3xl font-black italic uppercase tracking-tighter group-hover:text-emerald-400 transition-colors">{league.nombre}</h3>
+                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white group-hover:text-emerald-400 transition-colors">{league.nombre}</h3>
                         <div className="flex items-center gap-2 mt-2">
                            <Hash className="w-3 h-3 text-gray-600" />
                            <span className="text-[11px] font-black text-gray-500 tracking-[0.2em] uppercase">Código: {league.codigo_invitacion}</span>
@@ -265,14 +272,14 @@ export default function TorneosPage() {
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">
                 {showCreateModal ? "Nueva" : "Unirse a"} <span className="text-white/20">Liga</span>
               </h2>
-              <button onClick={() => {setShowCreateModal(false); setShowJoinModal(false)}} className="p-2 hover:bg-white/5 rounded-full"><X className="w-6 h-6"/></button>
+              <button onClick={() => {setShowCreateModal(false); setShowJoinModal(false)}} className="p-2 hover:bg-white/5 rounded-full transition-colors"><X className="w-6 h-6 text-white"/></button>
             </div>
             
             <Input 
               placeholder={showCreateModal ? "NOMBRE DE LA LIGA" : "CÓDIGO DE ACCESO"}
               value={showCreateModal ? newLeagueName : joinCode}
               onChange={(e) => showCreateModal ? setNewLeagueName(e.target.value) : setJoinCode(e.target.value.toUpperCase())}
-              className="h-16 bg-white/5 border-white/10 rounded-2xl font-black text-center text-lg focus:border-white transition-all mb-8 uppercase tracking-widest"
+              className="h-16 bg-white/5 border-white/10 rounded-2xl font-black text-center text-lg focus:border-white transition-all mb-8 uppercase tracking-widest text-white"
             />
 
             <Button 
