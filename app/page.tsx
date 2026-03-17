@@ -21,7 +21,6 @@ export default function LoginPage() {
   const [nombreDT, setNombreDT] = useState("")
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // VALIDACIÓN: 1 Mayúscula y al menos 2 Números
   const validatePassword = (pass: string) => {
     const hasUpperCase = /[A-Z]/.test(pass)
     const hasTwoNumbers = (pass.match(/\d/g) || []).length >= 2
@@ -41,7 +40,6 @@ export default function LoginPage() {
           password,
         })
         if (error) {
-          // Traducción de errores comunes de login
           if (error.message.includes("Invalid login credentials")) {
             throw new Error("Credenciales inválidas. Revisá tu email o contraseña.")
           }
@@ -52,21 +50,18 @@ export default function LoginPage() {
       } else {
         // --- REGISTRARSE ---
         
-        if (password !== confirmPassword) {
-          throw new Error("Las contraseñas no coinciden")
-        }
+        // 1. Validaciones previas de seguridad
+        if (!nombreDT.trim()) throw new Error("Debes elegir un nombre para tu equipo")
+        if (password !== confirmPassword) throw new Error("Las contraseñas no coinciden")
+        if (!validatePassword(password)) throw new Error("La contraseña requiere 1 mayúscula y 2 números")
 
-        if (!validatePassword(password)) {
-          throw new Error("La contraseña requiere 1 mayúscula y 2 números")
-        }
-
+        // 2. Intento de registro en Auth
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         })
 
         if (signUpError) {
-          // Traducción de error de usuario ya registrado
           if (signUpError.message.includes("User already registered")) {
             throw new Error("El usuario ya está registrado")
           }
@@ -74,6 +69,7 @@ export default function LoginPage() {
         }
 
         if (data.user) {
+          // 3. Intento de inserción en tabla Perfiles
           const { error: profileError } = await supabase
             .from('perfiles')
             .insert([{ 
@@ -83,6 +79,9 @@ export default function LoginPage() {
             }])
 
           if (profileError) {
+            // SI FALLA EL PERFIL, CERRAMOS SESIÓN PARA QUE NO PUEDA ENTRAR SIN NOMBRE
+            await supabase.auth.signOut()
+            
             if (profileError.code === '23505') {
               throw new Error("Ese nombre de equipo ya está registrado")
             }
@@ -90,7 +89,7 @@ export default function LoginPage() {
           }
           
           setIsLogin(true)
-          alert("¡Cuenta creada con éxito! Ya podés ingresar.")
+          alert("¡Cuenta creada con éxito! Ahora podés iniciar sesión.")
         }
       }
     } catch (error: any) {
@@ -163,7 +162,6 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
             >
-                {/* Lógica de icono corregida: Tachado (EyeOff) oculta, Abierto (Eye) muestra */}
                 {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
             </button>
           </div>
