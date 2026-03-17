@@ -57,50 +57,56 @@ export default function TorneosPage() {
   }
 
   const handleViewRanking = async (league: League) => {
-    setSelectedLeague(league)
-    setLoadingRanking(true)
-    
-    try {
-      // 1. Traemos TODOS los miembros de la liga. 
-      // Relacionamos con 'perfiles' para el nombre y con la VIEW 'ranking_usuarios' para los puntos.
-      const { data, error } = await supabase
-        .from('liga_miembros')
-        .select(`
-          user_id,
-          perfiles:user_id ( nombre_equipo ),
-          ranking_usuarios:user_id ( puntos_totales )
-        `)
-        .eq('liga_id', league.id);
+  setSelectedLeague(league)
+  setLoadingRanking(true)
+  
+  try {
+    // 1. Traemos los miembros de la liga y sus datos de perfil
+    // Buscamos 'nombre_equipo' que es como me confirmaste que se llama
+    const { data: miembros, error: errorMiembros } = await supabase
+      .from('liga_miembros')
+      .select(`
+        user_id,
+        perfiles:user_id ( nombre_equipo )
+      `)
+      .eq('liga_id', league.id);
 
-      if (error) throw error
-
-      // 2. Formateamos los datos manejando posibles nulos (si no armaron equipo aún)
-      const formattedRanking = (data || []).map((item: any) => {
-        // Obtenemos puntos (manejando si ranking_usuarios devuelve array u objeto)
-        let pts = 0;
-        if (item.ranking_usuarios) {
-          pts = Array.isArray(item.ranking_usuarios) 
-            ? (item.ranking_usuarios[0]?.puntos_totales || 0) 
-            : (item.ranking_usuarios.puntos_totales || 0);
-        }
-
-        return {
-          user_id: item.user_id,
-          nombre_equipo: item.perfiles?.nombre_equipo || "Manager en formación",
-          puntos_totales: pts
-        }
-      })
-      .sort((a, b) => b.puntos_totales - a.puntos_totales);
-
-      setRanking(formattedRanking)
-    } catch (e) {
-      console.error("Error al cargar el ranking de la liga:", e)
-      setRanking([])
-    } finally {
-      setLoadingRanking(false)
+    if (errorMiembros) {
+      console.error("Error en miembros:", errorMiembros);
+      throw errorMiembros;
     }
-  }
 
+    // 2. Traemos los puntos de la View (Independiente para que no filtre a nadie)
+    const { data: puntosData, error: errorPuntos } = await supabase
+      .from('ranking_usuarios')
+      .select('user_id, puntos_totales');
+
+    if (errorPuntos) console.warn("Aviso: No se pudieron cargar puntos, se mostrarán en 0");
+
+    // 3. Cruzamos los datos manualmente en el cliente
+    const formattedRanking = (miembros || []).map((m: any) => {
+      // Buscamos si este miembro tiene puntos en la View
+      const stats = puntosData?.find(p => p.user_id === m.user_id);
+      
+      return {
+        user_id: m.user_id,
+        // Usamos nombre_equipo de la tabla perfiles
+        nombre_equipo: m.perfiles?.nombre_equipo || "Manager sin nombre",
+        puntos_totales: stats?.puntos_totales || 0
+      }
+    })
+    // Ordenamos: el que tiene más puntos arriba
+    .sort((a, b) => b.puntos_totales - a.puntos_totales);
+
+    setRanking(formattedRanking);
+
+  } catch (e) {
+    console.error("Error crítico en ranking de liga:", e);
+    setRanking([]);
+  } finally {
+    setLoadingRanking(false);
+  }
+}
   const handleCreateLeague = async () => {
     if (!newLeagueName.trim()) return
     setLoading(true)
