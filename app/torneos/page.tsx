@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { MainHeader } from "@/components/main-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Trophy, Plus, Users, X, Share2, Loader2, ArrowLeft, Shield, Hash, Star, ChevronLeft } from "lucide-react"
+import { Trophy, Plus, Users, X, Share2, Loader2, Shield, Hash, Star, ChevronLeft } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 interface League {
@@ -57,53 +57,49 @@ export default function TorneosPage() {
   }
 
   const handleViewRanking = async (league: League) => {
-  setSelectedLeague(league)
-  setLoadingRanking(true)
-  
-  try {
-    // 1. Traemos los miembros, sus perfiles y sus puntos
-    const { data, error } = await supabase
-      .from('liga_miembros')
-      .select(`
-        user_id,
-        perfiles:user_id ( nombre_equipo ),
-        ranking_usuarios ( puntos_totales )
-      `)
-      .eq('liga_id', league.id);
+    setSelectedLeague(league)
+    setLoadingRanking(true)
+    
+    try {
+      // 1. Traemos TODOS los miembros de la liga. 
+      // Relacionamos con 'perfiles' para el nombre y con la VIEW 'ranking_usuarios' para los puntos.
+      const { data, error } = await supabase
+        .from('liga_miembros')
+        .select(`
+          user_id,
+          perfiles:user_id ( nombre_equipo ),
+          ranking_usuarios:user_id ( puntos_totales )
+        `)
+        .eq('liga_id', league.id);
 
-    if (error) throw error
+      if (error) throw error
 
-    // 2. Formateo con validación estricta
-    const formattedRanking = (data || []).map((item: any) => {
-      // Extraemos el nombre del equipo del perfil
-      const nombre = item.perfiles?.nombre_equipo || "Equipo en formación";
-      
-      // Extraemos los puntos. 
-      // Si ranking_usuarios es un array (a veces pasa por la relación), tomamos el primero.
-      // Si es un objeto, tomamos puntos_totales. Si no hay nada, 0.
-      let puntos = 0;
-      if (Array.isArray(item.ranking_usuarios)) {
-        puntos = item.ranking_usuarios[0]?.puntos_totales || 0;
-      } else {
-        puntos = item.ranking_usuarios?.puntos_totales || 0;
-      }
+      // 2. Formateamos los datos manejando posibles nulos (si no armaron equipo aún)
+      const formattedRanking = (data || []).map((item: any) => {
+        // Obtenemos puntos (manejando si ranking_usuarios devuelve array u objeto)
+        let pts = 0;
+        if (item.ranking_usuarios) {
+          pts = Array.isArray(item.ranking_usuarios) 
+            ? (item.ranking_usuarios[0]?.puntos_totales || 0) 
+            : (item.ranking_usuarios.puntos_totales || 0);
+        }
 
-      return {
-        user_id: item.user_id,
-        nombre_equipo: nombre,
-        puntos_totales: puntos
-      }
-    })
-    .sort((a, b) => b.puntos_totales - a.puntos_totales);
+        return {
+          user_id: item.user_id,
+          nombre_equipo: item.perfiles?.nombre_equipo || "Manager en formación",
+          puntos_totales: pts
+        }
+      })
+      .sort((a, b) => b.puntos_totales - a.puntos_totales);
 
-    setRanking(formattedRanking)
-  } catch (e) {
-    console.error("Error detallado:", e)
-    setRanking([])
-  } finally {
-    setLoadingRanking(false)
+      setRanking(formattedRanking)
+    } catch (e) {
+      console.error("Error al cargar el ranking de la liga:", e)
+      setRanking([])
+    } finally {
+      setLoadingRanking(false)
+    }
   }
-}
 
   const handleCreateLeague = async () => {
     if (!newLeagueName.trim()) return
@@ -141,7 +137,7 @@ export default function TorneosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] text-white">
+    <div className="min-h-screen bg-[#0A0A0B] text-white selection:bg-white selection:text-black">
       <MainHeader />
       
       <main className="max-w-5xl mx-auto px-6 py-12">
@@ -181,46 +177,54 @@ export default function TorneosPage() {
               <div className="space-y-3">
                 {ranking.length === 0 ? (
                    <p className="text-center py-20 text-gray-600 font-black uppercase tracking-widest">Sin miembros activos</p>
-                ) : ranking.map((res, idx) => (
-                  <div 
-                    key={res.user_id} 
-                    className={`flex items-center justify-between p-6 rounded-2xl border transition-all ${
-                      idx === 0 
-                      ? "bg-white text-black border-white shadow-[0_0_30px_rgba(255,255,255,0.05)]" 
-                      : "bg-white/[0.02] border-white/5"
-                    }`}
-                  >
-                    <div className="flex items-center gap-6">
-                      <span className={`text-2xl font-black italic ${idx === 0 ? "text-black" : "text-white/20"}`}>
-                        #{idx + 1}
-                      </span>
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                        idx === 0 ? "bg-black text-white border-black" : "bg-white/5 border-white/10 text-white"
-                      }`}>
-                        <Shield className="w-5 h-5" />
+                ) : (
+                  ranking.map((res, idx) => {
+                    const esLider = idx === 0;
+                    return (
+                      <div 
+                        key={res.user_id} 
+                        className={`flex items-center justify-between p-6 rounded-2xl border transition-all ${
+                          esLider 
+                          ? "bg-white text-black border-white shadow-[0_0_30px_rgba(255,255,255,0.05)]" 
+                          : "bg-white/[0.02] border-white/5"
+                        }`}
+                      >
+                        <div className="flex items-center gap-6">
+                          <span className={`text-2xl font-black italic ${esLider ? "text-black" : "text-white/20"}`}>
+                            #{idx + 1}
+                          </span>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                            esLider ? "bg-black text-white border-black" : "bg-white/5 border-white/10 text-white"
+                          }`}>
+                            <Shield className="w-5 h-5" />
+                          </div>
+                          <span className="text-lg md:text-2xl font-black italic uppercase tracking-tighter">
+                            {res.nombre_equipo}
+                          </span>
+                        </div>
+                        <span className={`text-3xl font-black italic ${esLider ? "text-black" : "text-emerald-400"}`}>
+                          {res.puntos_totales}
+                        </span>
                       </div>
-                      <span className="text-lg md:text-2xl font-black italic uppercase tracking-tighter">{res.nombre_equipo}</span>
-                    </div>
-                    <span className={`text-3xl font-black italic ${idx === 0 ? "text-black" : "text-emerald-400"}`}>
-                      {res.puntos_totales}
-                    </span>
-                  </div>
-                ))}
+                    )
+                  })
+                )}
               </div>
             )}
           </div>
         ) : (
-          /* --- VISTA LISTA DE LIGAS --- */
+          /* --- VISTA LISTA DE LIGAS (LOBBY) --- */
           <>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
               <div>
-                <h1 className="text-7xl md:text-8xl font-black italic tracking-tighter leading-none uppercase">
+                <h1 className="text-7xl md:text-8xl font-black italic tracking-tighter leading-none uppercase text-white">
                   Tor<span className="text-white/20">neos</span>
                 </h1>
-                <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-4 flex items-center gap-2">
-                  <Star className="w-3 h-3 text-emerald-400 fill-emerald-400" /> Compite en tus propias ligas
+                <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-4 flex items-center gap-2 leading-none">
+                  <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" /> Gestiona tus ligas privadas
                 </p>
               </div>
+              
               <div className="flex gap-3">
                 <Button 
                   onClick={() => setShowJoinModal(true)}
@@ -230,7 +234,7 @@ export default function TorneosPage() {
                 </Button>
                 <Button 
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-white text-black hover:bg-gray-200 rounded-2xl px-8 h-14 font-black uppercase tracking-widest text-[11px] transition-all shadow-xl"
+                  className="bg-white text-black hover:bg-gray-200 rounded-2xl px-8 h-14 font-black uppercase tracking-widest text-[11px] transition-all shadow-xl active:scale-95"
                 >
                   <Plus className="w-4 h-4 mr-2" /> Crear Liga
                 </Button>
@@ -241,18 +245,18 @@ export default function TorneosPage() {
               {fetching ? (
                 <div className="py-24 flex justify-center"><Loader2 className="animate-spin w-10 h-10 text-white/10" /></div>
               ) : leagues.length === 0 ? (
-                <div className="py-24 border border-dashed border-white/5 rounded-[40px] text-center bg-white/[0.01]">
+                <div className="bg-white/[0.01] border border-dashed border-white/10 rounded-[40px] p-24 text-center">
                    <Trophy className="w-12 h-12 text-white/5 mx-auto mb-4" />
-                   <p className="text-gray-600 font-bold uppercase tracking-widest text-xs">Aún no participas en ligas privadas</p>
+                   <p className="text-gray-600 font-bold uppercase tracking-widest text-xs">No participas en ligas privadas</p>
                 </div>
               ) : (
                 leagues.map((league) => (
                   <div 
                     key={league.id}
-                    className="group bg-white/[0.02] border border-white/5 p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300 shadow-lg"
+                    className="group bg-white/[0.02] border border-white/5 p-8 rounded-[32px] flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300 shadow-xl"
                   >
                     <div className="flex items-center gap-8 mb-6 md:mb-0">
-                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform">
+                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300">
                         <Trophy className="w-8 h-8 text-black" />
                       </div>
                       <div>
@@ -279,7 +283,7 @@ export default function TorneosPage() {
 
       {/* --- MODALES --- */}
       {(showCreateModal || showJoinModal) && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in fade-in duration-300">
           <div className="bg-[#0A0A0B] border border-white/10 p-10 w-full max-w-md rounded-[32px] shadow-2xl">
             <div className="flex justify-between items-center mb-10">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">
@@ -292,7 +296,7 @@ export default function TorneosPage() {
               placeholder={showCreateModal ? "NOMBRE DE LA LIGA" : "CÓDIGO DE ACCESO"}
               value={showCreateModal ? newLeagueName : joinCode}
               onChange={(e) => showCreateModal ? setNewLeagueName(e.target.value) : setJoinCode(e.target.value.toUpperCase())}
-              className="h-16 bg-white/5 border-white/10 rounded-2xl font-black text-center text-lg focus:border-white transition-all mb-8 uppercase tracking-widest text-white"
+              className="h-16 bg-white/5 border-white/10 rounded-2xl font-black text-center text-lg focus:border-white transition-all mb-8 uppercase tracking-widest text-white placeholder:text-gray-700"
             />
 
             <Button 
@@ -302,7 +306,7 @@ export default function TorneosPage() {
                 showCreateModal ? "bg-white text-black hover:bg-gray-200" : "bg-emerald-500 text-black hover:bg-emerald-400"
               }`}
             >
-              {loading ? <Loader2 className="animate-spin" /> : showCreateModal ? "CREAR TORNEO" : "INGRESAR AL XV"}
+              {loading ? <Loader2 className="animate-spin w-6 h-6 text-black" /> : showCreateModal ? "CREAR TORNEO" : "INGRESAR AL XV"}
             </Button>
           </div>
         </div>
