@@ -194,7 +194,7 @@ export default function LoginPage() {
               <Loader2 className="animate-spin w-5 h-5" />
             ) : (
               <span className="flex items-center gap-2">
-                {isLogin ? "ENTRAR" : "CONFIRMAR XV"} <ArrowRight className="w-4 h-4" />
+                {isLogin ? "ENTRAR" : "REGISTRARME"} <ArrowRight className="w-4 h-4" />
               </span>
             )}
           </Button>
