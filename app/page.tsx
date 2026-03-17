@@ -40,32 +40,40 @@ export default function LoginPage() {
           email,
           password,
         })
-        if (error) throw error
+        if (error) {
+          // Traducción de errores comunes de login
+          if (error.message.includes("Invalid login credentials")) {
+            throw new Error("Credenciales inválidas. Revisá tu email o contraseña.")
+          }
+          throw error
+        }
         router.push("/dashboard")
         router.refresh()
       } else {
         // --- REGISTRARSE ---
         
-        // 1. Validar Coincidencia
         if (password !== confirmPassword) {
           throw new Error("Las contraseñas no coinciden")
         }
 
-        // 2. Validar Complejidad
         if (!validatePassword(password)) {
           throw new Error("La contraseña requiere 1 mayúscula y 2 números")
         }
 
-        // 3. Registrar usuario en Auth
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
         })
 
-        if (signUpError) throw signUpError
+        if (signUpError) {
+          // Traducción de error de usuario ya registrado
+          if (signUpError.message.includes("User already registered")) {
+            throw new Error("El usuario ya está registrado")
+          }
+          throw signUpError
+        }
 
         if (data.user) {
-          // 4. Intentar guardar en Perfiles (Aquí saltará el error si el nombre ya existe)
           const { error: profileError } = await supabase
             .from('perfiles')
             .insert([{ 
@@ -75,7 +83,6 @@ export default function LoginPage() {
             }])
 
           if (profileError) {
-            // Error 23505 es el código de Postgres para "Unique Violation"
             if (profileError.code === '23505') {
               throw new Error("Ese nombre de equipo ya está registrado")
             }
@@ -83,7 +90,7 @@ export default function LoginPage() {
           }
           
           setIsLogin(true)
-          alert("¡Equipo creado! Ya podés ingresar al vestuario.")
+          alert("¡Cuenta creada con éxito! Ya podés ingresar.")
         }
       }
     } catch (error: any) {
@@ -94,7 +101,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center p-6 relative overflow-hidden text-white">
       
       {/* Luces de Fondo */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[120px] rounded-full" />
@@ -102,35 +109,33 @@ export default function LoginPage() {
 
       {/* HEADER */}
       <div className="mb-10 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-        <h1 className="text-6xl font-black  uppercase tracking-tighter leading-none text-white">
+        <h1 className="text-6xl font-black uppercase tracking-tighter leading-none">
           HEAD<span className="text-white/20">COACH</span>
         </h1>
-        <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-2">URBA TOP 14 • 2026</p>
+        <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-2">URBA TOP 12 • 2026</p>
       </div>
 
       {/* CARD */}
       <div className="w-full max-w-md bg-white/[0.02] border border-white/10 p-8 md:p-10 rounded-[40px] backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in duration-500">
-        <h2 className="text-xl font-black italic text-center mb-8 uppercase tracking-widest text-white">
+        <h2 className="text-xl font-black italic text-center mb-8 uppercase tracking-widest">
           {isLogin ? "Acceso / Vestuario" : "Nuevo / Manager"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* NOMBRE EQUIPO (Solo Registro) */}
           {!isLogin && (
             <div className="relative group animate-in slide-in-from-top-2 duration-300">
               <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-white transition-colors" />
               <Input
                 placeholder="NOMBRE DEL EQUIPO"
                 value={nombreDT}
-                onChange={(e) => setNombreDT(e.target.value.toUpperCase())}
+                onChange={(e) => setNombreDT(e.target.value)}
                 required
-                className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-700 focus:border-white transition-all uppercase tracking-widest text-[11px]"
+                className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-700 focus:border-white transition-all tracking-widest text-[11px]"
               />
             </div>
           )}
 
-          {/* EMAIL */}
           <div className="relative group">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-white transition-colors" />
             <Input
@@ -139,41 +144,40 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-700 focus:border-white transition-all uppercase tracking-widest text-[11px]"
+              className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-700 focus:border-white transition-all tracking-widest text-[11px]"
             />
           </div>
 
-          {/* PASSWORD */}
           <div className="relative group">
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-white transition-colors" />
             <Input
               type={showPassword ? "text" : "password"}
-              placeholder="PASSWORD"
+              placeholder="CONTRASEÑA"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-700 focus:border-white transition-all uppercase tracking-widest text-[11px]"
+              className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-700 focus:border-white transition-all tracking-widest text-[11px]"
             />
             <button 
                 type="button" 
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
             >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {/* Lógica de icono corregida: Tachado (EyeOff) oculta, Abierto (Eye) muestra */}
+                {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
             </button>
           </div>
 
-          {/* CONFIRMAR PASSWORD (Solo Registro) */}
           {!isLogin && (
             <div className="relative group animate-in slide-in-from-top-2 duration-300">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-white transition-colors" />
               <Input
                 type="password"
-                placeholder="CONFIRMAR PASSWORD"
+                placeholder="CONFIRMAR CONTRASEÑA"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-700 focus:border-white transition-all uppercase tracking-widest text-[11px]"
+                className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-700 focus:border-white transition-all tracking-widest text-[11px]"
               />
             </div>
           )}
@@ -194,7 +198,7 @@ export default function LoginPage() {
               <Loader2 className="animate-spin w-5 h-5" />
             ) : (
               <span className="flex items-center gap-2">
-                {isLogin ? "ENTRAR" : "REGISTRARME"} <ArrowRight className="w-4 h-4" />
+                {isLogin ? "ENTRAR" : "REGISTRARSE"} <ArrowRight className="w-4 h-4" />
               </span>
             )}
           </Button>
@@ -218,7 +222,7 @@ export default function LoginPage() {
       </div>
 
       <footer className="mt-12 text-[9px] text-gray-700 font-black uppercase tracking-[0.6em]">
-        Official Fantasy League 2026
+        LIGA OFICIAL 2026
       </footer>
     </div>
   )
