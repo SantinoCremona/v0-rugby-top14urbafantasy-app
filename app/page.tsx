@@ -102,13 +102,10 @@ export default function LoginPage() {
 
       {/* HEADER */}
       <div className="mb-10 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-        <div className="inline-flex w-14 h-14 bg-white rounded-2xl items-center justify-center mb-6 shadow-2xl rotate-[-6deg]">
-           <Shield className="w-8 h-8 text-black" />
-        </div>
-        <h1 className="text-6xl font-black italic uppercase tracking-tighter leading-none text-white">
-          GRAN<span className="text-white/20">DT</span>
+        <h1 className="text-6xl font-black  uppercase tracking-tighter leading-none text-white">
+          HEAD<span className="text-white/20">COACH</span>
         </h1>
-        <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-2">URBA TOP 12 • 2026</p>
+        <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-2">URBA TOP 14 • 2026</p>
       </div>
 
       {/* CARD */}
