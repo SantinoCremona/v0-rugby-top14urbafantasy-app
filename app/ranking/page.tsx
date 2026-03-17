@@ -32,7 +32,7 @@ export default async function RankingGeneralPage() {
               Ranking <span className="text-white/20">General</span>
             </h1>
             <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.4em] mt-4">
-              Temporada URBA 2026 • Top 10 Selecto
+              Temporada URBA 2026 • Top 10 Coaches
             </p>
           </div>
           
