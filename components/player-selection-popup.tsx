@@ -40,7 +40,7 @@ export function PlayerSelectionPopup({
         const { data } = await supabase
           .from('fixture')
           .select('local, visitante, fecha_num')
-          .eq('fecha_num', 1) // Ajustar a la fecha activa
+          .eq('fecha_num', 2) // Ajustar a la fecha activa
         
         if (data) setFixture(data)
         setLoadingFixture(false)
