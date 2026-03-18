@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, TrendingUp, TrendingDown, Minus, Wallet, Search, Loader2, Sword } from "lucide-react"
+import { X, TrendingUp, TrendingDown, Minus, Wallet, Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Player } from "@/components/player-card"
 import { createClient } from "@/lib/supabase/client"
@@ -33,7 +33,6 @@ export function PlayerSelectionPopup({
   const [fixture, setFixture] = useState<Match[]>([])
   const [loadingFixture, setLoadingFixture] = useState(true)
 
-  // Cargar Fixture al abrir el popup
   useEffect(() => {
     if (isOpen) {
       async function fetchFixture() {
@@ -53,11 +52,14 @@ export function PlayerSelectionPopup({
 
   const filteredPlayers = players.filter(p => p.posicion === positionType)
 
-  // Helper para encontrar el rival
   const getRival = (clubName: string) => {
-    const match = fixture.find(m => m.local === clubName || m.visitante === clubName)
+    if (!clubName) return null
+    const match = fixture.find(m => 
+      m.local.toUpperCase() === clubName.toUpperCase() || 
+      m.visitante.toUpperCase() === clubName.toUpperCase()
+    )
     if (!match) return null
-    return match.local === clubName ? match.visitante : match.local
+    return match.local.toUpperCase() === clubName.toUpperCase() ? match.visitante : match.local
   }
 
   const getTrendIcon = (tendencia: string) => {
@@ -101,7 +103,7 @@ export function PlayerSelectionPopup({
           </p>
         </div>
 
-        {/* Lista */}
+        {/* Lista de Jugadores */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
           {loadingFixture ? (
             <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-white/10" /></div>
@@ -112,7 +114,8 @@ export function PlayerSelectionPopup({
               {filteredPlayers.sort((a,b) => b.precio - a.precio).map((player) => {
                 const canAfford = player.precio <= remainingBudget
                 const rival = getRival(player.club)
-                
+                const estado = player.estado?.toUpperCase() || 'TITULAR'
+
                 return (
                   <button
                     key={player.id}
@@ -123,6 +126,7 @@ export function PlayerSelectionPopup({
                     }`}
                   >
                     <div className="flex items-center gap-4 text-left">
+                      {/* Siglas Club */}
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-[10px] transition-colors ${
                         canAfford ? "bg-white text-black group-hover:bg-emerald-400" : "bg-white/5 text-gray-600"
                       }`}>
@@ -130,17 +134,30 @@ export function PlayerSelectionPopup({
                       </div>
                       
                       <div>
-                        <p className="font-black text-sm uppercase tracking-tight italic group-hover:translate-x-1 transition-transform">
-                          {player.nombre}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-black text-sm uppercase tracking-tight italic group-hover:translate-x-1 transition-transform">
+                            {player.nombre}
+                          </p>
+                          
+                          {/* BADGE DE ESTADO: TITULAR / FINISHER */}
+                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter border ${
+                            estado === 'TITULAR' 
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                              : estado === 'FINISHER'
+                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                              : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                          }`}>
+                            {estado}
+                          </span>
+                        </div>
+
                         <div className="flex items-center gap-3 mt-1">
-                          {/* INFORMACIÓN DEL RIVAL DINÁMICA */}
                           <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-md border border-white/5">
                             <span className="text-[8px] font-black text-gray-600 uppercase italic">vs</span>
                             <span className="text-[9px] font-black text-emerald-400 uppercase italic">{rival || "BYE"}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-[10px] font-black text-white">{player.puntos_totales} pts.</span>
+                            <span className="text-[10px] font-black text-white/60">{player.puntos_totales} pts.</span>
                             {getTrendIcon(player.tendencia)}
                           </div>
                         </div>
@@ -165,7 +182,7 @@ export function PlayerSelectionPopup({
         {/* Footer */}
         <div className="p-6 border-t border-white/5 bg-black/50">
           <Button onClick={onClose} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-[11px] border border-white/10">
-            Volver
+            Volver al campo
           </Button>
         </div>
       </div>
