@@ -75,6 +75,7 @@ export default async function DashboardPage() {
     puntos_totales: j.puntos_totales,
     foto_url: j.foto_url,
     tendencia: j.tendencia as "subiendo" | "bajando" | "estable",
+    estado: j.estado, // <--- ESTA ES LA LÍNEA QUE FALTABA
   }))
 
   // Pasamos todos los datos al Client Component
