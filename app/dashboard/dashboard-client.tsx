@@ -269,7 +269,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         <section className="mt-20 space-y-12">
           <div className="text-center space-y-4">
             <h2 className="text-6xl font-black italic tracking-tighter uppercase">Reglas <span className="text-white/20">del Juego</span></h2>
-            <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em]">Temporada 2026 - Urba Top 12</p>
+            <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em]">Temporada 2026 - Urba Top 14</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -290,6 +290,15 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               </div>
               <p className="text-xs text-gray-400 leading-relaxed uppercase font-bold tracking-tight">
                 Presupuesto máximo de <span className="text-white">$10.000</span>. Límite de <span className="text-white">4 jugadores</span> por club.
+              </p>
+            </div>
+          </div>
+          <div className="bg-emerald-500 p-8 rounded-[32px] flex items-center gap-6 text-black shadow-[0_20px_40px_rgba(16,185,129,0.2)]">
+            <CheckCircle2 className="w-12 h-12 flex-shrink-0" />
+            <div>
+              <p className="font-black italic uppercase text-xl leading-none mb-1">Confirmar XV</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest leading-tight">
+                Debes presionar el botón de confirmar XV para que se guarde tu equipo y los cambios que hagas fecha a fecha tambien.
               </p>
             </div>
           </div>
@@ -342,16 +351,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               </div>
             </div>
           </div> {/* <--- AQUÍ FALTABAN ESTE CIERRE PARA SEPARAR LA TABLA DEL BOTÓN DE CONFIRMAR */}
-
-          <div className="bg-emerald-500 p-8 rounded-[32px] flex items-center gap-6 text-black shadow-[0_20px_40px_rgba(16,185,129,0.2)]">
-            <CheckCircle2 className="w-12 h-12 flex-shrink-0" />
-            <div>
-              <p className="font-black italic uppercase text-xl leading-none mb-1">Confirmar XV</p>
-              <p className="text-[10px] font-bold uppercase tracking-widest leading-tight">
-                Debes presionar el botón de confirmar XV para que se guarde tu equipo y los cambios que hagas fecha a fecha tambien.
-              </p>
-            </div>
-          </div>
         </section>
       </main>
 
