@@ -293,17 +293,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               </p>
             </div>
           </div>
-          
-          <div className="bg-emerald-500 p-8 rounded-[32px] flex items-center gap-6 text-black shadow-[0_20px_40px_rgba(16,185,129,0.2)]">
-            <CheckCircle2 className="w-12 h-12 flex-shrink-0" />
-            <div>
-              <p className="font-black italic uppercase text-xl leading-none mb-1">Confirmar XV</p>
-              <p className="text-[10px] font-bold uppercase tracking-widest leading-tight">
-                Debes presionar el botón de confirmar XV para que se guarde tu equipo y los cambios que hagas fecha a fecha tambien.
-              </p>
-            </div>
-          </div>
-
           <div className="bg-white/[0.02] border border-white/10 rounded-[40px] overflow-hidden">
             <div className="bg-white/5 px-8 py-6 border-b border-white/10">
               <h3 className="font-black italic uppercase tracking-[0.2em] text-center">Tabla de Puntuación</h3>
@@ -351,6 +340,15 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
     </ul>
   </div>
 </div>
+            <div className="bg-emerald-500 p-8 rounded-[32px] flex items-center gap-6 text-black shadow-[0_20px_40px_rgba(16,185,129,0.2)]">
+            <CheckCircle2 className="w-12 h-12 flex-shrink-0" />
+            <div>
+              <p className="font-black italic uppercase text-xl leading-none mb-1">Confirmar XV</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest leading-tight">
+                Debes presionar el botón de confirmar XV para que se guarde tu equipo y los cambios que hagas fecha a fecha tambien.
+              </p>
+            </div>
+          </div>
         </section>
       </main>
 
