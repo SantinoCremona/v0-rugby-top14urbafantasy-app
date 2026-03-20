@@ -146,7 +146,7 @@ export function RankingView({ initialRanking }: { initialRanking: any[] }) {
         {ranking.length > visibleCount && (
           <button
             onClick={() => setVisibleCount(prev => prev + 20)}
-            className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-2 group"
+            className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-black hover:text-black bg-white hover:border-white/20 transition-all flex items-center justify-center gap-2 group"
           >
             Ver resto del ranking 
             <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
