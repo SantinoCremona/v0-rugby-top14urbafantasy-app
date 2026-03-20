@@ -92,7 +92,7 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                           <div className={`
                             absolute -top-1 -right-1 z-30
                             w-7 h-7 flex items-center justify-center
-                            rounded-lg font-black text-[11px] italic
+                            rounded-full font-black text-[11px] italic
                             shadow-xl transition-transform group-hover/slot:scale-110
                             ${puntos >= 0 ? 'bg-white text-black' : 'bg-red-500 text-white'}
                           `}>
