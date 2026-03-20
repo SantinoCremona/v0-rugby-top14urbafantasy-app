@@ -266,7 +266,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         </div>
 
 {/* REGLAMENTO RÁPIDO */}
-        <section className="mt-20 space-y-12">
+        <section id="reglas" className="mt-20 space-y-12">
           <div className="text-center space-y-4">
             <h2 className="text-6xl font-black italic tracking-tighter uppercase">Reglas <span className="text-white/20">del Juego</span></h2>
             <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em]">Temporada 2026 - Urba Top 14</p>
