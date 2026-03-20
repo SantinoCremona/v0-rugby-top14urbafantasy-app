@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { User, LogOut, Menu, X, Shield, Trophy, Users, LayoutDashboard, ArrowRight } from "lucide-react"
+import { User, LogOut, Menu, X, Shield, Trophy, Users, LayoutDashboard, ArrowRight, BookOpen } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 const navItems = [
   { href: "/dashboard", label: "MI EQUIPO", icon: LayoutDashboard },
   { href: "/ranking", label: "RANKING", icon: Trophy },
   { href: "/torneos", label: "TORNEOS", icon: Users },
+  { href: "/dashboard#reglas", label: "REGLAS", icon: BookOpen }, // <-- NUEVO ITEM
 ]
 
 export function MainHeader() {
@@ -100,7 +101,7 @@ export function MainHeader() {
               {menuOpen && (
                 <div className="absolute right-0 mt-3 w-56 bg-[#141416] border border-white/10 rounded-2xl shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="px-4 py-3 border-b border-white/5 mb-1">
-                    <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Director Técnico</p>
+                    <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Head Coach</p>
                     <p className="text-sm font-bold text-white truncate italic">{nombreDT || "Cargando..."}</p>
                   </div>
                   <button
@@ -170,7 +171,7 @@ export function MainHeader() {
                   <User className="w-6 h-6" />
                </div>
                <div>
-                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Manager</p>
+                  <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest leading-none mb-1">Head Coach</p>
                   <p className="text-lg font-black italic text-white leading-none uppercase">{nombreDT || "Sin Equipo"}</p>
                </div>
             </div>
@@ -178,7 +179,7 @@ export function MainHeader() {
               onClick={handleLogout}
               className="w-full p-6 flex items-center justify-center gap-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-[24px] font-black uppercase italic tracking-widest text-[10px]"
             >
-              <LogOut className="w-5 h-5" /> Cerrar Sesión de DT
+              <LogOut className="w-5 h-5" /> Cerrar Sesión de HC
             </button>
           </div>
         </div>
