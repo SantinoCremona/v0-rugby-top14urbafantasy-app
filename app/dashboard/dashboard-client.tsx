@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button"
 import type { Player } from "@/components/player-card"
 import { createClient } from "@/lib/supabase/client"
-import dynamic from 'next/dynamic'
 
 const INITIAL_BUDGET = 10000
 
@@ -248,11 +247,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               <p className="text-4xl font-black">{playersCount} <span className="text-gray-600 text-2xl">/ 15</span></p>
             </div>
           </div>
-
-
-  <div className="flex items-center gap-4">
-    <MarketTimer /> {/* <-- EL RELOJ ACÁ */}
-  </div>
 
           {/* CAMPO DE JUEGO */}
           <div className="lg:col-span-9">
