@@ -265,7 +265,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           </div>
         </div>
 
-        {/* REGLAMENTO RÁPIDO */}
+{/* REGLAMENTO RÁPIDO */}
         <section className="mt-20 space-y-12">
           <div className="text-center space-y-4">
             <h2 className="text-6xl font-black italic tracking-tighter uppercase">Reglas <span className="text-white/20">del Juego</span></h2>
@@ -293,54 +293,57 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               </p>
             </div>
           </div>
+
           <div className="bg-white/[0.02] border border-white/10 rounded-[40px] overflow-hidden">
             <div className="bg-white/5 px-8 py-6 border-b border-white/10">
               <h3 className="font-black italic uppercase tracking-[0.2em] text-center">Tabla de Puntuación</h3>
             </div>
             
             <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
-  {/* ACIERTOS (SUMA) */}
-  <div className="space-y-4">
-    <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Aciertos (Suma)</h4>
-    <ul className="space-y-3">
-      {[
-        ["Base por jugar", "+10"],
-        ["Victoria del Equipo", "+2"],
-        ["Try Apoyado / Drop", "+5"],
-        ["Penal / Conversión", "+3 / +2"],
-        ["Bonus Ofensivo (Todo el club)", "+2"],
-        ["Bonus Defensivo (Todo el club)", "+1"],
-        ["MVP del Partido", "+5"]
-      ].map(([label, pts]) => (
-        <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
-          <span className="text-gray-400">{label}</span>
-          <span className="text-white italic font-black">{pts}</span>
-        </li>
-      ))}
-    </ul>
-  </div>
+              {/* ACIERTOS (SUMA) */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Aciertos (Suma)</h4>
+                <ul className="space-y-3">
+                  {[
+                    ["Base por jugar", "+10"],
+                    ["Victoria del Equipo", "+2"],
+                    ["Try Apoyado / Drop", "+5"],
+                    ["Penal / Conversión", "+3 / +2"],
+                    ["Bonus Ofensivo (Todo el club)", "+2"],
+                    ["Bonus Defensivo (Todo el club)", "+1"],
+                    ["MVP del Partido", "+5"]
+                  ].map(([label, pts]) => (
+                    <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
+                      <span className="text-gray-400">{label}</span>
+                      <span className="text-white italic font-black">{pts}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-  {/* PENALIZACIONES (RESTA) */}
-  <div className="space-y-4">
-    <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Penalizaciones (Resta)</h4>
-    <ul className="space-y-3">
-      {[
-        ["Derrota del Equipo", "-2"],
-        ["Derrota por Bonus (Resta)", "-2"],
-        ["Kick Errado (Penal/Conv)", "-2"],
-        ["Tarjeta Amarilla", "-5"],
-        ["Tarjeta Roja", "-10"],
-        ["Mercado Cerrado", "LOCKED"]
-      ].map(([label, pts]) => (
-        <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
-          <span className="text-gray-400">{label}</span>
-          <span className="text-rose-500 italic font-black">{pts}</span>
-        </li>
-      ))}
-    </ul>
-  </div>
-</div>
-            <div className="bg-emerald-500 p-8 rounded-[32px] flex items-center gap-6 text-black shadow-[0_20px_40px_rgba(16,185,129,0.2)]">
+              {/* PENALIZACIONES (RESTA) */}
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Penalizaciones (Resta)</h4>
+                <ul className="space-y-3">
+                  {[
+                    ["Derrota del Equipo", "-2"],
+                    ["Derrota por Bonus (Resta)", "-2"],
+                    ["Kick Errado (Penal/Conv)", "-2"],
+                    ["Tarjeta Amarilla", "-5"],
+                    ["Tarjeta Roja", "-10"],
+                    ["Mercado Cerrado", "LOCKED"]
+                  ].map(([label, pts]) => (
+                    <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
+                      <span className="text-gray-400">{label}</span>
+                      <span className="text-rose-500 italic font-black">{pts}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div> {/* <--- AQUÍ FALTABAN ESTE CIERRE PARA SEPARAR LA TABLA DEL BOTÓN DE CONFIRMAR */}
+
+          <div className="bg-emerald-500 p-8 rounded-[32px] flex items-center gap-6 text-black shadow-[0_20px_40px_rgba(16,185,129,0.2)]">
             <CheckCircle2 className="w-12 h-12 flex-shrink-0" />
             <div>
               <p className="font-black italic uppercase text-xl leading-none mb-1">Confirmar XV</p>
