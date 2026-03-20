@@ -153,7 +153,7 @@ export default function TorneosPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Trophy className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.3em]">Liga Privada</span>
+                  <span className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.3em]">Torneo Privado</span>
                 </div>
                 <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none">
                   {selectedLeague.nombre}
@@ -218,7 +218,7 @@ export default function TorneosPage() {
                   Tor<span className="text-white/20">neos</span>
                 </h1>
                 <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-4 flex items-center gap-2 leading-none">
-                  <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" /> Crea tu torneo y competí con tus amigos. Una vez creado el torneo envia el código de invitación asi se unen y empiezan a competir.
+                  <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" /> Crea tu torneo y competí con tus amigos.
                 </p>
               </div>
               
@@ -244,7 +244,7 @@ export default function TorneosPage() {
               ) : leagues.length === 0 ? (
                 <div className="bg-white/[0.01] border border-dashed border-white/10 rounded-[40px] p-24 text-center">
                    <Trophy className="w-12 h-12 text-white/5 mx-auto mb-4" />
-                   <p className="text-gray-600 font-bold uppercase tracking-widest text-xs">No participas en ligas privadas</p>
+                   <p className="text-gray-600 font-bold uppercase tracking-widest text-xs">No participas en torneos privados</p>
                 </div>
               ) : (
                 leagues.map((league) => (
@@ -284,7 +284,7 @@ export default function TorneosPage() {
           <div className="bg-[#0A0A0B] border border-white/10 p-10 w-full max-w-md rounded-[32px] shadow-2xl">
             <div className="flex justify-between items-center mb-10">
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">
-                {showCreateModal ? "Nueva" : "Unirse a"} <span className="text-white/20">Liga</span>
+                {showCreateModal ? "Nueva" : "Unirse a"} <span className="text-white/20">Torneo</span>
               </h2>
               <button onClick={() => {setShowCreateModal(false); setShowJoinModal(false)}} className="p-2 hover:bg-white/5 rounded-full transition-colors"><X className="w-6 h-6 text-white"/></button>
             </div>
