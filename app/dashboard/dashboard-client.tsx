@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import type { Player } from "@/components/player-card"
 import { createClient } from "@/lib/supabase/client"
+import dynamic from 'next/dynamic'
 
 const INITIAL_BUDGET = 10000
 
