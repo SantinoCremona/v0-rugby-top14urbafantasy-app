@@ -46,22 +46,25 @@ export default function AdminPuntosMasivos() {
     setPuntosTemp({ ...puntosTemp, [id]: actual + cantidad })
   }
 
-  // --- ACCIONES MASIVAS ---
-  const aplicarATodos = (cantidad) => {
+  // --- NUEVAS ACCIONES MASIVAS SEGÚN REGLAS 2026 ---
+  const resetBase10 = () => {
+    const nuevosPuntos = { ...puntosTemp }
+    jugadores.forEach(j => { nuevosPuntos[j.id] = 10 })
+    setPuntosTemp(nuevosPuntos)
+  }
+
+  const aplicarResultado = (cantidad) => {
     const nuevosPuntos = { ...puntosTemp }
     jugadores.forEach(j => {
-      nuevosPuntos[j.id] = parseInt(nuevosPuntos[j.id] || 0) + cantidad
+      nuevosPuntos[j.id] = (parseInt(nuevosPuntos[j.id]) || 10) + cantidad
     })
     setPuntosTemp(nuevosPuntos)
   }
 
-  const aplicarAForwards = (cantidad) => {
+  const aplicarBonus = (cantidad) => {
     const nuevosPuntos = { ...puntosTemp }
-    const forwards = ['Pilar', 'Hooker', 'Segunda', 'Ala', 'N8']
     jugadores.forEach(j => {
-      if (forwards.includes(j.posicion)) {
-        nuevosPuntos[j.id] = parseInt(nuevosPuntos[j.id] || 0) + cantidad
-      }
+      nuevosPuntos[j.id] = (parseInt(nuevosPuntos[j.id]) || 10) + cantidad
     })
     setPuntosTemp(nuevosPuntos)
   }
@@ -97,7 +100,7 @@ export default function AdminPuntosMasivos() {
     if (inserts.length === 0) return alert("No hay datos")
     const { error } = await supabase.from("puntos_fecha").insert(inserts)
     if (!error) {
-      alert(`¡Puntos guardados!`)
+      alert(`¡Puntos guardados correctamente!`)
       setPuntosTemp({}) 
     } else alert("Error: " + error.message)
   }
@@ -111,7 +114,7 @@ export default function AdminPuntosMasivos() {
         <div className="mb-8 border-4 border-black p-6 bg-gray-50 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-wrap gap-6 items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <p className="text-[10px] font-black uppercase tracking-tighter">Fecha Actual</p>
+              <p className="text-[10px] font-black uppercase tracking-tighter text-gray-400">Fecha en curso</p>
               <div className="flex items-center gap-2">
                 <button onClick={() => cambiarFecha(-1)} className="px-3 py-1 border-2 border-black font-bold hover:bg-black hover:text-white">-</button>
                 <span className="font-display text-5xl italic px-2">{config.fecha_activa}</span>
@@ -130,16 +133,16 @@ export default function AdminPuntosMasivos() {
         {/* ACCIONES POR CLUB */}
         <div className="bg-white border-4 border-black p-4 mb-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
-            <select className="w-full lg:w-48 border-4 border-black p-3 font-black uppercase bg-white text-xl" value={clubSeleccionado} onChange={(e) => setClubSeleccionado(e.target.value)}>
+            <select className="w-full lg:w-64 border-4 border-black p-3 font-black uppercase bg-white text-xl" value={clubSeleccionado} onChange={(e) => setClubSeleccionado(e.target.value)}>
               {["CASI", "SIC", "Hindu", "Belgrano", "Alumni", "CUBA", "Newman", "BIEI", "Atletico del Rosario", "Los Matreros", "Regatas", "Champagnat", "La Plata", "Los Tilos"].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
 
             <div className="flex flex-wrap justify-center gap-2">
-              <button onClick={() => aplicarATodos(10)} className="bg-yellow-400 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">⚡ +10 BASE</button>
-              <button onClick={() => aplicarATodos(2)} className="bg-green-400 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">🏆 +2 VICTORIA</button>
-              <button onClick={() => aplicarATodos(9)} className="bg-purple-400 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">🔥 +9 PALIZA</button>
-              <button onClick={() => aplicarAForwards(5)} className="bg-blue-400 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">🛡️ +5 DEF. GORDOS</button>
-              <button onClick={() => aplicarAForwards(3)} className="bg-orange-500 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-white">🚜 +3 TRY PENAL</button>
+              <button onClick={resetBase10} className="bg-white px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">⚙️ SET BASE 10</button>
+              <button onClick={() => aplicarResultado(2)} className="bg-green-400 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">🏆 VICTORIA +2</button>
+              <button onClick={() => aplicarResultado(-2)} className="bg-red-100 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">❌ DERROTA -2</button>
+              <button onClick={() => aplicarBonus(2)} className="bg-yellow-400 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">🔥 BONUS OFF +2</button>
+              <button onClick={() => aplicarBonus(1)} className="bg-blue-300 px-3 py-2 border-2 border-black font-black text-[10px] uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">🛡️ BONUS DEF +1</button>
             </div>
           </div>
         </div>
@@ -147,27 +150,32 @@ export default function AdminPuntosMasivos() {
         {/* LISTADO DE JUGADORES */}
         <div className="grid gap-3">
           {jugadores.map(j => (
-            <div key={j.id} className="border-2 border-black p-3 bg-white flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-50">
-              <div className="w-56">
+            <div key={j.id} className="border-2 border-black p-3 bg-white flex flex-col xl:flex-row xl:items-center justify-between gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-50">
+              <div className="w-64">
                 <p className="font-black uppercase text-sm leading-none">{j.nombre}</p>
                 <p className="text-[10px] font-bold text-gray-400 uppercase">{j.posicion} | {j.club}</p>
               </div>
 
               <div className="flex flex-wrap gap-1 items-center">
+                {/* ACCIONES DE SUMA */}
                 <button onClick={() => sumarPunto(j.id, 5)} className="px-2 py-1 border border-black text-[9px] font-black bg-gray-100 hover:bg-yellow-300">TRY +5</button>
                 <button onClick={() => sumarPunto(j.id, 2)} className="px-2 py-1 border border-black text-[9px] font-black bg-gray-100 hover:bg-yellow-300">CONV +2</button>
                 <button onClick={() => sumarPunto(j.id, 3)} className="px-2 py-1 border border-black text-[9px] font-black bg-gray-100 hover:bg-yellow-300">PEN +3</button>
-                <button onClick={() => sumarPunto(j.id, 1)} className="px-2 py-1 border border-black text-[9px] font-black bg-gray-100 hover:bg-yellow-300">TAC +1</button>
-                <button onClick={() => sumarPunto(j.id, 1)} className="px-2 py-1 border-2 border-blue-500 text-[9px] font-black bg-white text-blue-600 hover:bg-blue-50">MVP +1</button>
-                <button onClick={() => sumarPunto(j.id, -5)} className="px-2 py-1 border border-black text-[9px] font-black bg-red-100 hover:bg-red-500 hover:text-white">AMA -5</button>
+                <button onClick={() => sumarPunto(j.id, 5)} className="px-2 py-1 border border-black text-[9px] font-black bg-gray-100 hover:bg-yellow-300">DROP +5</button>
+                <button onClick={() => sumarPunto(j.id, 5)} className="px-2 py-1 border-2 border-blue-500 text-[9px] font-black bg-white text-blue-600 hover:bg-blue-50">MVP +5</button>
                 
-                <div className="ml-3 bg-yellow-400 px-3 py-1 border-2 border-black flex items-center gap-2">
-                  <span className="text-[10px] font-black italic">PTS:</span>
+                {/* ACCIONES DE RESTA */}
+                <button onClick={() => sumarPunto(j.id, -2)} className="px-2 py-1 border border-black text-[9px] font-black bg-orange-100 hover:bg-orange-300 italic">ERRADA -2</button>
+                <button onClick={() => sumarPunto(j.id, -5)} className="px-2 py-1 border border-black text-[9px] font-black bg-red-100 hover:bg-red-500 hover:text-white">AMA -5</button>
+                <button onClick={() => sumarPunto(j.id, -10)} className="px-2 py-1 border border-black text-[9px] font-black bg-red-200 hover:bg-red-700 hover:text-white">ROJA -10</button>
+                
+                <div className="ml-3 bg-black text-white px-4 py-1 border-2 border-black flex items-center gap-2">
+                  <span className="text-[10px] font-black italic">TOTAL:</span>
                   <input 
                     type="number" 
                     value={puntosTemp[j.id] || 0} 
-                    onChange={(e) => setPuntosTemp({...puntosTemp, [j.id]: e.target.value})} 
-                    className="w-12 bg-transparent text-center font-display text-xl outline-none" 
+                    onChange={(e) => setPuntosTemp({...puntosTemp, [j.id]: parseInt(e.target.value)})} 
+                    className="w-14 bg-transparent text-center font-display text-xl outline-none text-yellow-400" 
                   />
                 </div>
               </div>
@@ -175,8 +183,8 @@ export default function AdminPuntosMasivos() {
           ))}
         </div>
 
-        <button onClick={guardarPlanilla} className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl bg-black text-white p-6 font-display text-4xl italic uppercase border-4 border-black shadow-[10px_10px_0px_0px_rgba(255,255,255,1),10px_10px_0px_4px_rgba(0,0,0,1)] z-50 active:translate-y-2 active:shadow-none transition-all">
-          CONFIRMAR PUNTOS FECHA {config.fecha_activa}
+        <button onClick={guardarPlanilla} className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl bg-black text-white p-6 font-display text-4xl italic uppercase border-4 border-black shadow-[10px_10px_0px_0px_rgba(34,197,94,1),10px_10px_0px_4px_rgba(0,0,0,1)] z-50 active:translate-y-2 active:shadow-none transition-all">
+          GUARDAR PLANILLA FECHA {config.fecha_activa}
         </button>
       </main>
     </div>
