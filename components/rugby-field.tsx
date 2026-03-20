@@ -151,7 +151,7 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
 
         {/* LÍNEA DE H (IN-GOAL LOCAL) */}
         <div className="relative border-t border-white/5 py-4 flex justify-center bg-white/[0.02]">
-          <span className="text-[9px] text-white/20 tracking-[0.8em] font-black uppercase">H-Line Local</span>
+          <span className="text-[9px] text-white/20 tracking-[0.8em] font-black uppercase">In-Goal Local</span>
         </div>
       </div>
     </div>
