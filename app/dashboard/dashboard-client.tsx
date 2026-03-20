@@ -159,7 +159,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 14</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none uppercase">
-              Mi Equipo <span className="text-white italic">Ideal</span>
+              Mi XV <span className="text-white italic">Ideal</span>
             </h1>
           </div>
 
@@ -200,6 +200,24 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* PANEL LATERAL: ESTADÍSTICAS */}
+          {/* Ejemplo de ubicación en el Dashboard */}
+<div className="flex flex-wrap items-center justify-between gap-6 mb-10">
+  <div>
+    <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white">
+      Mi <span className="text-white/20">Selección</span>
+    </h1>
+    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Fecha {fechaActiva} • Temporada 2026</p>
+  </div>
+
+  <div className="flex items-center gap-4">
+    <MarketTimer /> {/* <-- EL RELOJ ACÁ */}
+    
+    <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl">
+      <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest mb-1">Presupuesto</p>
+      <p className="text-xl font-black italic text-white">${remainingBudget.toLocaleString()}</p>
+    </div>
+  </div>
+</div>
           <div className="lg:col-span-3 space-y-4">
             <div className="bg-white p-6 rounded-[32px] text-black shadow-xl shadow-white/5 relative overflow-hidden group">
               <div className="flex justify-between items-start mb-4 relative z-10">
