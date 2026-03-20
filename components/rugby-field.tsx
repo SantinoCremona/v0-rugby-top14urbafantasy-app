@@ -50,7 +50,7 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
   return (
     <div className="w-full max-w-2xl mx-auto p-2">
       {/* CONTENEDOR PRINCIPAL: Verde Musgo Profundo */}
-      <div className="relative bg-[#141a14] border border-white/5 overflow-hidden shadow-2xl rounded-[40px]">
+      <div className="relative bg-[#2c722c] border border-white/5 overflow-hidden shadow-2xl rounded-[40px]">
         
         {/* TEXTURA DE CÉSPED SUTIL */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
