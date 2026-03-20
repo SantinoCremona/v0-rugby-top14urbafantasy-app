@@ -218,7 +218,7 @@ export default function TorneosPage() {
                   Tor<span className="text-white/20">neos</span>
                 </h1>
                 <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.4em] mt-4 flex items-center gap-2 leading-none">
-                  <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" /> Gestiona tus ligas privadas
+                  <Star className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400" /> Crea tu torneo y competí con tus amigos. Una vez creado el torneo envia el código de invitación asi se unen y empiezan a competir.
                 </p>
               </div>
               
@@ -233,7 +233,7 @@ export default function TorneosPage() {
                   onClick={() => setShowCreateModal(true)}
                   className="bg-white text-black hover:bg-gray-200 rounded-2xl px-8 h-14 font-black uppercase tracking-widest text-[11px] transition-all shadow-xl active:scale-95"
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Crear Liga
+                  <Plus className="w-4 h-4 mr-2" /> Crear Torneo
                 </Button>
               </div>
             </div>
