@@ -21,6 +21,13 @@ interface Match {
   fecha_num: number
 }
 
+// Lista de clubes del Top 12 para el filtro
+const CLUBS = [
+  "CASI", "SIC", "HINDU", "BELGRANO", "ALUMNI", "CUBA", 
+  "NEWMAN", "BIEI", "ATLÉTICO DEL ROSARIO", "LOS MATREROS", 
+  "REGATAS", "CHAMPAGNAT", "LA PLATA", "LOS TILOS"
+].sort()
+
 export function PlayerSelectionPopup({
   isOpen,
   onClose,
@@ -32,6 +39,7 @@ export function PlayerSelectionPopup({
   const supabase = createClient()
   const [fixture, setFixture] = useState<Match[]>([])
   const [loadingFixture, setLoadingFixture] = useState(true)
+  const [clubFilter, setClubFilter] = useState<string>("TODOS") // <-- ESTADO DEL FILTRO
 
   useEffect(() => {
     if (isOpen) {
@@ -50,7 +58,11 @@ export function PlayerSelectionPopup({
 
   if (!isOpen) return null
 
-  const filteredPlayers = players.filter(p => p.posicion === positionType)
+  // Lógica de filtrado combinada (Posición + Club)
+  const filteredPlayers = players.filter(p => 
+    p.posicion === positionType && 
+    (clubFilter === "TODOS" || p.club.toUpperCase() === clubFilter.toUpperCase())
+  )
 
   const getRival = (clubName: string) => {
     if (!clubName) return null
@@ -103,12 +115,41 @@ export function PlayerSelectionPopup({
           </p>
         </div>
 
+        {/* Filtro por Club (Horizontal Scroll) */}
+        <div className="px-6 py-3 bg-white/[0.01] border-b border-white/5">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
+            <button
+              onClick={() => setClubFilter("TODOS")}
+              className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
+                clubFilter === "TODOS" 
+                ? "bg-white text-black border-white" 
+                : "bg-transparent text-gray-500 border-white/10 hover:border-white/20"
+              }`}
+            >
+              Todos
+            </button>
+            {CLUBS.map(club => (
+              <button
+                key={club}
+                onClick={() => setClubFilter(club)}
+                className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
+                  clubFilter === club 
+                  ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                  : "bg-transparent text-gray-500 border-white/10 hover:border-white/20"
+                }`}
+              >
+                {club}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Lista de Jugadores */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
           {loadingFixture ? (
             <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-white/10" /></div>
           ) : filteredPlayers.length === 0 ? (
-            <div className="p-12 text-center text-gray-500 uppercase font-black text-xs tracking-widest">No hay disponibles</div>
+            <div className="p-12 text-center text-gray-500 uppercase font-black text-xs tracking-widest">No hay disponibles en {clubFilter}</div>
           ) : (
             <div className="space-y-1">
               {filteredPlayers.sort((a,b) => b.precio - a.precio).map((player) => {
@@ -139,7 +180,6 @@ export function PlayerSelectionPopup({
                             {player.nombre}
                           </p>
                           
-                          {/* BADGE DE ESTADO: TITULAR / FINISHER */}
                           <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter border ${
                             estado === 'TITULAR' 
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
