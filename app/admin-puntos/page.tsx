@@ -141,20 +141,29 @@ export default function AdminPuntosMasivos() {
 
 
   async function ejecutarCierre() {
+  // 1. Confirmación de seguridad
+  if (!confirm(`¿Cerrar Fecha ${config.fecha_activa}? Esto sincronizará el Ranking General con los puntos de la vista.`)) return
 
-    if (!confirm(`¿Cerrar Fecha ${config.fecha_activa}? Esto actualiza el Ranking General.`)) return
+  setIsClosing(true)
 
-    setIsClosing(true)
+  try {
+    // 2. Llamada única a la función de la base de datos
+    // Usamos el parámetro 'fecha_a_cerrar' por si tu SQL lo requiere
+    const { error } = await supabase.rpc('cierre_de_fecha', { 
+      fecha_a_cerrar: config.fecha_activa 
+    })
 
-    const { error } = await supabase.rpc('cierre_de_fecha', { fecha_a_cerrar: config.fecha_activa })
-
-    if (!error) alert("¡Ranking actualizado!")
-
-    else alert("Error: " + error.message)
-
+    if (error) {
+      alert("Error de Supabase: " + error.message)
+    } else {
+      alert(`¡Ranking de la Fecha ${config.fecha_activa} actualizado correctamente en el General!`)
+    }
+  } catch (err) {
+    alert("Error de conexión: " + err.message)
+  } finally {
     setIsClosing(false)
-
   }
+}
 
 
 
