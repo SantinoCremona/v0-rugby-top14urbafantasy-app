@@ -191,17 +191,34 @@ export function PlayerSelectionPopup({
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3 mt-1">
-                          <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-md border border-white/5">
-                            <span className="text-[8px] font-black text-gray-600 uppercase italic">vs</span>
-                            <span className="text-[9px] font-black text-emerald-400 uppercase italic">{rival || "BYE"}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[10px] font-black text-white/60">{player.puntos_totales} pts.</span>
-                            {getTrendIcon(player.tendencia)}
-                          </div>
-                        </div>
-                      </div>
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+  {/* BADGE DINÁMICO DEL RIVAL */}
+  <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20">
+      <span className="text-[7px] font-black text-emerald-500/50 uppercase italic tracking-tighter">
+        {prefijo}
+      </span>
+      <span className="text-[10px] font-black text-emerald-400 uppercase italic leading-none">
+        {nombreRival || "BYE"}
+      </span>
+    </div>
+  </div>
+
+  {/* PUNTOS TOTALES ACUMULADOS */}
+  <div className="flex items-center gap-2">
+    <div className="flex flex-col items-end">
+      <span className="text-[7px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-0.5">
+        Puntos Totales
+      </span>
+      <div className="flex items-center gap-1.5">
+        <span className="text-13px font-display italic font-black text-white">
+          {player.puntos_totales || 0}
+        </span>
+        {getTrendIcon(player.tendencia)}
+      </div>
+    </div>
+  </div>
+</div>
                     </div>
 
                     <div className="text-right">
