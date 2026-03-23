@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, TrendingUp, TrendingDown, Minus, Wallet, Search, Loader2 } from "lucide-react"
+import { X, TrendingUp, TrendingDown, Minus, Wallet, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Player } from "@/components/player-card"
 import { createClient } from "@/lib/supabase/client"
@@ -21,7 +21,6 @@ interface Match {
   fecha_num: number
 }
 
-// Lista de clubes del Top 12 para el filtro
 const CLUBS = [
   "CASI", "SIC", "HINDU", "BELGRANO", "ALUMNI", "CUBA", 
   "NEWMAN", "BIEI", "ATLÉTICO DEL ROSARIO", "LOS MATREROS", 
@@ -39,15 +38,16 @@ export function PlayerSelectionPopup({
   const supabase = createClient()
   const [fixture, setFixture] = useState<Match[]>([])
   const [loadingFixture, setLoadingFixture] = useState(true)
-  const [clubFilter, setClubFilter] = useState<string>("TODOS") // <-- ESTADO DEL FILTRO
+  const [clubFilter, setClubFilter] = useState<string>("TODOS")
 
   useEffect(() => {
     if (isOpen) {
       async function fetchFixture() {
+        setLoadingFixture(true)
         const { data } = await supabase
           .from('fixture')
           .select('local, visitante, fecha_num')
-          .eq('fecha_num', 2) // Ajustar a la fecha activa
+          .eq('fecha_num', 3) // <-- ACTUALIZADO A FECHA 3
         
         if (data) setFixture(data)
         setLoadingFixture(false)
@@ -58,21 +58,10 @@ export function PlayerSelectionPopup({
 
   if (!isOpen) return null
 
-  // Lógica de filtrado combinada (Posición + Club)
   const filteredPlayers = players.filter(p => 
     p.posicion === positionType && 
     (clubFilter === "TODOS" || p.club.toUpperCase() === clubFilter.toUpperCase())
   )
-
-  const getRival = (clubName: string) => {
-    if (!clubName) return null
-    const match = fixture.find(m => 
-      m.local.toUpperCase() === clubName.toUpperCase() || 
-      m.visitante.toUpperCase() === clubName.toUpperCase()
-    )
-    if (!match) return null
-    return match.local.toUpperCase() === clubName.toUpperCase() ? match.visitante : match.local
-  }
 
   const getTrendIcon = (tendencia: string) => {
     switch (tendencia) {
@@ -104,7 +93,7 @@ export function PlayerSelectionPopup({
           </button>
         </div>
 
-        {/* Fondos */}
+        {/* Presupuesto */}
         <div className="px-6 py-4 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Wallet className="w-4 h-4 text-gray-500" />
@@ -115,7 +104,7 @@ export function PlayerSelectionPopup({
           </p>
         </div>
 
-        {/* Filtro por Club (Horizontal Scroll) */}
+        {/* Filtro por Club */}
         <div className="px-6 py-3 bg-white/[0.01] border-b border-white/5">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
             <button
@@ -145,89 +134,82 @@ export function PlayerSelectionPopup({
         </div>
 
         {/* Lista de Jugadores */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-black">
           {loadingFixture ? (
-            <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-white/10" /></div>
+            <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-emerald-500" /></div>
           ) : filteredPlayers.length === 0 ? (
             <div className="p-12 text-center text-gray-500 uppercase font-black text-xs tracking-widest">No hay disponibles en {clubFilter}</div>
           ) : (
             <div className="space-y-1">
               {filteredPlayers.sort((a,b) => b.precio - a.precio).map((player) => {
                 const canAfford = player.precio <= remainingBudget
-                const rival = getRival(player.club)
                 const estado = player.estado?.toUpperCase() || 'TITULAR'
+
+                // LÓGICA DE RIVAL DENTRO DEL MAP
+                const match = fixture.find(m => 
+                  m.local.toUpperCase() === player.club.toUpperCase() || 
+                  m.visitante.toUpperCase() === player.club.toUpperCase()
+                )
+                const esLocal = match?.local.toUpperCase() === player.club.toUpperCase()
+                const nombreRival = esLocal ? match?.visitante : match?.local
+                const prefijo = esLocal ? "vs" : "@"
 
                 return (
                   <button
                     key={player.id}
                     onClick={() => canAfford && onSelectPlayer(player)}
                     disabled={!canAfford}
-                    className={`w-full group flex items-center justify-between p-4 rounded-2xl transition-all ${
-                      canAfford ? "hover:bg-white/5 text-white" : "opacity-30 cursor-not-allowed"
+                    className={`w-full group flex items-center justify-between p-4 rounded-2xl transition-all border border-transparent ${
+                      canAfford ? "hover:bg-white/5 hover:border-white/5 text-white" : "opacity-30 cursor-not-allowed"
                     }`}
                   >
-                    <div className="flex items-center gap-4 text-left">
+                    <div className="flex items-center gap-4 text-left w-full">
                       {/* Siglas Club */}
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-[10px] transition-colors ${
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-[10px] flex-shrink-0 transition-colors ${
                         canAfford ? "bg-white text-black group-hover:bg-emerald-400" : "bg-white/5 text-gray-600"
                       }`}>
                         {player.club.substring(0, 3).toUpperCase()}
                       </div>
                       
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-black text-sm uppercase tracking-tight italic group-hover:translate-x-1 transition-transform">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-black text-sm uppercase tracking-tight italic truncate">
                             {player.nombre}
                           </p>
-                          
-                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-tighter border ${
+                          <span className={`text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter border ${
                             estado === 'TITULAR' 
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                              : estado === 'FINISHER'
-                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                              : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                           }`}>
                             {estado}
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
-  {/* BADGE DINÁMICO DEL RIVAL */}
-  <div className="flex items-center gap-2">
-    <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/10 rounded-md border border-emerald-500/20">
-      <span className="text-[7px] font-black text-emerald-500/50 uppercase italic tracking-tighter">
-        {prefijo}
-      </span>
-      <span className="text-[10px] font-black text-emerald-400 uppercase italic leading-none">
-        {nombreRival || "BYE"}
-      </span>
-    </div>
-  </div>
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+                          {/* BADGE DEL RIVAL */}
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/5 rounded border border-emerald-500/10">
+                            <span className="text-[7px] font-black text-emerald-500/40 uppercase italic">{prefijo}</span>
+                            <span className="text-[9px] font-black text-emerald-400 uppercase italic truncate max-w-[80px]">
+                              {nombreRival || "BYE"}
+                            </span>
+                          </div>
 
-  {/* PUNTOS TOTALES ACUMULADOS */}
-  <div className="flex items-center gap-2">
-    <div className="flex flex-col items-end">
-      <span className="text-[7px] font-bold text-gray-500 uppercase tracking-widest leading-none mb-0.5">
-        Puntos Totales
-      </span>
-      <div className="flex items-center gap-1.5">
-        <span className="text-13px font-display italic font-black text-white">
-          {player.puntos_totales || 0}
-        </span>
-        {getTrendIcon(player.tendencia)}
-      </div>
-    </div>
-  </div>
-</div>
-                    </div>
+                          {/* PUNTOS */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-display italic font-black text-white/90">
+                              {player.puntos_totales || 0} <span className="text-[7px] text-gray-500 not-italic">PTS</span>
+                            </span>
+                            {getTrendIcon(player.tendencia)}
+                          </div>
+                        </div>
+                      </div>
 
-                    <div className="text-right">
-                      <p className={`text-lg font-black italic tracking-tighter ${canAfford ? 'text-white' : 'text-gray-600'}`}>
-                        ${player.precio}
-                      </p>
-                      {!canAfford && (
-                        <span className="text-[8px] font-black text-rose-500 uppercase tracking-tighter bg-rose-500/10 px-1.5 py-0.5 rounded">Sin Fondos</span>
-                      )}
+                      {/* PRECIO */}
+                      <div className="text-right ml-4 flex-shrink-0">
+                        <p className={`text-base font-black italic tracking-tighter ${canAfford ? 'text-white' : 'text-gray-600'}`}>
+                          ${player.precio.toLocaleString()}
+                        </p>
+                      </div>
                     </div>
                   </button>
                 )
