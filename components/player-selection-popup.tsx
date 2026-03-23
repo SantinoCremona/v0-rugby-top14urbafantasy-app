@@ -188,7 +188,7 @@ export function PlayerSelectionPopup({
                         <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
                           {/* BADGE DEL RIVAL */}
                           <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/5 rounded border border-emerald-500/10">
-                            <span className="text-[7px] font-black text-emerald-500/40 uppercase italic">{prefijo}</span>
+                            <span className="text-[7px] font-black text-emerald-500/40 uppercase italic">vs.</span>
                             <span className="text-[9px] font-black text-emerald-400 uppercase italic truncate max-w-[80px]">
                               {nombreRival || "BYE"}
                             </span>
