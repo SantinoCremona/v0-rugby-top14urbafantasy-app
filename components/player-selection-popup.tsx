@@ -163,13 +163,18 @@ export function PlayerSelectionPopup({
                       canAfford ? "hover:bg-white/5 hover:border-white/5 text-white" : "opacity-30 cursor-not-allowed"
                     }`}
                   >
-                    <div className="flex items-center gap-4 text-left w-full">
-                      {/* Siglas Club */}
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-[10px] flex-shrink-0 transition-colors ${
-                        canAfford ? "bg-white text-black group-hover:bg-emerald-400" : "bg-white/5 text-gray-600"
-                      }`}>
-                        {player.club.substring(0, 3).toUpperCase()}
-                      </div>
+                    {/* ESCUDO DEL CLUB */}
+<div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-white/5 to-transparent rounded-xl border border-white/5 overflow-hidden group-hover:border-emerald-500/30 transition-all duration-500">
+  <img 
+    src={`/escudos/${player.club.toLowerCase()}.png`} 
+    alt={player.club}
+    className="w-9 h-9 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.15)] group-hover:scale-110 transition-transform duration-500"
+    onError={(e) => {
+      e.currentTarget.style.display = 'none';
+      e.currentTarget.parentElement!.innerHTML = `<span class="text-[10px] font-black text-gray-600">${player.club.substring(0,3).toUpperCase()}</span>`;
+    }}
+  />
+</div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
