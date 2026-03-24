@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { MainHeader } from "@/components/main-header"
 import { RugbyField } from "@/components/rugby-field"
 import { PlayerSelectionPopup } from "@/components/player-selection-popup"
-// SE AGREGARON LOS ICONOS FALTANTES AQUÍ:
 import { 
   Save, Trash2, Lock, ArrowUpRight, Trophy, Wallet, Users, 
   Activity, AlertTriangle, Loader2, Clock, DollarSign, CheckCircle2 
@@ -197,10 +196,33 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           </div>
         )}
 
+        {/* DASHBOARD MOBILE: 4 COLUMNAS EN UNA FILA (Visible solo en mobile) */}
+        <div className="grid grid-cols-4 gap-2 mb-6 md:hidden">
+          <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
+            <span className="text-[7px] font-black text-emerald-400 uppercase tracking-tighter mb-1 leading-none">Puntos</span>
+            <span className="text-sm font-black text-white italic leading-none">{puntosEnCanchaTotal}</span>
+          </div>
+
+          <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
+            <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1 leading-none">Presup.</span>
+            <span className="text-[10px] font-black text-white italic leading-none">${(remainingBudget / 1000).toFixed(0)}k</span>
+          </div>
+
+          <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
+            <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1 leading-none">Ranking</span>
+            <span className="text-sm font-black text-white italic leading-none">#{rankingPos}</span>
+          </div>
+
+          <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
+            <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1 leading-none">Equipo</span>
+            <span className="text-sm font-black text-emerald-400 italic leading-none">{playersCount}/15</span>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* PANEL LATERAL: ESTADÍSTICAS */}
-          <div className="lg:col-span-3 space-y-4">
+          {/* PANEL LATERAL: DESKTOP SOLAMENTE (Oculto en Mobile para evitar duplicar info) */}
+          <div className="hidden lg:block lg:col-span-3 space-y-4">
             <div className="bg-white p-6 rounded-[32px] text-black shadow-xl shadow-white/5 relative overflow-hidden group">
               <div className="flex justify-between items-start mb-4 relative z-10">
                 <Trophy className="w-6 h-6" />
@@ -224,9 +246,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               <p className={`text-3xl font-black ${remainingBudget < 0 ? 'text-red-500' : 'text-white'}`}>
                 ${remainingBudget.toLocaleString('es-AR')}
               </p>
-              <div className="mt-4 w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-white h-full transition-all duration-700" style={{ width: `${Math.min(100, (totalSpent / INITIAL_BUDGET) * 100)}%` }}></div>
-              </div>
             </div>
 
             <div className="bg-[#141416] border border-white/10 p-6 rounded-[32px] flex items-center justify-between hover:border-white/30 transition-all">
@@ -247,47 +266,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               <p className="text-4xl font-black">{playersCount} <span className="text-gray-600 text-2xl">/ 15</span></p>
             </div>
           </div>
-          {/* DASHBOARD STATS: 4 COLUMNAS EN UNA FILA */}
-<div className="grid grid-cols-4 gap-2 px-4 mb-6">
-  
-  {/* PUNTOS FECHA */}
-  <div className="bg-[#0A0A0B] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
-    <span className="text-[7px] font-black text-emerald-400 uppercase tracking-tighter mb-1">Fecha {config.fecha_activa}</span>
-    <div className="flex items-baseline gap-0.5">
-      <span className="text-sm font-black text-white italic">{puntosFecha}</span>
-      <span className="text-[8px] text-gray-400 font-bold">pts</span>
-    </div>
-  </div>
-
-  {/* PRESUPUESTO */}
-  <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
-    <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1">Presup.</span>
-    <div className="flex items-baseline gap-0.5">
-      <span className="text-[10px] font-black text-white italic leading-none">
-        ${(remainingBudget / 1000).toFixed(0)}k
-      </span>
-    </div>
-  </div>
-
-  {/* RANKING GLOBAL */}
-  <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
-    <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1">Global</span>
-    <div className="flex items-center gap-1">
-      <span className="text-sm font-black text-white italic">#{rankingPos}</span>
-    </div>
-  </div>
-
-  {/* ALINEACIÓN (Confirmados) */}
-  <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
-    <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1">Equipo</span>
-    <div className="flex items-center gap-1">
-      <span className="text-sm font-black text-emerald-400 italic">
-        {selectedPlayers.size}<span className="text-white/40">/15</span>
-      </span>
-    </div>
-  </div>
-
-</div>
 
           {/* CAMPO DE JUEGO */}
           <div className="lg:col-span-9">
@@ -306,7 +284,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           </div>
         </div>
 
-{/* REGLAMENTO RÁPIDO */}
+        {/* REGLAMENTO RÁPIDO */}
         <section id="reglas" className="mt-20 space-y-12">
           <div className="text-center space-y-4">
             <h2 className="text-6xl font-black italic tracking-tighter uppercase">Reglas <span className="text-white/20">del Juego</span></h2>
@@ -334,6 +312,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               </p>
             </div>
           </div>
+
           <div className="bg-emerald-500 p-8 rounded-[32px] flex items-center gap-6 text-black shadow-[0_20px_40px_rgba(16,185,129,0.2)]">
             <CheckCircle2 className="w-12 h-12 flex-shrink-0" />
             <div>
@@ -350,7 +329,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             </div>
             
             <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
-              {/* ACIERTOS (SUMA) */}
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Aciertos (Suma)</h4>
                 <ul className="space-y-3">
@@ -359,8 +337,8 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
                     ["Victoria del Equipo", "+2"],
                     ["Try Apoyado / Drop", "+5"],
                     ["Penal / Conversión", "+3 / +2"],
-                    ["Bonus Ofensivo (Todo el club)", "+2"],
-                    ["Bonus Defensivo (Todo el club)", "+1"],
+                    ["Bonus Ofensivo", "+2"],
+                    ["Bonus Defensivo", "+1"],
                     ["MVP del Partido", "+5"]
                   ].map(([label, pts]) => (
                     <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
@@ -371,17 +349,15 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
                 </ul>
               </div>
 
-              {/* PENALIZACIONES (RESTA) */}
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Penalizaciones (Resta)</h4>
                 <ul className="space-y-3">
                   {[
                     ["Derrota del Equipo", "-2"],
-                    ["Derrota por Bonus (Resta)", "-2"],
-                    ["Kick Errado (Penal/Conv)", "-2"],
+                    ["Derrota por Bonus", "-2"],
+                    ["Kick Errado", "-2"],
                     ["Tarjeta Amarilla", "-5"],
-                    ["Tarjeta Roja", "-10"],
-                    ["Mercado Cerrado", "LOCKED"]
+                    ["Tarjeta Roja", "-10"]
                   ].map(([label, pts]) => (
                     <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
                       <span className="text-gray-400">{label}</span>
@@ -391,7 +367,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
                 </ul>
               </div>
             </div>
-          </div> {/* <--- AQUÍ FALTABAN ESTE CIERRE PARA SEPARAR LA TABLA DEL BOTÓN DE CONFIRMAR */}
+          </div>
         </section>
       </main>
 
