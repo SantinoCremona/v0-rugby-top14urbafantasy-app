@@ -154,7 +154,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             <span className="bg-white text-black px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
               Fecha {fechaActiva}
             </span>
-            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 12</span>
+            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 14</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none uppercase">
             Mi XV <span className="text-white italic">Ideal</span>
@@ -278,7 +278,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         <section id="reglas" className="mt-20 space-y-12">
           <div className="text-center space-y-4">
             <h2 className="text-6xl font-black italic tracking-tighter uppercase">Reglas <span className="text-white/20">del Juego</span></h2>
-            <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em]">Temporada 2026 - Urba Top 12</p>
+            <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em]">Temporada 2026 - Urba Top 14</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
