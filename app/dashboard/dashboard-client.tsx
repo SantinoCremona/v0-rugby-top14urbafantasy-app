@@ -149,37 +149,16 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
       <main className="max-w-7xl mx-auto px-4 py-6 md:py-10 pb-24 md:pb-12">
         
         {/* ENCABEZADO */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="bg-white text-black px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-                Fecha {fechaActiva}
-              </span>
-              <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 14</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none uppercase">
-              Mi XV <span className="text-white italic">Ideal</span>
-            </h1>
+        <div className="mb-10 text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+            <span className="bg-white text-black px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+              Fecha {fechaActiva}
+            </span>
+            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 12</span>
           </div>
-
-          <div className="flex gap-3">
-            <Button 
-              onClick={() => { if(confirm("¿Vaciar campo?")) setSelectedPlayers(new Map()) }}
-              variant="outline"
-              disabled={!mercadoAbierto || loading}
-              className="h-14 border-white/10 bg-white/5 hover:bg-red-500/20 hover:border-red-500/50 text-white rounded-2xl transition-all disabled:opacity-30"
-            >
-              <Trash2 className="w-5 h-5" />
-            </Button>
-            <Button 
-              onClick={handleSaveTeam} 
-              disabled={loading || !mercadoAbierto || remainingBudget < 0}
-              className="h-14 bg-white hover:bg-gray-200 text-black px-8 rounded-2xl font-bold uppercase italic flex items-center gap-2 transition-all hover:scale-105 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-              {loading ? "Guardando..." : "Confirmar XV"}
-            </Button>
-          </div>
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none uppercase">
+            Mi XV <span className="text-white italic">Ideal</span>
+          </h1>
         </div>
 
         {/* ALERTAS DE ESTADO */}
@@ -189,30 +168,21 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             <span>Mercado <span className="font-bold">CERRADO</span>. Los cambios no están disponibles.</span>
           </div>
         )}
-        {remainingBudget < 0 && (
-          <div className="bg-red-950 border border-red-500 text-red-200 p-4 rounded-2xl mb-8 flex items-center gap-3 text-sm animate-pulse">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            <span>Presupuesto excedido. Ajusta tu equipo para poder confirmar.</span>
-          </div>
-        )}
 
-        {/* DASHBOARD MOBILE: 4 COLUMNAS EN UNA FILA (Visible solo en mobile) */}
+        {/* DASHBOARD MOBILE: 4 COLUMNAS (Solo Mobile) */}
         <div className="grid grid-cols-4 gap-2 mb-6 md:hidden">
           <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
             <span className="text-[7px] font-black text-emerald-400 uppercase tracking-tighter mb-1 leading-none">Puntos</span>
             <span className="text-sm font-black text-white italic leading-none">{puntosEnCanchaTotal}</span>
           </div>
-
           <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
             <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1 leading-none">Presup.</span>
             <span className="text-[10px] font-black text-white italic leading-none">${(remainingBudget / 1000).toFixed(0)}k</span>
           </div>
-
           <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
             <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1 leading-none">Ranking</span>
             <span className="text-sm font-black text-white italic leading-none">#{rankingPos}</span>
           </div>
-
           <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
             <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1 leading-none">Equipo</span>
             <span className="text-sm font-black text-emerald-400 italic leading-none">{playersCount}/15</span>
@@ -221,7 +191,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* PANEL LATERAL: DESKTOP SOLAMENTE (Oculto en Mobile para evitar duplicar info) */}
+          {/* PANEL LATERAL: DESKTOP */}
           <div className="hidden lg:block lg:col-span-3 space-y-4">
             <div className="bg-white p-6 rounded-[32px] text-black shadow-xl shadow-white/5 relative overflow-hidden group">
               <div className="flex justify-between items-start mb-4 relative z-10">
@@ -230,7 +200,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               </div>
               <p className="font-bold uppercase text-[10px] tracking-widest opacity-70 relative z-10">Puntos de la Fecha</p>
               <p className="text-6xl font-black tracking-tighter italic relative z-10">{puntosEnCanchaTotal}</p>
-              <Trophy className="absolute -right-6 -bottom-6 w-28 h-28 text-black/5 group-hover:rotate-12 transition-transform duration-500" />
+              <Trophy className="absolute -right-6 -bottom-6 w-28 h-28 text-black/5" />
             </div>
 
             <div className="bg-[#141416] border border-white/10 p-6 rounded-[32px]">
@@ -257,19 +227,11 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
                 <ArrowUpRight className="w-5 h-5" />
               </div>
             </div>
-
-            <div className="bg-[#141416] border border-white/10 p-6 rounded-[32px]">
-              <div className="flex items-center gap-3 mb-4">
-                <Users className="w-5 h-5 text-gray-400" />
-                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Alineación</p>
-              </div>
-              <p className="text-4xl font-black">{playersCount} <span className="text-gray-600 text-2xl">/ 15</span></p>
-            </div>
           </div>
 
           {/* CAMPO DE JUEGO */}
           <div className="lg:col-span-9">
-            <div className="relative bg-[#141416] border border-white/10 rounded-[40px] p-4 shadow-2xl overflow-hidden">
+            <div className="relative bg-[#141416] border border-white/10 rounded-[40px] p-2 md:p-4 shadow-2xl overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
               <RugbyField
                 selectedPlayers={new Map(
@@ -281,6 +243,34 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
                 onRemovePlayer={handleRemovePlayer}
               />
             </div>
+
+            {/* BOTONES DE ACCIÓN (Debajo de la cancha) */}
+            <div className="mt-6 flex flex-col md:flex-row gap-3">
+              <Button 
+                onClick={handleSaveTeam} 
+                disabled={loading || !mercadoAbierto || remainingBudget < 0}
+                className="flex-1 h-16 bg-emerald-500 hover:bg-emerald-600 text-black rounded-2xl font-black uppercase italic flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-[0_10px_20px_rgba(16,185,129,0.2)]"
+              >
+                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
+                {loading ? "Guardando..." : "Confirmar XV Titular"}
+              </Button>
+
+              <Button 
+                onClick={() => { if(confirm("¿Vaciar campo?")) setSelectedPlayers(new Map()) }}
+                variant="outline"
+                disabled={!mercadoAbierto || loading}
+                className="h-16 px-6 border-white/10 bg-white/5 hover:bg-red-500/20 hover:border-red-500/50 text-white rounded-2xl transition-all disabled:opacity-30"
+              >
+                <Trash2 className="w-6 h-6" />
+              </Button>
+            </div>
+
+            {remainingBudget < 0 && (
+              <div className="mt-4 bg-red-950 border border-red-500 text-red-200 p-4 rounded-2xl flex items-center gap-3 text-sm animate-pulse">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                <span>Presupuesto excedido por ${Math.abs(remainingBudget).toLocaleString()}.</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -288,7 +278,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         <section id="reglas" className="mt-20 space-y-12">
           <div className="text-center space-y-4">
             <h2 className="text-6xl font-black italic tracking-tighter uppercase">Reglas <span className="text-white/20">del Juego</span></h2>
-            <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em]">Temporada 2026 - Urba Top 14</p>
+            <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em]">Temporada 2026 - Urba Top 12</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -318,7 +308,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             <div>
               <p className="font-black italic uppercase text-xl leading-none mb-1">Confirmar XV</p>
               <p className="text-[10px] font-bold uppercase tracking-widest leading-tight">
-                Debes presionar el botón de confirmar XV para que se guarde tu equipo y los cambios que hagas fecha a fecha tambien.
+                Debes presionar el botón de confirmar XV para que se guarde tu equipo y los cambios que hagas fecha a fecha también.
               </p>
             </div>
           </div>
