@@ -144,7 +144,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] text-white selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-[#1A3A2A] text-white selection:bg-white selection:text-black">
       <MainHeader />
       
       <main className="max-w-7xl mx-auto px-4 py-6 md:py-10 pb-24 md:pb-12">
