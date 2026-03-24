@@ -247,6 +247,47 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               <p className="text-4xl font-black">{playersCount} <span className="text-gray-600 text-2xl">/ 15</span></p>
             </div>
           </div>
+          {/* DASHBOARD STATS: 4 COLUMNAS EN UNA FILA */}
+<div className="grid grid-cols-4 gap-2 px-4 mb-6">
+  
+  {/* PUNTOS FECHA */}
+  <div className="bg-[#0A0A0B] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
+    <span className="text-[7px] font-black text-emerald-400 uppercase tracking-tighter mb-1">Fecha {config.fecha_activa}</span>
+    <div className="flex items-baseline gap-0.5">
+      <span className="text-sm font-black text-white italic">{puntosFecha}</span>
+      <span className="text-[8px] text-gray-400 font-bold">pts</span>
+    </div>
+  </div>
+
+  {/* PRESUPUESTO */}
+  <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
+    <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1">Presup.</span>
+    <div className="flex items-baseline gap-0.5">
+      <span className="text-[10px] font-black text-white italic leading-none">
+        ${(remainingBudget / 1000).toFixed(0)}k
+      </span>
+    </div>
+  </div>
+
+  {/* RANKING GLOBAL */}
+  <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
+    <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1">Global</span>
+    <div className="flex items-center gap-1">
+      <span className="text-sm font-black text-white italic">#{rankingPos}</span>
+    </div>
+  </div>
+
+  {/* ALINEACIÓN (Confirmados) */}
+  <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
+    <span className="text-[7px] font-black text-gray-400 uppercase tracking-tighter mb-1">Equipo</span>
+    <div className="flex items-center gap-1">
+      <span className="text-sm font-black text-emerald-400 italic">
+        {selectedPlayers.size}<span className="text-white/40">/15</span>
+      </span>
+    </div>
+  </div>
+
+</div>
 
           {/* CAMPO DE JUEGO */}
           <div className="lg:col-span-9">
