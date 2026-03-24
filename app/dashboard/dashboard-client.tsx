@@ -154,7 +154,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="bg-white text-black px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-                Fecha {fechaActiva} en Vivo
+                Fecha {fechaActiva}
               </span>
               <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 14</span>
             </div>
