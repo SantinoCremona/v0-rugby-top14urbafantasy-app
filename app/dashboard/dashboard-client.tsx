@@ -71,6 +71,38 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
     return acc
   }, {} as Record<string, number>)
 
+  // --- FUNCIÓN DE BORRADO AUTOMÁTICO ---
+  const handleClearField = async () => {
+    if (!mercadoAbierto || loading) return
+    
+    // El cartel que pediste
+    if (!confirm("¿Estás seguro que querés vaciar tu XV? Esta acción se guardará automáticamente.")) return
+
+    setLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Borramos directamente de la base de datos
+      const { error } = await supabase
+        .from('equipos_usuarios')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('fecha_num', fechaActiva)
+
+      if (error) throw error
+
+      // Limpiamos la pantalla
+      setSelectedPlayers(new Map())
+      alert("XV vaciado y guardado correctamente.")
+    } catch (e) {
+      console.error(e)
+      alert("Hubo un error al intentar vaciar el equipo.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSaveTeam = async () => {
     if (!mercadoAbierto || remainingBudget < 0 || loading) return
     setLoading(true)
@@ -154,14 +186,14 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             <span className="bg-white text-black px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
               Fecha {fechaActiva}
             </span>
-            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 14</span>
+            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 12</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none uppercase">
             Mi XV <span className="text-white italic">Ideal</span>
           </h1>
         </div>
 
-        {/* ALERTAS DE ESTADO */}
+        {/* ALERTAS */}
         {!mercadoAbierto && (
           <div className="bg-red-950/30 border border-red-500/50 text-red-200 p-4 rounded-2xl mb-8 flex items-center gap-3 text-sm">
             <Lock className="w-5 h-5 text-red-500" />
@@ -169,7 +201,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           </div>
         )}
 
-        {/* DASHBOARD MOBILE: 4 COLUMNAS (Solo Mobile) */}
+        {/* DASHBOARD MOBILE */}
         <div className="grid grid-cols-4 gap-2 mb-6 md:hidden">
           <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
             <span className="text-[7px] font-black text-emerald-400 uppercase tracking-tighter mb-1 leading-none">Puntos</span>
@@ -190,8 +222,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* PANEL LATERAL: DESKTOP */}
           <div className="hidden lg:block lg:col-span-3 space-y-4">
             <div className="bg-white p-6 rounded-[32px] text-black shadow-xl shadow-white/5 relative overflow-hidden group">
               <div className="flex justify-between items-start mb-4 relative z-10">
@@ -217,19 +247,8 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
                 ${remainingBudget.toLocaleString('es-AR')}
               </p>
             </div>
-
-            <div className="bg-[#141416] border border-white/10 p-6 rounded-[32px] flex items-center justify-between hover:border-white/30 transition-all">
-              <div>
-                <p className="text-gray-500 font-bold uppercase text-[10px] tracking-widest mb-1">Ranking Global</p>
-                <p className="text-3xl font-black">#{rankingPos}</p>
-              </div>
-              <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
-                <ArrowUpRight className="w-5 h-5" />
-              </div>
-            </div>
           </div>
 
-          {/* CAMPO DE JUEGO */}
           <div className="lg:col-span-9">
             <div className="relative bg-[#141416] border border-white/10 rounded-[40px] p-2 md:p-4 shadow-2xl overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
@@ -244,7 +263,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               />
             </div>
 
-            {/* BOTONES DE ACCIÓN (Debajo de la cancha) */}
+            {/* BOTONES ABAJO DE LA CANCHA */}
             <div className="mt-6 flex flex-col md:flex-row gap-3">
               <Button 
                 onClick={handleSaveTeam} 
@@ -256,12 +275,11 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               </Button>
 
               <Button 
-                onClick={() => { if(confirm("¿Vaciar campo?")) setSelectedPlayers(new Map()) }}
-                variant="outline"
+                onClick={handleClearField}
                 disabled={!mercadoAbierto || loading}
-                className="h-16 px-6 border-white/10 bg-white/5 hover:bg-red-500/20 hover:border-red-500/50 text-white rounded-2xl transition-all disabled:opacity-30"
+                className="h-16 px-6 bg-red-600 hover:bg-red-700 text-white border-none rounded-2xl transition-all disabled:opacity-30 active:scale-95 flex items-center justify-center shadow-[0_10px_20px_rgba(220,38,38,0.2)]"
               >
-                <Trash2 className="w-6 h-6" />
+                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Trash2 className="w-6 h-6" />}
               </Button>
             </div>
 
