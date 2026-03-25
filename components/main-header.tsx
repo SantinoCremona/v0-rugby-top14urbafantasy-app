@@ -10,7 +10,7 @@ const navItems = [
   { href: "/dashboard", label: "MI EQUIPO", icon: LayoutDashboard },
   { href: "/ranking", label: "RANKING", icon: Trophy },
   { href: "/torneos", label: "TORNEOS", icon: Users },
-  { href: "/dashboard#reglas", label: "REGLAS", icon: BookOpen }, // <-- NUEVO ITEM
+  { href: "/como-jugar", label: "COMO JUGAR", icon: BookOpen }, // <-- NUEVO ITEM
 ]
 
 export function MainHeader() {
