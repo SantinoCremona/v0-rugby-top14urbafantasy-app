@@ -1,108 +1,69 @@
 "use client"
 
 import { useState } from "react"
-import { Trophy, Shield, Medal, ChevronDown } from "lucide-react"
+import { Trophy, Shield, Medal, ChevronDown, Calendar } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
-export function RankingView({ initialRanking, userClub }: { initialRanking: any[], userClub: string }) {
+export function RankingView({ initialRanking }: { initialRanking: any[] }) {
   const supabase = createClient()
-  const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
+  const [view, setView] = useState<"GENERAL" | "FECHA">("GENERAL")
   const [selectedFecha, setSelectedFecha] = useState(1)
   const [ranking, setRanking] = useState(initialRanking)
   const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(false)
 
-  // Función para normalizar el nombre del club para la imagen del escudo
-  const getLogoPath = (clubName: string) => {
-    const fileName = clubName.toLowerCase().trim().replace(/\s+/g, '-')
-    return `/escudos/${fileName}.png`
-  }
-
   const fetchRankingFecha = async (num: number) => {
     setLoading(true)
     setSelectedFecha(num)
     
+    // Suponiendo que tienes una tabla o vista 'puntos_usuario_fecha'
     const { data, error } = await supabase
       .from('puntos_usuario_fecha') 
-      .select('nombre_equipo, puntos_fecha, club')
+      .select('nombre_equipo, puntos_fecha')
       .eq('fecha_num', num)
       .order('puntos_fecha', { ascending: false })
 
     if (!error && data) {
+      // Mapeamos para que coincida con la estructura de la tabla
       const mapped = data.map(d => ({
         nombre_equipo: d.nombre_equipo,
-        puntos_acumulados: d.puntos_fecha,
-        club: d.club
+        puntos_acumulados: d.puntos_fecha
       }))
       setRanking(mapped)
     }
     setLoading(false)
   }
 
-  const toggleView = (newView: "GENERAL" | "FECHA" | "CLUB") => {
+  const toggleView = (newView: "GENERAL" | "FECHA") => {
     setView(newView)
     setVisibleCount(10)
-    if (newView === "GENERAL" || newView === "CLUB") {
-        setRanking(initialRanking)
-    } else {
-        fetchRankingFecha(selectedFecha)
-    }
+    if (newView === "GENERAL") setRanking(initialRanking)
+    else fetchRankingFecha(selectedFecha)
   }
 
-  // Lógica de filtrado automática por el club del usuario
-  const filteredRanking = view === "CLUB" 
-    ? ranking.filter(item => item.club?.toUpperCase() === userClub?.toUpperCase())
-    : ranking
-
-  const visibleRanking = filteredRanking.slice(0, visibleCount)
+  const visibleRanking = ranking.slice(0, visibleCount)
 
   return (
     <div className="space-y-6">
       {/* SELECTOR DE MODO */}
-      <div className="flex flex-wrap justify-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit mx-auto mb-10">
+      <div className="flex gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit mx-auto mb-10">
         <button 
           onClick={() => toggleView("GENERAL")}
-          className={`px-6 md:px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+          className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
             view === "GENERAL" ? "bg-white text-black shadow-lg" : "text-gray-500 hover:text-white"
           }`}
         >
           General
         </button>
         <button 
-          onClick={() => toggleView("CLUB")}
-          className={`px-6 md:px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-            view === "CLUB" ? "bg-white text-black shadow-lg" : "text-gray-500 hover:text-white"
-          }`}
-        >
-          Mi Club
-        </button>
-        <button 
           onClick={() => toggleView("FECHA")}
-          className={`px-6 md:px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+          className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
             view === "FECHA" ? "bg-emerald-500 text-black shadow-lg" : "text-gray-500 hover:text-white"
           }`}
         >
           Por Fecha
         </button>
       </div>
-
-      {/* CABECERA DE CLUB CON ESCUDO (Solo aparece en modo CLUB) */}
-      {view === "CLUB" && (
-        <div className="flex flex-col items-center mb-10 animate-in fade-in zoom-in duration-500">
-          <div className="w-24 h-24 mb-4 bg-white/5 rounded-3xl p-4 border border-white/10 flex items-center justify-center">
-            <img 
-              src={getLogoPath(userClub)} 
-              alt={userClub} 
-              className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-              onError={(e) => { e.currentTarget.src = "/escudos/default.png" }}
-            />
-          </div>
-          <h2 className="text-2xl font-black italic uppercase tracking-tighter">
-            Interna de <span className="text-emerald-400">{userClub}</span>
-          </h2>
-          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Ranking exclusivo de tu club</p>
-        </div>
-      )}
 
       {view === "FECHA" && (
         <div className="flex flex-wrap justify-center gap-3 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -130,7 +91,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
       </div>
 
       <div className="space-y-3">
-        {visibleRanking.length > 0 ? visibleRanking.map((equipo, index) => {
+        {visibleRanking.map((equipo, index) => {
           const esPrimero = index === 0;
           const esPodio = index < 3;
 
@@ -166,7 +127,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
                   <span className={`text-[9px] font-bold uppercase tracking-widest ${
                     esPrimero ? "text-black/50" : "text-gray-600"
                   }`}>
-                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `MANAGER DE ${userClub}` : `HINCHA DE ${equipo.club}`)}
+                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : "URBA FANTASY LEAGUE"}
                   </span>
                 </div>
               </div>
@@ -180,16 +141,12 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
               </div>
             </div>
           )
-        }) : (
-            <div className="text-center py-20 text-gray-500 font-bold uppercase text-xs tracking-widest border border-dashed border-white/10 rounded-2xl">
-                Aún no hay equipos de {userClub} inscriptos
-            </div>
-        )}
+        })}
 
-        {filteredRanking.length > visibleCount && (
+        {ranking.length > visibleCount && (
           <button
             onClick={() => setVisibleCount(prev => prev + 20)}
-            className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-white hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 group"
+            className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-black hover:text-black bg-white hover:border-white/20 transition-all flex items-center justify-center gap-2 group"
           >
             Ver resto del ranking 
             <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
@@ -199,3 +156,4 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
     </div>
   )
 }
+   
