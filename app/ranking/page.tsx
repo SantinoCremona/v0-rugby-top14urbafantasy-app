@@ -3,29 +3,24 @@ import { MainHeader } from "@/components/main-header"
 import { Shield, Users, Star } from "lucide-react"
 import { RankingView } from "@/components/ranking-view"
 
-// FORZAMOS DATOS SIEMPRE FRESCOS (Importante para que los cambios de fecha funcionen)
-export const revalidate = 0
-export const dynamic = 'force-dynamic'
-
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
   // 1. OBTENEMOS EL USUARIO ACTUAL PARA SABER SU CLUB
   const { data: { user } } = await supabase.auth.getUser()
   
-  // 2. BUSCAMOS SU CLUB EN LA TABLA PERFILES
+  // 2. BUSCAMOS EL CLUB ESPECÍFICO DEL PERFIL DEL USUARIO
   const { data: perfilUsuario } = await supabase
     .from('perfiles')
     .select('club')
     .eq('id', user?.id)
     .single()
 
-  // 3. CARGAMOS EL RANKING GENERAL DESDE TU VISTA 'ranking_usuarios'
-  // Usamos la columna 'puntos_totales' que definiste
+  // 3. SELECT CON 'club' PARA EL RANKING
   const { data: rankingData, error } = await supabase
-    .from('ranking_usuarios')
-    .select('nombre_equipo, puntos_totales, club') 
-    .order('puntos_totales', { ascending: false })
+    .from('perfiles')
+    .select('nombre_equipo, puntos_acumulados, club') 
+    .order('puntos_acumulados', { ascending: false })
 
   if (error) console.error("Error fetching ranking:", error)
   const ranking = rankingData || []
@@ -46,7 +41,7 @@ export default async function RankingGeneralPage() {
               Ranking <span className="text-white/20">General</span>
             </h1>
             <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.4em] mt-4">
-              Temporada URBA 2026 • Top 14
+              Temporada URBA 2026 • Top 12
             </p>
           </div>
           
@@ -61,7 +56,7 @@ export default async function RankingGeneralPage() {
           </div>
         </div>
 
-        {/* CONTENIDO DINÁMICO */}
+        {/* CONTENIDO DINÁMICO CON LA PROP userClub AÑADIDA */}
         {ranking.length > 0 ? (
           <RankingView 
             initialRanking={ranking} 
