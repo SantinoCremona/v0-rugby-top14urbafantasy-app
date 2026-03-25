@@ -294,13 +294,16 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
       </main>
 
       <PlayerSelectionPopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        positionType={targetPositionType}
-        players={players.filter(p => !Array.from(selectedPlayers.values()).some(sp => sp.id === p.id) && (clubCounts[p.club] || 0) < 4)}
-        onSelectPlayer={handleSelectPlayer}
-        remainingBudget={remainingBudget}
-      />
+      isOpen={isPopupOpen}
+      onClose={() => setIsPopupOpen(false)}
+      positionType={targetPositionType}
+      // QUITAMOS EL FILTRO DE CLUB AQUÍ PARA QUE APAREZCAN TODOS
+      players={players.filter(p => !Array.from(selectedPlayers.values()).some(sp => sp.id === p.id))}
+      onSelectPlayer={handleSelectPlayer}
+      remainingBudget={remainingBudget}
+      // PASAMOS LOS CONTEOS PARA QUE EL POPUP SEPA EL LÍMITE
+      clubCounts={clubCounts} 
+    />
     </div>
   )
 }
