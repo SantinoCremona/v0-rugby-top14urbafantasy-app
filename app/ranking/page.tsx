@@ -3,38 +3,17 @@ import { MainHeader } from "@/components/main-header"
 import { Shield, Users, Star } from "lucide-react"
 import { RankingView } from "@/components/ranking-view"
 
-// Forza la actualización de datos para que no use caché vieja
-export const revalidate = 0
-export const dynamic = 'force-dynamic'
-
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
-  // 1. OBTENEMOS EL USUARIO ACTUAL PARA SABER SU CLUB
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  // 2. BUSCAMOS SU CLUB EN LA TABLA PERFILES
-  const { data: perfilUsuario } = await supabase
-    .from('perfiles')
-    .select('club')
-    .eq('id', user?.id)
-    .single()
-
-  // 3. CARGAMOS EL RANKING DESDE LA VISTA 'ranking_usuarios'
-  // Usamos 'puntos_totales' que es el nombre de tu columna en esa vista
+  // AGREGAMOS 'club' AL SELECT PARA QUE EL COMPONENTE HIJO PUEDA FILTRAR
   const { data: rankingData, error } = await supabase
-    .from('ranking_usuarios')
-    .select('nombre_equipo, puntos_totales, club') 
-    .order('puntos_totales', { ascending: false })
+    .from('perfiles')
+    .select('nombre_equipo, puntos_acumulados, club') 
+    .order('puntos_acumulados', { ascending: false })
 
   if (error) console.error("Error fetching ranking:", error)
-  
-  // Mapeo para que el RankingView reciba los datos listos
-  const ranking = (rankingData || []).map(r => ({
-    nombre_equipo: r.nombre_equipo || "XV SIN NOMBRE",
-    puntos_totales: r.puntos_totales || 0, // Mantenemos el nombre original de la vista
-    club: r.club || "CASI"
-  }))
+  const ranking = rankingData || []
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white">
@@ -67,12 +46,9 @@ export default async function RankingGeneralPage() {
           </div>
         </div>
 
-        {/* PASAMOS LOS DATOS AL COMPONENTE CLIENTE */}
+        {/* CONTENIDO DINÁMICO */}
         {ranking.length > 0 ? (
-          <RankingView 
-            initialRanking={ranking} 
-            userClub={perfilUsuario?.club || "CASI"} 
-          />
+          <RankingView initialRanking={ranking} />
         ) : (
           <div className="mt-20 py-20 border border-dashed border-white/10 rounded-[40px] text-center">
             <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
