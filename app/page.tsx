@@ -1,11 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react" // Agregado useEffect
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client" 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Shield, Loader2, ArrowRight, Lock, Mail, User as UserIcon, Eye, EyeOff, AlertCircle } from "lucide-react"
+
+// LISTA DE CLUBES TOP 12
+const CLUBS = [
+  "ALUMNI", "ATLETICO DEL ROSARIO", "BELGRANO", "BIEI", "CASI", "CHAMPAGNAT", 
+  "CUBA", "HINDU", "LA PLATA", "LOS MATREROS", "LOS TILOS", "NEWMAN", "REGATAS", "SIC"
+].sort()
 
 export default function LoginPage() {
   const router = useRouter()
@@ -13,16 +19,16 @@ export default function LoginPage() {
 
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
-  const [checkingAuth, setCheckingAuth] = useState(true) // Nuevo estado para persistencia
+  const [checkingAuth, setCheckingAuth] = useState(true) 
   const [showPassword, setShowPassword] = useState(false)
   
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [nombreDT, setNombreDT] = useState("")
+  const [clubHincha, setClubHincha] = useState("") // NUEVO ESTADO
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // --- NUEVA LÓGICA DE PERSISTENCIA ---
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -62,6 +68,7 @@ export default function LoginPage() {
         router.refresh()
       } else {
         if (!nombreDT.trim()) throw new Error("Debes elegir un nombre para tu equipo")
+        if (!clubHincha) throw new Error("Debes seleccionar un club") // VALIDACIÓN CLUB
         if (password !== confirmPassword) throw new Error("Las contraseñas no coinciden")
         if (!validatePassword(password)) throw new Error("La contraseña requiere 1 mayúscula y 2 números")
 
@@ -83,7 +90,8 @@ export default function LoginPage() {
             .insert([{ 
               id: data.user.id, 
               email: email, 
-              nombre_equipo: nombreDT.trim() 
+              nombre_equipo: nombreDT.trim(),
+              club: clubHincha // GUARDAMOS EL CLUB
             }])
 
           if (profileError) {
@@ -105,7 +113,6 @@ export default function LoginPage() {
     }
   }
 
-  // Si está chequeando la sesión, mostramos un loader centrado
   if (checkingAuth) {
     return (
       <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center">
@@ -117,7 +124,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden text-white">
       
-      {/* IMAGEN DE FONDO CON OVERLAY */}
       <div className="absolute inset-0 z-0">
         <img 
           src="/urbafoto-login.jpeg" 
@@ -127,7 +133,6 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#0A0A0B]/80 to-[#0A0A0B]" />
       </div>
 
-      {/* HEADER */}
       <div className="relative z-10 mb-10 text-center animate-in fade-in slide-in-from-top-4 duration-700">
         <h1 className="text-6xl font-black uppercase tracking-tighter leading-none drop-shadow-2xl">
           HEAD<span className="text-white/20">COACH</span>
@@ -135,7 +140,6 @@ export default function LoginPage() {
         <p className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.4em] mt-2 drop-shadow-md">URBA TOP 14 • 2026</p>
       </div>
 
-      {/* CARD */}
       <div className="relative z-10 w-full max-w-md bg-black/40 border border-white/10 p-8 md:p-10 rounded-[40px] backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in duration-500">
         <h2 className="text-xl font-black italic text-center mb-8 uppercase tracking-widest text-white/90">
           {isLogin ? "Acceso / Vestuario" : "Nuevo / Head Coach"}
@@ -143,16 +147,35 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div className="relative group animate-in slide-in-from-top-2 duration-300">
-              <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-white transition-colors" />
-              <Input
-                placeholder="NOMBRE DEL EQUIPO"
-                value={nombreDT}
-                onChange={(e) => setNombreDT(e.target.value)}
-                required
-                className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-600 focus:border-emerald-500 transition-all tracking-widest text-[11px]"
-              />
-            </div>
+            <>
+              <div className="relative group animate-in slide-in-from-top-2 duration-300">
+                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-white transition-colors" />
+                <Input
+                  placeholder="NOMBRE DEL EQUIPO"
+                  value={nombreDT}
+                  onChange={(e) => setNombreDT(e.target.value)}
+                  required
+                  className="h-14 bg-white/5 border-white/10 pl-12 rounded-2xl font-bold text-white placeholder:text-gray-600 focus:border-emerald-500 transition-all tracking-widest text-[11px]"
+                />
+              </div>
+
+              {/* SELECTOR DE CLUB - SOLO EN REGISTRO */}
+              <div className="relative group animate-in slide-in-from-top-2 duration-300">
+                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-white transition-colors" />
+                <select
+                  value={clubHincha}
+                  onChange={(e) => setClubHincha(e.target.value)}
+                  required
+                  className="h-14 w-full bg-[#121214]/50 border border-white/10 pl-12 pr-4 rounded-2xl font-bold text-white text-[11px] tracking-widest appearance-none focus:border-emerald-500 transition-all outline-none"
+                >
+                  <option value="" disabled className="text-gray-600 uppercase">HINCHA DE...</option>
+                  {CLUBS.map(club => (
+                    <option key={club} value={club} className="bg-[#121214] text-white uppercase">{club}</option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
+              </div>
+            </>
           )}
 
           <div className="relative group">
