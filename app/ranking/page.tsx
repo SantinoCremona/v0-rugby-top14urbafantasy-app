@@ -3,14 +3,29 @@ import { MainHeader } from "@/components/main-header"
 import { Shield, Users, Star } from "lucide-react"
 import { RankingView } from "@/components/ranking-view"
 
+// FORZAMOS DATOS SIEMPRE FRESCOS (Importante para que los cambios de fecha funcionen)
+export const revalidate = 0
+export const dynamic = 'force-dynamic'
+
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
-  // AGREGAMOS 'club' AL SELECT PARA QUE EL COMPONENTE HIJO PUEDA FILTRAR
-  const { data: rankingData, error } = await supabase
+  // 1. OBTENEMOS EL USUARIO ACTUAL PARA SABER SU CLUB
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  // 2. BUSCAMOS SU CLUB EN LA TABLA PERFILES
+  const { data: perfilUsuario } = await supabase
     .from('perfiles')
-    .select('nombre_equipo, puntos_acumulados, club') 
-    .order('puntos_acumulados', { ascending: false })
+    .select('club')
+    .eq('id', user?.id)
+    .single()
+
+  // 3. CARGAMOS EL RANKING GENERAL DESDE TU VISTA 'ranking_usuarios'
+  // Usamos la columna 'puntos_totales' que definiste
+  const { data: rankingData, error } = await supabase
+    .from('ranking_usuarios')
+    .select('nombre_equipo, puntos_totales, club') 
+    .order('puntos_totales', { ascending: false })
 
   if (error) console.error("Error fetching ranking:", error)
   const ranking = rankingData || []
@@ -31,7 +46,7 @@ export default async function RankingGeneralPage() {
               Ranking <span className="text-white/20">General</span>
             </h1>
             <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.4em] mt-4">
-              Temporada URBA 2026 • Top 12
+              Temporada URBA 2026 • Top 14
             </p>
           </div>
           
@@ -48,7 +63,10 @@ export default async function RankingGeneralPage() {
 
         {/* CONTENIDO DINÁMICO */}
         {ranking.length > 0 ? (
-          <RankingView initialRanking={ranking} />
+          <RankingView 
+            initialRanking={ranking} 
+            userClub={perfilUsuario?.club || "CASI"} 
+          />
         ) : (
           <div className="mt-20 py-20 border border-dashed border-white/10 rounded-[40px] text-center">
             <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
