@@ -1,23 +1,22 @@
 "use client"
 
 import { useState } from "react"
-import { Trophy, Shield, Medal, ChevronDown, Calendar } from "lucide-react"
+import { Trophy, Shield, Medal, ChevronDown } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
-// Lista de clubes para el selector
-const CLUBS = [
-  "ALUMNI", "ATLETICO DEL ROSARIO", "BELGRANO", "BIEI", "CASI", "CHAMPAGNAT", 
-  "CUBA", "HINDU", "LA PLATA", "LOS MATREROS", "LOS TILOS", "NEWMAN", "REGATAS", "SIC"
-].sort()
-
-export function RankingView({ initialRanking }: { initialRanking: any[] }) {
+export function RankingView({ initialRanking, userClub }: { initialRanking: any[], userClub: string }) {
   const supabase = createClient()
-  const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL") // Añadido CLUB
+  const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
   const [selectedFecha, setSelectedFecha] = useState(1)
-  const [selectedClub, setSelectedClub] = useState("CASI") // Estado para club
   const [ranking, setRanking] = useState(initialRanking)
   const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(false)
+
+  // Función para normalizar el nombre del club para la imagen del escudo
+  const getLogoPath = (clubName: string) => {
+    const fileName = clubName.toLowerCase().trim().replace(/\s+/g, '-')
+    return `/escudos/${fileName}.png`
+  }
 
   const fetchRankingFecha = async (num: number) => {
     setLoading(true)
@@ -25,7 +24,7 @@ export function RankingView({ initialRanking }: { initialRanking: any[] }) {
     
     const { data, error } = await supabase
       .from('puntos_usuario_fecha') 
-      .select('nombre_equipo, puntos_fecha, club') // Traemos el club también
+      .select('nombre_equipo, puntos_fecha, club')
       .eq('fecha_num', num)
       .order('puntos_fecha', { ascending: false })
 
@@ -50,9 +49,9 @@ export function RankingView({ initialRanking }: { initialRanking: any[] }) {
     }
   }
 
-  // Lógica de filtrado: Si es modo CLUB, filtramos el ranking actual por el club seleccionado
+  // Lógica de filtrado automática por el club del usuario
   const filteredRanking = view === "CLUB" 
-    ? ranking.filter(item => item.club === selectedClub)
+    ? ranking.filter(item => item.club?.toUpperCase() === userClub?.toUpperCase())
     : ranking
 
   const visibleRanking = filteredRanking.slice(0, visibleCount)
@@ -87,18 +86,21 @@ export function RankingView({ initialRanking }: { initialRanking: any[] }) {
         </button>
       </div>
 
-      {/* SELECTOR DE CLUB - Solo aparece en modo CLUB */}
+      {/* CABECERA DE CLUB CON ESCUDO (Solo aparece en modo CLUB) */}
       {view === "CLUB" && (
-        <div className="flex justify-center mb-10 animate-in fade-in zoom-in duration-300">
-          <select
-            value={selectedClub}
-            onChange={(e) => setSelectedClub(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-emerald-400 outline-none focus:border-emerald-500 transition-all"
-          >
-            {CLUBS.map(club => (
-              <option key={club} value={club} className="bg-[#0A0A0B] text-white">{club}</option>
-            ))}
-          </select>
+        <div className="flex flex-col items-center mb-10 animate-in fade-in zoom-in duration-500">
+          <div className="w-24 h-24 mb-4 bg-white/5 rounded-3xl p-4 border border-white/10 flex items-center justify-center">
+            <img 
+              src={getLogoPath(userClub)} 
+              alt={userClub} 
+              className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+              onError={(e) => { e.currentTarget.src = "/escudos/default.png" }}
+            />
+          </div>
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter">
+            Interna de <span className="text-emerald-400">{userClub}</span>
+          </h2>
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Ranking exclusivo de tu club</p>
         </div>
       )}
 
@@ -164,7 +166,7 @@ export function RankingView({ initialRanking }: { initialRanking: any[] }) {
                   <span className={`text-[9px] font-bold uppercase tracking-widest ${
                     esPrimero ? "text-black/50" : "text-gray-600"
                   }`}>
-                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `HINCHA DE ${equipo.club}` : "URBA FANTASY LEAGUE")}
+                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `MANAGER DE ${userClub}` : `HINCHA DE ${equipo.club}`)}
                   </span>
                 </div>
               </div>
@@ -180,7 +182,7 @@ export function RankingView({ initialRanking }: { initialRanking: any[] }) {
           )
         }) : (
             <div className="text-center py-20 text-gray-500 font-bold uppercase text-xs tracking-widest border border-dashed border-white/10 rounded-2xl">
-                No hay equipos en este club todavía
+                Aún no hay equipos de {userClub} inscriptos
             </div>
         )}
 
