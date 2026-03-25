@@ -116,7 +116,7 @@ export default function LoginPage() {
       {/* CARD */}
       <div className="relative z-10 w-full max-w-md bg-black/40 border border-white/10 p-8 md:p-10 rounded-[40px] backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in duration-500">
         <h2 className="text-xl font-black italic text-center mb-8 uppercase tracking-widest text-white/90">
-          {isLogin ? "Acceso / Vestuario" : "Nuevo / Manager"}
+          {isLogin ? "Acceso / Vestuario" : "Nuevo / Head Coach"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -202,7 +202,7 @@ export default function LoginPage() {
 
         <div className="mt-8 text-center border-t border-white/10 pt-6">
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-3">
-            {isLogin ? "¿Aún no sos manager?" : "¿Ya tenés un equipo?"}
+            {isLogin ? "¿Aún no sos Head Coach?" : "¿Ya tenés un equipo?"}
           </p>
           <button
             type="button"
@@ -212,7 +212,7 @@ export default function LoginPage() {
             }}
             className="text-xs font-black text-white uppercase tracking-tighter hover:text-emerald-400 transition-colors italic border-b border-white/10 pb-1"
           >
-            {isLogin ? "Registrarme en el Top 14" : "Volver al acceso"}
+            {isLogin ? "Registrarme" : "Volver al acceso"}
           </button>
         </div>
       </div>
