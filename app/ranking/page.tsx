@@ -6,7 +6,17 @@ import { RankingView } from "@/components/ranking-view"
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
-  // AGREGAMOS 'club' AL SELECT PARA QUE EL COMPONENTE HIJO PUEDA FILTRAR
+  // 1. OBTENEMOS EL USUARIO ACTUAL PARA SABER SU CLUB
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  // 2. BUSCAMOS EL CLUB ESPECÍFICO DEL PERFIL DEL USUARIO
+  const { data: perfilUsuario } = await supabase
+    .from('perfiles')
+    .select('club')
+    .eq('id', user?.id)
+    .single()
+
+  // 3. SELECT CON 'club' PARA EL RANKING
   const { data: rankingData, error } = await supabase
     .from('perfiles')
     .select('nombre_equipo, puntos_acumulados, club') 
@@ -31,7 +41,7 @@ export default async function RankingGeneralPage() {
               Ranking <span className="text-white/20">General</span>
             </h1>
             <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.4em] mt-4">
-              Temporada URBA 2026 • Top 12
+              Temporada URBA 2026 • Top 14
             </p>
           </div>
           
@@ -46,9 +56,12 @@ export default async function RankingGeneralPage() {
           </div>
         </div>
 
-        {/* CONTENIDO DINÁMICO */}
+        {/* CONTENIDO DINÁMICO CON LA PROP userClub AÑADIDA */}
         {ranking.length > 0 ? (
-          <RankingView initialRanking={ranking} />
+          <RankingView 
+            initialRanking={ranking} 
+            userClub={perfilUsuario?.club || "CASI"} 
+          />
         ) : (
           <div className="mt-20 py-20 border border-dashed border-white/10 rounded-[40px] text-center">
             <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
