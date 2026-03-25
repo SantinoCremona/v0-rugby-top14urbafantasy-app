@@ -186,7 +186,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             <span className="bg-white text-black px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
               Fecha {fechaActiva}
             </span>
-            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 12</span>
+            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">URBA TOP 14</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none uppercase">
             Mi XV <span className="text-white italic">Ideal</span>
