@@ -8,25 +8,29 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
   const supabase = createClient()
   const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
   const [selectedFecha, setSelectedFecha] = useState(1)
-  const [ranking, setRanking] = useState(initialRanking) 
+  
+  // Inicializamos mapeando 'puntos_totales' de la vista general
+  const [ranking, setRanking] = useState(initialRanking.map(item => ({
+    ...item,
+    puntos_acumulados: item.puntos_totales 
+  })))
+
   const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(false)
 
   const getLogoPath = (clubName: string) => {
-    const fileName = clubName.toLowerCase().trim().replace(/\s+/g, '-')
+    const fileName = clubName?.toLowerCase().trim().replace(/\s+/g, '-') || 'casi'
     return `/escudos/${fileName}.png`
   }
 
-  // --- ESTA FUNCIÓN AHORA SE ASEGURA DE TRAER LA COLUMNA CORRECTA ---
   const fetchRankingFecha = async (num: number) => {
     setLoading(true)
     setSelectedFecha(num)
-    // Forzamos el cambio de vista a FECHA para que el render sepa qué mostrar
     setView("FECHA") 
     
     try {
       const { data, error } = await supabase
-        .from('puntos_usuario_fecha') 
+        .from('puntos_usuarios_fecha') // Tu nombre exacto de vista
         .select('nombre_equipo, puntos_fecha, club')
         .eq('fecha_num', num)
         .order('puntos_fecha', { ascending: false })
@@ -34,16 +38,17 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
       if (error) throw error
 
       if (data) {
-        // MAPEAMOS 'puntos_fecha' a 'puntos_acumulados' para que el HTML de abajo lo lea bien
+        // MAPEAMOS 'puntos_fecha' a la variable que usa el diseño
         const mapped = data.map(d => ({
           nombre_equipo: d.nombre_equipo,
-          puntos_acumulados: d.puntos_fecha, // Aquí agarramos la columna de la vista
+          puntos_acumulados: d.puntos_fecha, 
           club: d.club
         }))
         setRanking(mapped)
       }
     } catch (err) {
       console.error("Error al traer puntos de fecha:", err)
+      setRanking([])
     } finally {
       setLoading(false)
     }
@@ -53,14 +58,17 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
     setView(newView)
     setVisibleCount(10)
     if (newView === "GENERAL" || newView === "CLUB") {
-        setRanking(initialRanking)
+        // Al volver a General/Club, mapeamos los puntos_totales del initialRanking
+        const resetData = initialRanking.map(item => ({
+            ...item,
+            puntos_acumulados: item.puntos_totales
+        }))
+        setRanking(resetData)
     } else {
-        // Si clickea la pestaña "Por Fecha", cargamos la fecha que esté seleccionada actualmente
         fetchRankingFecha(selectedFecha)
     }
   }
 
-  // Lógica de filtrado: Solo aplica si estamos en la pestaña CLUB
   const filteredRanking = view === "CLUB" 
     ? ranking.filter(item => item.club?.toUpperCase() === userClub?.toUpperCase())
     : ranking
@@ -103,17 +111,17 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
             <img 
               src={getLogoPath(userClub)} 
               alt={userClub} 
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
               onError={(e) => { e.currentTarget.src = "/escudos/default.png" }}
             />
           </div>
           <h2 className="text-2xl font-black italic uppercase tracking-tighter text-center">
             Interna de <span className="text-emerald-400">{userClub}</span>
           </h2>
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Ranking exclusivo de tu club</p>
         </div>
       )}
 
-      {/* BOTONES DE FECHA */}
       {view === "FECHA" && (
         <div className="flex flex-wrap justify-center gap-3 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
           {[1, 2, 3, 4, 5].map((num) => (
@@ -132,7 +140,15 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         </div>
       )}
 
-      {/* LISTADO DE RANKING */}
+      {/* Header de Columnas */}
+      <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">
+        <div className="col-span-2">Posición</div>
+        <div className="col-span-7 md:col-span-8">Equipo</div>
+        <div className="col-span-3 md:col-span-2 text-right">
+            Puntos {view === "FECHA" ? "Fecha" : "Totales"}
+        </div>
+      </div>
+
       <div className="space-y-3">
         {loading ? (
            <div className="text-center py-20 font-black text-emerald-500 animate-pulse uppercase text-xs tracking-widest">
@@ -141,6 +157,8 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         ) : visibleRanking.length > 0 ? (
           visibleRanking.map((equipo, index) => {
             const esPrimero = index === 0;
+            const esPodio = index < 3;
+
             return (
               <div 
                 key={index} 
@@ -155,6 +173,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
                     #{index + 1}
                   </span>
                   {esPrimero && <Trophy className="w-5 h-5 text-black" />}
+                  {esPodio && !esPrimero && <Medal className="w-4 h-4 text-emerald-400" />}
                 </div>
 
                 <div className="col-span-7 md:col-span-8 flex items-center gap-4">
@@ -166,7 +185,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
                   <div>
                     <span className="text-base md:text-xl font-black uppercase italic block leading-none mb-1">{equipo.nombre_equipo}</span>
                     <span className="text-[9px] font-bold uppercase opacity-50">
-                      {view === "FECHA" ? `Puntos de la Fecha ${selectedFecha}` : `Hincha de ${equipo.club || 'CASI'}`}
+                      {view === "FECHA" ? `Resultado Fecha ${selectedFecha}` : `Hincha de ${equipo.club || 'CASI'}`}
                     </span>
                   </div>
                 </div>
