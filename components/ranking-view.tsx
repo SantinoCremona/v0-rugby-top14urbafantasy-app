@@ -8,7 +8,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
   const supabase = createClient()
   const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
   const [selectedFecha, setSelectedFecha] = useState(1)
-  const [ranking, setRanking] = useState(initialRanking) // Este estado controla lo que se ve
+  const [ranking, setRanking] = useState(initialRanking) 
   const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(false)
 
@@ -17,41 +17,50 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
     return `/escudos/${fileName}.png`
   }
 
+  // --- ESTA FUNCIÓN AHORA SE ASEGURA DE TRAER LA COLUMNA CORRECTA ---
   const fetchRankingFecha = async (num: number) => {
     setLoading(true)
     setSelectedFecha(num)
+    // Forzamos el cambio de vista a FECHA para que el render sepa qué mostrar
+    setView("FECHA") 
     
-    const { data, error } = await supabase
-      .from('puntos_usuario_fecha') 
-      .select('nombre_equipo, puntos_fecha, club')
-      .eq('fecha_num', num)
-      .order('puntos_fecha', { ascending: false })
+    try {
+      const { data, error } = await supabase
+        .from('puntos_usuario_fecha') 
+        .select('nombre_equipo, puntos_fecha, club')
+        .eq('fecha_num', num)
+        .order('puntos_fecha', { ascending: false })
 
-    if (!error && data) {
-      // MAPEAMOS puntos_fecha a puntos_acumulados para mantener la consistencia en el diseño
-      const mapped = data.map(d => ({
-        nombre_equipo: d.nombre_equipo,
-        puntos_acumulados: d.puntos_fecha,
-        club: d.club
-      }))
-      setRanking(mapped)
+      if (error) throw error
+
+      if (data) {
+        // MAPEAMOS 'puntos_fecha' a 'puntos_acumulados' para que el HTML de abajo lo lea bien
+        const mapped = data.map(d => ({
+          nombre_equipo: d.nombre_equipo,
+          puntos_acumulados: d.puntos_fecha, // Aquí agarramos la columna de la vista
+          club: d.club
+        }))
+        setRanking(mapped)
+      }
+    } catch (err) {
+      console.error("Error al traer puntos de fecha:", err)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const toggleView = (newView: "GENERAL" | "FECHA" | "CLUB") => {
     setView(newView)
     setVisibleCount(10)
     if (newView === "GENERAL" || newView === "CLUB") {
-        // Restauramos el ranking inicial (acumulados totales)
         setRanking(initialRanking)
     } else {
-        // Disparamos la carga de la fecha seleccionada
+        // Si clickea la pestaña "Por Fecha", cargamos la fecha que esté seleccionada actualmente
         fetchRankingFecha(selectedFecha)
     }
   }
 
-  // Lógica de filtrado automática por el club del usuario
+  // Lógica de filtrado: Solo aplica si estamos en la pestaña CLUB
   const filteredRanking = view === "CLUB" 
     ? ranking.filter(item => item.club?.toUpperCase() === userClub?.toUpperCase())
     : ranking
@@ -88,24 +97,23 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         </button>
       </div>
 
-      {/* CABECERA DE CLUB CON ESCUDO (Solo aparece en modo CLUB) */}
       {view === "CLUB" && (
         <div className="flex flex-col items-center mb-10 animate-in fade-in zoom-in duration-500">
           <div className="w-24 h-24 mb-4 bg-white/5 rounded-3xl p-4 border border-white/10 flex items-center justify-center">
             <img 
               src={getLogoPath(userClub)} 
               alt={userClub} 
-              className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+              className="w-full h-full object-contain"
               onError={(e) => { e.currentTarget.src = "/escudos/default.png" }}
             />
           </div>
-          <h2 className="text-2xl font-black italic uppercase tracking-tighter">
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter text-center">
             Interna de <span className="text-emerald-400">{userClub}</span>
           </h2>
-          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Ranking exclusivo de tu club</p>
         </div>
       )}
 
+      {/* BOTONES DE FECHA */}
       {view === "FECHA" && (
         <div className="flex flex-wrap justify-center gap-3 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
           {[1, 2, 3, 4, 5].map((num) => (
@@ -124,70 +132,57 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         </div>
       )}
 
-      {/* Header de Columnas */}
-      <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">
-        <div className="col-span-2">Posición</div>
-        <div className="col-span-7 md:col-span-8">Equipo</div>
-        <div className="col-span-3 md:col-span-2 text-right">Puntos {view === "FECHA" ? "Fecha" : "Totales"}</div>
-      </div>
-
+      {/* LISTADO DE RANKING */}
       <div className="space-y-3">
         {loading ? (
-            <div className="text-center py-20 font-black text-emerald-500 animate-pulse uppercase tracking-widest text-xs">Cargando fecha {selectedFecha}...</div>
-        ) : visibleRanking.length > 0 ? visibleRanking.map((equipo, index) => {
-          const esPrimero = index === 0;
-          const esPodio = index < 3;
-
-          return (
-            <div 
-              key={index} 
-              className={`grid grid-cols-12 items-center px-6 py-5 rounded-2xl border transition-all duration-300 ${
-                esPrimero 
-                ? "bg-white border-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]" 
-                : "bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]"
-              }`}
-            >
-              <div className="col-span-2 flex items-center gap-3">
-                <span className={`text-2xl font-black italic ${esPrimero ? "text-black" : "text-white/40"}`}>
-                  #{index + 1}
-                </span>
-                {esPrimero && <Trophy className="w-5 h-5 text-black fill-black" />}
-                {esPodio && !esPrimero && <Medal className="w-4 h-4 text-emerald-400" />}
-              </div>
-
-              <div className="col-span-7 md:col-span-8 flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                  esPrimero ? "bg-black border-black text-white" : "bg-white/5 border-white/10 text-white/30"
-                }`}>
-                  <Shield className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className={`text-base md:text-xl font-black uppercase italic leading-none block ${
-                    esPrimero ? "text-black" : "text-white"
-                  }`}>
-                    {equipo.nombre_equipo || "XV SIN NOMBRE"}
+           <div className="text-center py-20 font-black text-emerald-500 animate-pulse uppercase text-xs tracking-widest">
+             Cargando Ranking Fecha {selectedFecha}...
+           </div>
+        ) : visibleRanking.length > 0 ? (
+          visibleRanking.map((equipo, index) => {
+            const esPrimero = index === 0;
+            return (
+              <div 
+                key={index} 
+                className={`grid grid-cols-12 items-center px-6 py-5 rounded-2xl border transition-all duration-300 ${
+                  esPrimero 
+                  ? "bg-white border-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]" 
+                  : "bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]"
+                }`}
+              >
+                <div className="col-span-2 flex items-center gap-3">
+                  <span className={`text-2xl font-black italic ${esPrimero ? "text-black" : "text-white/40"}`}>
+                    #{index + 1}
                   </span>
-                  <span className={`text-[9px] font-bold uppercase tracking-widest ${
-                    esPrimero ? "text-black/50" : "text-gray-600"
+                  {esPrimero && <Trophy className="w-5 h-5 text-black" />}
+                </div>
+
+                <div className="col-span-7 md:col-span-8 flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                    esPrimero ? "bg-black text-white" : "bg-white/5 text-white/30"
                   }`}>
-                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `HINCHA DE ${userClub}` : `HINCHA DE ${equipo.club}`)}
-                  </span>
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-base md:text-xl font-black uppercase italic block leading-none mb-1">{equipo.nombre_equipo}</span>
+                    <span className="text-[9px] font-bold uppercase opacity-50">
+                      {view === "FECHA" ? `Puntos de la Fecha ${selectedFecha}` : `Hincha de ${equipo.club || 'CASI'}`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-span-3 md:col-span-2 text-right">
+                  <p className={`text-2xl md:text-4xl font-black italic tracking-tighter ${esPrimero ? 'text-black' : 'text-emerald-400'}`}>
+                    {equipo.puntos_acumulados || 0}
+                  </p>
                 </div>
               </div>
-
-              <div className="col-span-3 md:col-span-2 text-right">
-                <p className={`text-2xl md:text-4xl font-black italic tracking-tighter ${
-                  esPrimero ? "text-black" : "text-emerald-400"
-                }`}>
-                  {equipo.puntos_acumulados || 0}
-                </p>
-              </div>
-            </div>
-          )
-        }) : (
-            <div className="text-center py-20 text-gray-500 font-bold uppercase text-xs tracking-widest border border-dashed border-white/10 rounded-2xl">
-                Aún no hay equipos de {userClub} inscriptos
-            </div>
+            )
+          })
+        ) : (
+          <div className="text-center py-20 text-gray-500 font-bold uppercase text-xs border border-dashed border-white/10 rounded-2xl">
+            No se encontraron datos para esta selección
+          </div>
         )}
 
         {filteredRanking.length > visibleCount && !loading && (
