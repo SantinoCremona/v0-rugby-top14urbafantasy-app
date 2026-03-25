@@ -8,11 +8,10 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
   const supabase = createClient()
   const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
   const [selectedFecha, setSelectedFecha] = useState(1)
-  const [ranking, setRanking] = useState(initialRanking)
+  const [ranking, setRanking] = useState(initialRanking) // Este estado controla lo que se ve
   const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(false)
 
-  // Función para normalizar el nombre del club para la imagen del escudo
   const getLogoPath = (clubName: string) => {
     const fileName = clubName.toLowerCase().trim().replace(/\s+/g, '-')
     return `/escudos/${fileName}.png`
@@ -29,6 +28,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
       .order('puntos_fecha', { ascending: false })
 
     if (!error && data) {
+      // MAPEAMOS puntos_fecha a puntos_acumulados para mantener la consistencia en el diseño
       const mapped = data.map(d => ({
         nombre_equipo: d.nombre_equipo,
         puntos_acumulados: d.puntos_fecha,
@@ -43,8 +43,10 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
     setView(newView)
     setVisibleCount(10)
     if (newView === "GENERAL" || newView === "CLUB") {
+        // Restauramos el ranking inicial (acumulados totales)
         setRanking(initialRanking)
     } else {
+        // Disparamos la carga de la fecha seleccionada
         fetchRankingFecha(selectedFecha)
     }
   }
@@ -106,7 +108,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
 
       {view === "FECHA" && (
         <div className="flex flex-wrap justify-center gap-3 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
-          {[1, 2, 3, 4].map((num) => (
+          {[1, 2, 3, 4, 5].map((num) => (
             <button
               key={num}
               onClick={() => fetchRankingFecha(num)}
@@ -130,7 +132,9 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
       </div>
 
       <div className="space-y-3">
-        {visibleRanking.length > 0 ? visibleRanking.map((equipo, index) => {
+        {loading ? (
+            <div className="text-center py-20 font-black text-emerald-500 animate-pulse uppercase tracking-widest text-xs">Cargando fecha {selectedFecha}...</div>
+        ) : visibleRanking.length > 0 ? visibleRanking.map((equipo, index) => {
           const esPrimero = index === 0;
           const esPodio = index < 3;
 
@@ -186,7 +190,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
             </div>
         )}
 
-        {filteredRanking.length > visibleCount && (
+        {filteredRanking.length > visibleCount && !loading && (
           <button
             onClick={() => setVisibleCount(prev => prev + 20)}
             className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-white hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 group"
