@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // Agregado useEffect
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client" 
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ export default function LoginPage() {
 
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true) // Nuevo estado para persistencia
   const [showPassword, setShowPassword] = useState(false)
   
   const [email, setEmail] = useState("")
@@ -20,6 +21,19 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [nombreDT, setNombreDT] = useState("")
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  // --- NUEVA LÓGICA DE PERSISTENCIA ---
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push("/dashboard")
+      } else {
+        setCheckingAuth(false)
+      }
+    }
+    checkUser()
+  }, [supabase, router])
 
   const validatePassword = (pass: string) => {
     const hasUpperCase = /[A-Z]/.test(pass)
@@ -91,17 +105,25 @@ export default function LoginPage() {
     }
   }
 
+  // Si está chequeando la sesión, mostramos un loader centrado
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden text-white">
       
       {/* IMAGEN DE FONDO CON OVERLAY */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/urbafoto-login.jpeg" // Asegurate de guardarla con este nombre en la carpeta /public
+          src="/urbafoto-login.jpeg" 
           alt="Rugby Background"
           className="w-full h-full object-cover scale-105 animate-pulse-slow" 
         />
-        {/* Capa de oscurecimiento (Vignette) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-[#0A0A0B]/80 to-[#0A0A0B]" />
       </div>
 
