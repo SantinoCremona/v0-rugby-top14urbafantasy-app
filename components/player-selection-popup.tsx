@@ -13,6 +13,7 @@ interface PlayerSelectionPopupProps {
   players: Player[]
   onSelectPlayer: (player: Player) => void
   remainingBudget: number
+  clubCounts: Record<string, number> // <-- AGREGAR ESTO
 }
 
 interface Match {
