@@ -3,6 +3,10 @@ import { MainHeader } from "@/components/main-header"
 import { Shield, Users, Star } from "lucide-react"
 import { RankingView } from "@/components/ranking-view"
 
+// ESTO ASEGURA QUE EL RANKING SIEMPRE ESTÉ ACTUALIZADO Y NO USE CACHÉ
+export const revalidate = 0
+export const dynamic = 'force-dynamic'
+
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
@@ -17,13 +21,20 @@ export default async function RankingGeneralPage() {
     .single()
 
   // 3. SELECT CON 'club' PARA EL RANKING
+  // Traemos puntos_acumulados como base inicial
   const { data: rankingData, error } = await supabase
     .from('perfiles')
     .select('nombre_equipo, puntos_acumulados, club') 
     .order('puntos_acumulados', { ascending: false })
 
   if (error) console.error("Error fetching ranking:", error)
-  const ranking = rankingData || []
+  
+  // Mapeo preventivo para asegurar que no pasen nulos al RankingView
+  const ranking = (rankingData || []).map(r => ({
+    nombre_equipo: r.nombre_equipo || "XV SIN NOMBRE",
+    puntos_acumulados: r.puntos_acumulados || 0,
+    club: r.club || "CASI"
+  }))
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white">
@@ -41,7 +52,7 @@ export default async function RankingGeneralPage() {
               Ranking <span className="text-white/20">General</span>
             </h1>
             <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.4em] mt-4">
-              Temporada URBA 2026 • Top 14
+              Temporada URBA 2026 • Top 12
             </p>
           </div>
           
@@ -56,7 +67,7 @@ export default async function RankingGeneralPage() {
           </div>
         </div>
 
-        {/* CONTENIDO DINÁMICO CON LA PROP userClub AÑADIDA */}
+        {/* CONTENIDO DINÁMICO */}
         {ranking.length > 0 ? (
           <RankingView 
             initialRanking={ranking} 
