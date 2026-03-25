@@ -13,7 +13,7 @@ interface PlayerSelectionPopupProps {
   players: Player[]
   onSelectPlayer: (player: Player) => void
   remainingBudget: number
-  clubCounts: Record<string, number> // <-- AGREGAR ESTO
+  clubCounts: Record<string, number> // <-- NUEVA PROP AGREGADA
 }
 
 interface Match {
@@ -34,16 +34,15 @@ export function PlayerSelectionPopup({
   positionType,
   players,
   onSelectPlayer,
-  remainingBudget
+  remainingBudget,
+  clubCounts // <-- RECIBIMOS LA PROP
 }: PlayerSelectionPopupProps) {
   const supabase = createClient()
   const [fixture, setFixture] = useState<Match[]>([])
   const [loadingFixture, setLoadingFixture] = useState(true)
   const [clubFilter, setClubFilter] = useState<string>("TODOS")
 
-  // Función para normalizar el nombre del club para la imagen
   const getLogoPath = (clubName: string) => {
-    // Convierte "La Plata" en "la-plata" y "SIC" en "sic"
     const fileName = clubName.toLowerCase().trim().replace(/\s+/g, '-')
     return `/escudos/${fileName}.png`
   }
@@ -151,7 +150,8 @@ export function PlayerSelectionPopup({
             <div className="space-y-1">
               {filteredPlayers.sort((a,b) => b.precio - a.precio).map((player) => {
                 const canAfford = player.precio <= remainingBudget
-                const estado = player.estado?.toUpperCase() || 'TITULAR'
+                const clubLimitReached = (clubCounts[player.club] || 0) >= 4 // Lógica de límite
+                const isSelectable = canAfford && !clubLimitReached // ¿Se puede clickear?
 
                 const match = fixture.find(m => 
                   m.local.toUpperCase() === player.club.toUpperCase() || 
@@ -161,13 +161,17 @@ export function PlayerSelectionPopup({
                 const nombreRival = esLocal ? match?.visitante : match?.local
                 const prefijo = esLocal ? "vs" : "@"
 
+                const estado = player.estado?.toUpperCase() || 'TITULAR'
+
                 return (
                   <button
                     key={player.id}
-                    onClick={() => canAfford && onSelectPlayer(player)}
-                    disabled={!canAfford}
+                    onClick={() => isSelectable && onSelectPlayer(player)}
+                    disabled={!isSelectable}
                     className={`w-full group flex items-center gap-4 p-4 rounded-2xl transition-all border border-transparent ${
-                      canAfford ? "hover:bg-white/5 hover:border-white/5 text-white" : "opacity-30 cursor-not-allowed"
+                      isSelectable 
+                        ? "hover:bg-white/5 hover:border-white/5 text-white" 
+                        : "opacity-30 cursor-not-allowed grayscale" // Se pone gris si no es seleccionable
                     }`}
                   >
                     {/* ESCUDO DEL CLUB */}
@@ -177,7 +181,6 @@ export function PlayerSelectionPopup({
                         alt={player.club}
                         className="w-9 h-9 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.15)] group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => {
-                          // Si falla la imagen, ocultamos el img y mostramos el texto del club
                           e.currentTarget.style.display = 'none';
                           const fallback = e.currentTarget.parentElement?.querySelector('.fallback-text');
                           if (fallback) (fallback as HTMLElement).style.display = 'block';
@@ -220,9 +223,12 @@ export function PlayerSelectionPopup({
                     </div>
 
                     <div className="text-right ml-4 flex-shrink-0">
-                      <p className={`text-base font-black italic tracking-tighter ${canAfford ? 'text-white' : 'text-gray-600'}`}>
+                      <p className={`text-base font-black italic tracking-tighter ${isSelectable ? 'text-white' : 'text-gray-600'}`}>
                         ${player.precio.toLocaleString()}
                       </p>
+                      {clubLimitReached && (
+                         <span className="text-[8px] font-black text-rose-500 uppercase block tracking-tighter bg-rose-500/10 px-1 py-0.5 rounded mt-1">Límite 4/4</span>
+                      )}
                     </div>
                   </button>
                 )
