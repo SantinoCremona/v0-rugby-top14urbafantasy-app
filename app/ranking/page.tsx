@@ -3,7 +3,7 @@ import { MainHeader } from "@/components/main-header"
 import { Shield, Users, Star } from "lucide-react"
 import { RankingView } from "@/components/ranking-view"
 
-// ESTO ASEGURA QUE EL RANKING SIEMPRE ESTÉ ACTUALIZADO Y NO USE CACHÉ
+// Forza la actualización de datos para que no use caché vieja
 export const revalidate = 0
 export const dynamic = 'force-dynamic'
 
@@ -13,26 +13,26 @@ export default async function RankingGeneralPage() {
   // 1. OBTENEMOS EL USUARIO ACTUAL PARA SABER SU CLUB
   const { data: { user } } = await supabase.auth.getUser()
   
-  // 2. BUSCAMOS EL CLUB ESPECÍFICO DEL PERFIL DEL USUARIO
+  // 2. BUSCAMOS SU CLUB EN LA TABLA PERFILES
   const { data: perfilUsuario } = await supabase
     .from('perfiles')
     .select('club')
     .eq('id', user?.id)
     .single()
 
-  // 3. SELECT CON 'club' PARA EL RANKING
-  // Traemos puntos_acumulados como base inicial
+  // 3. CARGAMOS EL RANKING DESDE LA VISTA 'ranking_usuarios'
+  // Usamos 'puntos_totales' que es el nombre de tu columna en esa vista
   const { data: rankingData, error } = await supabase
-    .from('perfiles')
-    .select('nombre_equipo, puntos_acumulados, club') 
-    .order('puntos_acumulados', { ascending: false })
+    .from('ranking_usuarios')
+    .select('nombre_equipo, puntos_totales, club') 
+    .order('puntos_totales', { ascending: false })
 
   if (error) console.error("Error fetching ranking:", error)
   
-  // Mapeo preventivo para asegurar que no pasen nulos al RankingView
+  // Mapeo para que el RankingView reciba los datos listos
   const ranking = (rankingData || []).map(r => ({
     nombre_equipo: r.nombre_equipo || "XV SIN NOMBRE",
-    puntos_acumulados: r.puntos_acumulados || 0,
+    puntos_totales: r.puntos_totales || 0, // Mantenemos el nombre original de la vista
     club: r.club || "CASI"
   }))
 
@@ -67,7 +67,7 @@ export default async function RankingGeneralPage() {
           </div>
         </div>
 
-        {/* CONTENIDO DINÁMICO */}
+        {/* PASAMOS LOS DATOS AL COMPONENTE CLIENTE */}
         {ranking.length > 0 ? (
           <RankingView 
             initialRanking={ranking} 
