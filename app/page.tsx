@@ -97,7 +97,7 @@ export default function LoginPage() {
       {/* IMAGEN DE FONDO CON OVERLAY */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/urbafoto-login.jpg" // Asegurate de guardarla con este nombre en la carpeta /public
+          src="/urbafoto-login.jpeg" // Asegurate de guardarla con este nombre en la carpeta /public
           alt="Rugby Background"
           className="w-full h-full object-cover scale-105 animate-pulse-slow" 
         />
