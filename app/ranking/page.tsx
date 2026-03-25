@@ -3,27 +3,38 @@ import { MainHeader } from "@/components/main-header"
 import { Shield, Users, Star } from "lucide-react"
 import { RankingView } from "@/components/ranking-view"
 
+// Forzamos datos frescos para evitar que Next.js cachee resultados vacíos
+export const revalidate = 0
+export const dynamic = 'force-dynamic'
+
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
   // 1. OBTENEMOS EL USUARIO ACTUAL PARA SABER SU CLUB
   const { data: { user } } = await supabase.auth.getUser()
   
-  // 2. BUSCAMOS EL CLUB ESPECÍFICO DEL PERFIL DEL USUARIO
+  // 2. BUSCAMOS SU CLUB EN LA TABLA PERFILES
   const { data: perfilUsuario } = await supabase
     .from('perfiles')
     .select('club')
     .eq('id', user?.id)
     .single()
 
-  // 3. SELECT CON 'club' PARA EL RANKING
+  // 3. CARGAMOS EL RANKING DESDE TU VISTA 'ranking_usuarios'
+  // IMPORTANTE: Usamos 'puntos_totales' que es el nombre de tu columna en esa vista
   const { data: rankingData, error } = await supabase
-    .from('perfiles')
-    .select('nombre_equipo, puntos_acumulados, club') 
-    .order('puntos_acumulados', { ascending: false })
+    .from('ranking_usuarios')
+    .select('nombre_equipo, puntos_totales, club') 
+    .order('puntos_totales', { ascending: false })
 
   if (error) console.error("Error fetching ranking:", error)
-  const ranking = rankingData || []
+  
+  // Mapeamos para que los puntos siempre lleguen al componente
+  const ranking = (rankingData || []).map(r => ({
+    nombre_equipo: r.nombre_equipo || "XV SIN NOMBRE",
+    puntos_totales: r.puntos_totales || 0,
+    club: r.club || "CASI"
+  }))
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white">
@@ -56,7 +67,7 @@ export default async function RankingGeneralPage() {
           </div>
         </div>
 
-        {/* CONTENIDO DINÁMICO CON LA PROP userClub AÑADIDA */}
+        {/* CONTENIDO DINÁMICO */}
         {ranking.length > 0 ? (
           <RankingView 
             initialRanking={ranking} 
