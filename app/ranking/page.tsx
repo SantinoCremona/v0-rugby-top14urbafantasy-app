@@ -1,14 +1,15 @@
 import { createClient } from "@/lib/supabase/server"
 import { MainHeader } from "@/components/main-header"
 import { Shield, Users, Star } from "lucide-react"
-import { RankingView } from "@/components/ranking-view" // <-- Importamos el nuevo componente
+import { RankingView } from "@/components/ranking-view"
 
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
+  // AGREGAMOS 'club' AL SELECT PARA QUE EL COMPONENTE HIJO PUEDA FILTRAR
   const { data: rankingData, error } = await supabase
     .from('perfiles')
-    .select('nombre_equipo, puntos_acumulados')
+    .select('nombre_equipo, puntos_acumulados, club') 
     .order('puntos_acumulados', { ascending: false })
 
   if (error) console.error("Error fetching ranking:", error)
@@ -19,7 +20,7 @@ export default async function RankingGeneralPage() {
       <MainHeader />
       
       <main className="max-w-5xl mx-auto px-4 py-12">
-        {/* HEADER DE PÁGINA (Sin cambios) */}
+        {/* HEADER DE PÁGINA */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -30,7 +31,7 @@ export default async function RankingGeneralPage() {
               Ranking <span className="text-white/20">General</span>
             </h1>
             <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.4em] mt-4">
-              Temporada URBA 2026 • Top 14
+              Temporada URBA 2026 • Top 12
             </p>
           </div>
           
