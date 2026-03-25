@@ -166,7 +166,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
                   <span className={`text-[9px] font-bold uppercase tracking-widest ${
                     esPrimero ? "text-black/50" : "text-gray-600"
                   }`}>
-                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `MANAGER DE ${userClub}` : `HINCHA DE ${equipo.club}`)}
+                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `HINCHA DE ${userClub}` : `HINCHA DE ${equipo.club}`)}
                   </span>
                 </div>
               </div>
