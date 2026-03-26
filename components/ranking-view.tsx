@@ -200,7 +200,7 @@ export function RankingView({
                   <span className={`text-[9px] font-bold uppercase tracking-widest ${
                     esMiUsuario ? "text-emerald-500/60" : esPrimero ? "text-black/50" : "text-gray-600"
                   }`}>
-                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `MANAGER DE ${userClub}` : `HINCHA DE ${equipo.club || 'URBA'}`)}
+                    {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `HEAD COACH DE ${userClub}` : `HINCHA DE ${equipo.club || 'URBA'}`)}
                   </span>
                 </div>
               </div>
@@ -219,7 +219,7 @@ export function RankingView({
         {filteredRanking.length > visibleCount && !loading && (
           <button 
             onClick={() => setVisibleCount(prev => prev + 20)} 
-            className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-white hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 group"
+            className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] bg-white text-black hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 group"
           >
             Ver resto del ranking <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
           </button>
