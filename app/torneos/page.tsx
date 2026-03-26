@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Suspense } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { MainHeader } from "@/components/main-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,9 +21,21 @@ interface RankingMember {
   puntos_totales: number
 }
 
+// 1. COMPONENTE PRINCIPAL CON SUSPENSE (Obligatorio para useSearchParams)
 export default function TorneosPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center"><Loader2 className="animate-spin w-10 h-10 text-emerald-500" /></div>}>
+      <TorneosContent />
+    </Suspense>
+  )
+}
+
+// 2. CONTENIDO REAL DE LA PÁGINA
+function TorneosContent() {
   const supabase = createClient()
-  const fileInputRef = useRef<HTMLInputElement>(null) // Ref para el input de imagen
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [leagues, setLeagues] = useState<League[]>([])
   const [selectedLeague, setSelectedLeague] = useState<League | null>(null)
@@ -30,28 +43,51 @@ export default function TorneosPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
   const [newLeagueName, setNewLeagueName] = useState("")
-  
-  // ESTADOS PARA LA IMAGEN REAL
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  
   const [joinCode, setJoinCode] = useState("")
   const [loading, setLoading] = useState(false)
   const [loadingRanking, setLoadingRanking] = useState(false)
   const [fetching, setFetching] = useState(true)
 
+  // --- LÓGICA DE AUTO-JOIN POR URL ---
   useEffect(() => {
-    fetchLeagues()
-  }, [])
-
-  // Limpiar estados al cerrar modal
-  useEffect(() => {
-    if (!showCreateModal) {
-      setSelectedFile(null)
-      setPreviewUrl(null)
-      setNewLeagueName("")
+    const code = searchParams.get('join')
+    if (code) {
+      handleAutoJoin(code.toUpperCase())
+    } else {
+      fetchLeagues()
     }
-  }, [showCreateModal])
+  }, [searchParams])
+
+  async function handleAutoJoin(code: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    // Si no hay usuario, el middleware o la lógica de la página debería manejar el login.
+    // Aquí simplemente esperamos a que exista el usuario.
+    if (!user) {
+      setFetching(false)
+      return 
+    }
+
+    try {
+      const { data: liga } = await supabase.from('ligas').select('id').eq('codigo_invitacion', code).single()
+      
+      if (liga) {
+        const { error: joinError } = await supabase
+          .from('liga_miembros')
+          .insert([{ liga_id: liga.id, user_id: user.id }])
+        
+        // Si se unió con éxito o ya era miembro (error 23505), limpiamos URL y cargamos
+        if (!joinError || (joinError as any).code === '23505') {
+          router.replace('/torneos') // Limpia el ?join= de la URL
+          fetchLeagues()
+        }
+      }
+    } catch (e) {
+      console.error("Error en auto-join:", e)
+    }
+  }
 
   async function fetchLeagues() {
     setFetching(true)
@@ -82,9 +118,10 @@ export default function TorneosPage() {
   }
 
   const handleShareWhatsApp = (league: League) => {
-    const message = `¡Sumate a mi torneo "${league.nombre}" en Headcoach! 🏉\n\nCódigo de acceso: ${league.codigo_invitacion}\n\nIngresá acá: ${window.location.origin}/torneos`;
-    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    // Generamos el link con el parámetro de unión
+    const shareUrl = `${window.location.origin}/torneos?join=${league.codigo_invitacion}`;
+    const message = `¡Sumate a mi torneo "${league.nombre}" en Headcoach! 🏉\n\nEntrá acá para unirte directo: ${shareUrl}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleViewRanking = async (league: League) => {
@@ -114,41 +151,24 @@ export default function TorneosPage() {
       if (!user) throw new Error("Inicia sesión")
 
       let publicUrl = null
-
-      // 1. SUBIR IMAGEN AL STORAGE SI EXISTE
       if (selectedFile) {
         const fileExt = selectedFile.name.split('.').pop()
         const fileName = `${Math.random()}.${fileExt}`
         const filePath = `${user.id}/${fileName}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('logos-ligas')
-          .upload(filePath, selectedFile)
-
+        const { error: uploadError } = await supabase.storage.from('logos-ligas').upload(filePath, selectedFile)
         if (uploadError) throw uploadError
-
-        const { data: urlData } = supabase.storage
-          .from('logos-ligas')
-          .getPublicUrl(filePath)
-          
+        const { data: urlData } = supabase.storage.from('logos-ligas').getPublicUrl(filePath)
         publicUrl = urlData.publicUrl
       }
 
       const code = Math.random().toString(36).substring(2, 8).toUpperCase()
-      
       const { data: liga, error: errorLiga } = await supabase
         .from('ligas')
-        .insert([{ 
-          nombre: newLeagueName, 
-          codigo_invitacion: code, 
-          creador_id: user.id,
-          logo_url: publicUrl 
-        }])
+        .insert([{ nombre: newLeagueName, codigo_invitacion: code, creador_id: user.id, logo_url: publicUrl }])
         .select().single()
 
       if (errorLiga) throw errorLiga
       await supabase.from('liga_miembros').insert([{ liga_id: liga.id, user_id: user.id }])
-      
       setShowCreateModal(false)
       fetchLeagues()
     } catch (error: any) { alert(error.message) } finally { setLoading(false) }
@@ -174,7 +194,7 @@ export default function TorneosPage() {
       <MainHeader />
       <main className="max-w-5xl mx-auto px-6 py-12">
         {selectedLeague ? (
-          /* --- VISTA DETALLE LIGA --- */
+          /* --- VISTA DETALLE LIGA (No cambia) --- */
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <button onClick={() => setSelectedLeague(null)} className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors mb-8">
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Volver a mis torneos
@@ -182,11 +202,7 @@ export default function TorneosPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div className="flex items-center gap-6">
                 <div className="w-20 h-20 bg-white rounded-[24px] overflow-hidden flex items-center justify-center shadow-2xl border-4 border-white/5">
-                   {selectedLeague.logo_url ? (
-                     <img src={selectedLeague.logo_url} className="w-full h-full object-cover" alt="Logo" />
-                   ) : (
-                     <Trophy className="w-10 h-10 text-black" />
-                   )}
+                   {selectedLeague.logo_url ? <img src={selectedLeague.logo_url} className="w-full h-full object-cover" alt="Logo" /> : <Trophy className="w-10 h-10 text-black" />}
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
@@ -197,8 +213,8 @@ export default function TorneosPage() {
                 </div>
               </div>
               <div className="flex flex-col items-center gap-3">
-                <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl backdrop-blur-md">
-                  <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1 text-center">Código Invitación</p>
+                <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl backdrop-blur-md text-center">
+                  <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Código Invitación</p>
                   <p className="text-2xl font-black text-white tracking-widest uppercase">{selectedLeague.codigo_invitacion}</p>
                 </div>
                 <Button onClick={() => handleShareWhatsApp(selectedLeague)} className="w-full bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/20 rounded-xl h-10 font-black uppercase tracking-widest text-[10px] transition-all">
@@ -225,7 +241,7 @@ export default function TorneosPage() {
             )}
           </div>
         ) : (
-          /* --- VISTA LISTA LOBBY --- */
+          /* --- VISTA LOBBY (No cambia) --- */
           <>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
               <div>
@@ -243,14 +259,10 @@ export default function TorneosPage() {
                 <div className="py-24 flex justify-center"><Loader2 className="animate-spin w-10 h-10 text-white/10" /></div>
               ) : (
                 leagues.map((league) => (
-                  <div key={league.id} className="group bg-white/[0.02] border border-white/5 p-8 rounded-[32px] flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300">
+                  <div key={league.id} className="group bg-white/[0.02] border border-white/5 p-8 rounded-[32px] flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300 shadow-xl">
                     <div className="flex items-center gap-8 mb-6 md:mb-0">
                       <div className="w-16 h-16 bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300">
-                        {league.logo_url ? (
-                          <img src={league.logo_url} className="w-full h-full object-cover" alt="Logo" />
-                        ) : (
-                          <Trophy className="w-8 h-8 text-black" />
-                        )}
+                        {league.logo_url ? <img src={league.logo_url} className="w-full h-full object-cover" alt="Logo" /> : <Trophy className="w-8 h-8 text-black" />}
                       </div>
                       <div>
                         <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white group-hover:text-emerald-400 transition-colors">{league.nombre}</h3>
@@ -283,34 +295,14 @@ export default function TorneosPage() {
               <button onClick={() => {setShowCreateModal(false); setShowJoinModal(false)}} className="p-2 hover:bg-white/5 rounded-full transition-colors"><X className="w-6 h-6 text-white"/></button>
             </div>
             
-            <div className="flex flex-col items-center mb-8">
-              {/* BOTÓN DE SUBIDA / PREVIEW */}
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                className="w-28 h-28 bg-white/5 border-2 border-dashed border-white/10 rounded-[32px] overflow-hidden flex flex-col items-center justify-center hover:border-emerald-500 transition-all group relative"
-              >
-                {previewUrl ? (
-                  <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
-                ) : (
-                  <>
-                    <Camera className="w-8 h-8 text-gray-600 mb-2 group-hover:text-emerald-500 transition-colors" />
-                    <span className="text-[8px] font-black uppercase text-gray-600 tracking-widest">Foto</span>
-                  </>
-                )}
-                {previewUrl && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ImageIcon className="w-6 h-6 text-white" />
-                  </div>
-                )}
-              </button>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                className="hidden" 
-                accept="image/*" 
-              />
-            </div>
+            {showCreateModal && (
+              <div className="flex flex-col items-center mb-8">
+                <button onClick={() => fileInputRef.current?.click()} className="w-28 h-28 bg-white/5 border-2 border-dashed border-white/10 rounded-[32px] overflow-hidden flex flex-col items-center justify-center hover:border-emerald-500 transition-all group relative">
+                  {previewUrl ? <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" /> : <><Camera className="w-8 h-8 text-gray-600 mb-2 group-hover:text-emerald-500" /><span className="text-[8px] font-black uppercase text-gray-600 tracking-widest">Foto</span></>}
+                </button>
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
+              </div>
+            )}
 
             <div className="space-y-4 mb-8">
               <Input 
