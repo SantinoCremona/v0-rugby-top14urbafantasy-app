@@ -39,7 +39,7 @@ export function RankingView({
     try {
       const { data, error } = await supabase
         .from('puntos_usuario_fecha') 
-        .select('nombre_equipo, puntos_fecha, user_id, club')
+        .select('nombre_equipo, puntos_fecha, user_id')
         .eq('fecha_num', num)
         .order('puntos_fecha', { ascending: false })
 
