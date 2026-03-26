@@ -35,86 +35,66 @@ function TorneosContent() {
   const [loadingRanking, setLoadingRanking] = useState(false)
   const [fetching, setFetching] = useState(true)
 
-  // --- LÓGICA DE PERSISTENCIA Y AUTO-JOIN ---
+  // --- LÓGICA DE AUTO-JOIN ---
   useEffect(() => {
-    const processJoin = async () => {
-      // 1. Verificamos si hay un código en la URL
-      const codeFromUrl = searchParams.get('join')
-      
-      // 2. Si hay código en URL, lo guardamos en una cookie (expira en 10 min)
-      if (codeFromUrl) {
-        document.cookie = `pending_join=${codeFromUrl.toUpperCase()}; path=/; max-age=600`
-      }
-
-      // 3. Chequeamos si hay un código pendiente (en URL o en Cookie)
-      const pendingCode = codeFromUrl || document.cookie.split('; ').find(row => row.startsWith('pending_join='))?.split('=')[1]
-
-      if (!pendingCode) {
+    const checkJoinRequest = async () => {
+      const code = searchParams.get('join')
+      if (!code) {
         fetchLeagues()
         return
       }
 
-      // 4. Verificamos sesión
       const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        // Si no hay user, lo mandamos al login pero el código ya está a salvo en la cookie
-        setFetching(false)
-        return 
-      }
+      if (!user) return // El middleware ya se encarga de mandarlo al login
 
-      // 5. Si hay user y hay código, ejecutamos la unión
       try {
-        const { data: liga } = await supabase.from('ligas').select('id').eq('codigo_invitacion', pendingCode).single()
-        
+        // 1. Buscamos la liga
+        const { data: liga } = await supabase
+          .from('ligas')
+          .select('id')
+          .eq('codigo_invitacion', code.toUpperCase())
+          .single()
+
         if (liga) {
+          // 2. Intentamos unirlo
           const { error: joinError } = await supabase
             .from('liga_miembros')
             .insert([{ liga_id: liga.id, user_id: user.id }])
-          
-          // Borramos la cookie ya usada
-          document.cookie = "pending_join=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;"
-          
+
+          // Si no hay error (o si ya era miembro), limpiamos la URL y cargamos
           if (!joinError || (joinError as any).code === '23505') {
-            // Limpiamos la URL y refrescamos
-            router.replace('/torneos')
-            fetchLeagues()
+            router.replace('/torneos') // Limpiamos el ?join= de la barra
           }
         }
       } catch (e) {
         console.error(e)
+      } finally {
         fetchLeagues()
       }
     }
 
-    processJoin()
+    checkJoinRequest()
   }, [searchParams])
 
+  // --- RESTO DE FUNCIONES (fetchLeagues, handleCreate, etc) IGUAL QUE ANTES ---
   async function fetchLeagues() {
     setFetching(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setFetching(false); return; }
-
     const { data } = await supabase
       .from('liga_miembros')
       .select(`liga_id, ligas:liga_id ( id, nombre, codigo_invitacion, logo_url )`)
       .eq('user_id', user.id)
-
-    if (data) {
-      setLeagues(data.map((item: any) => item.ligas).filter(Boolean))
-    }
+    if (data) setLeagues(data.map((item: any) => item.ligas).filter(Boolean))
     setFetching(false)
   }
 
-  // --- COMPARTIR ---
   const handleShareWhatsApp = (league: any) => {
     const shareUrl = `${window.location.origin}/torneos?join=${league.codigo_invitacion}`
     const message = `¡Sumate a mi torneo "${league.nombre}" en Headcoach! 🏉\n\nEntrá acá para unirte directo: ${shareUrl}`
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank')
   }
 
-  // ... (Tus funciones handleFileChange, handleCreateLeague, handleJoinLeague, handleViewRanking se mantienen igual)
-  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -206,7 +186,7 @@ function TorneosContent() {
                 </Button>
               </div>
             </div>
-            {/* ... (Ranking igual) */}
+            
             <div className="space-y-3">
               {ranking.map((res, idx) => (
                 <div key={res.user_id} className={`flex items-center justify-between p-6 rounded-2xl border ${idx === 0 ? "bg-yellow-500/10 border-yellow-500/50" : "bg-white/[0.02] border-white/5"}`}>
@@ -230,7 +210,7 @@ function TorneosContent() {
               </div>
               <div className="flex gap-3">
                 <Button onClick={() => setShowJoinModal(true)} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl px-6 h-14 font-black uppercase tracking-widest text-[11px] transition-all"><Users className="w-4 h-4 mr-2" /> Unirse</Button>
-                <Button onClick={() => setShowCreateModal(true)} className="bg-white text-black hover:bg-gray-200 rounded-2xl px-8 h-14 font-black uppercase tracking-widest text-[11px] transition-all shadow-xl"><Plus className="w-4 h-4 mr-2" /> Crear Torneo</Button>
+                <Button onClick={() => setShowCreateModal(true)} className="bg-white text-black hover:bg-gray-200 rounded-2xl px-8 h-14 font-black uppercase tracking-widest text-[11px] transition-all shadow-xl active:scale-95"><Plus className="w-4 h-4 mr-2" /> Crear Torneo</Button>
               </div>
             </div>
 
@@ -244,19 +224,22 @@ function TorneosContent() {
                 </div>
               ) : (
                 leagues.map((league) => (
-                  <div key={league.id} className="group bg-white/[0.02] border border-white/5 p-8 rounded-[32px] flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] transition-all">
+                  <div key={league.id} className="group bg-white/[0.02] border border-white/5 p-8 rounded-[32px] flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] transition-all duration-300 shadow-xl">
                     <div className="flex items-center gap-8 mb-6 md:mb-0">
-                      <div className="w-16 h-16 bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-2xl">
+                      <div className="w-16 h-16 bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300">
                         {league.logo_url ? <img src={league.logo_url} className="w-full h-full object-cover" alt="Logo" /> : <Trophy className="w-8 h-8 text-black" />}
                       </div>
                       <div>
                         <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white group-hover:text-emerald-400 transition-colors">{league.nombre}</h3>
-                        <span className="text-[11px] font-black text-gray-500 tracking-[0.2em] uppercase">Código: {league.codigo_invitacion}</span>
+                        <div className="flex items-center gap-2 mt-2">
+                           <Hash className="w-3 h-3 text-gray-600" />
+                           <span className="text-[11px] font-black text-gray-500 tracking-[0.2em] uppercase">Código: {league.codigo_invitacion}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Button onClick={() => handleShareWhatsApp(league)} variant="outline" className="bg-emerald-500/5 text-emerald-400 border-emerald-500/20 rounded-2xl w-14 h-14 p-0"><Share2 className="w-5 h-5" /></Button>
-                      <Button onClick={() => handleViewRanking(league)} className="bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 rounded-2xl px-10 h-14 font-black uppercase tracking-widest text-[11px] transition-all">Ver Tabla</Button>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <Button onClick={() => handleShareWhatsApp(league)} variant="outline" className="bg-emerald-500/5 hover:bg-emerald-500 text-emerald-400 hover:text-black border-emerald-500/20 rounded-2xl w-14 h-14 p-0 transition-all"><Share2 className="w-5 h-5" /></Button>
+                      <Button onClick={() => handleViewRanking(league)} className="flex-1 md:flex-none bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 rounded-2xl px-10 h-14 font-black uppercase tracking-widest text-[11px] transition-all">Ver Tabla</Button>
                     </div>
                   </div>
                 ))
@@ -272,16 +255,16 @@ function TorneosContent() {
           <div className="bg-[#0A0A0B] border border-white/10 p-10 w-full max-w-md rounded-[32px] shadow-2xl text-center">
             <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-10">Nuevo <span className="text-white/20">Torneo</span></h2>
             <div className="flex flex-col items-center mb-8">
-              <button onClick={() => fileInputRef.current?.click()} className="w-28 h-28 bg-white/5 border-2 border-dashed border-white/10 rounded-[32px] overflow-hidden flex flex-col items-center justify-center hover:border-emerald-500 transition-all group">
-                {previewUrl ? <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" /> : <><Camera className="w-8 h-8 text-gray-600 mb-2 group-hover:text-emerald-500" /><span className="text-[8px] font-black uppercase text-gray-600 tracking-widest">Foto</span></>}
+              <button onClick={() => fileInputRef.current?.click()} className="w-28 h-28 bg-white/5 border-2 border-dashed border-white/10 rounded-[32px] overflow-hidden flex flex-col items-center justify-center hover:border-emerald-500 transition-all group relative">
+                {previewUrl ? <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" /> : <><Camera className="w-8 h-8 text-gray-600 mb-2 group-hover:text-emerald-500 transition-colors" /><span className="text-[8px] font-black uppercase text-gray-600 tracking-widest">Foto</span></>}
               </button>
               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
             </div>
             <Input placeholder="NOMBRE DE LA LIGA" value={newLeagueName} onChange={(e) => setNewLeagueName(e.target.value)} className="h-16 bg-white/5 border-white/10 rounded-2xl font-black text-center text-lg mb-8 uppercase text-white" />
-            <Button onClick={handleCreateLeague} disabled={loading} className="w-full h-16 rounded-2xl font-black italic uppercase text-lg bg-white text-black hover:bg-gray-200">
+            <Button onClick={handleCreateLeague} disabled={loading} className="w-full h-16 rounded-2xl font-black italic uppercase text-lg bg-white text-black hover:bg-gray-200 shadow-2xl">
               {loading ? <Loader2 className="animate-spin w-6 h-6" /> : "CREAR TORNEO"}
             </Button>
-            <button onClick={() => setShowCreateModal(false)} className="mt-6 text-xs font-bold text-gray-600 uppercase hover:text-white">Cancelar</button>
+            <button onClick={() => setShowCreateModal(false)} className="mt-6 text-xs font-bold text-gray-600 uppercase hover:text-white transition-colors">Cancelar</button>
           </div>
         </div>
       )}
@@ -291,10 +274,10 @@ function TorneosContent() {
           <div className="bg-[#0A0A0B] border border-white/10 p-10 w-full max-w-md rounded-[32px] shadow-2xl text-center">
             <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-10">Unirse a <span className="text-white/20">Torneo</span></h2>
             <Input placeholder="CÓDIGO DE ACCESO" value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} className="h-16 bg-white/5 border-white/10 rounded-2xl font-black text-center text-lg mb-8 uppercase text-white" />
-            <Button onClick={handleJoinLeague} disabled={loading} className="w-full h-16 rounded-2xl font-black italic uppercase text-lg bg-emerald-500 text-black hover:bg-emerald-400">
+            <Button onClick={handleJoinLeague} disabled={loading} className="w-full h-16 rounded-2xl font-black italic uppercase text-lg bg-emerald-500 text-black hover:bg-emerald-400 shadow-2xl">
               {loading ? <Loader2 className="animate-spin w-6 h-6 text-black" /> : "INGRESAR AL XV"}
             </Button>
-            <button onClick={() => setShowJoinModal(false)} className="mt-6 text-xs font-bold text-gray-600 uppercase hover:text-white">Cancelar</button>
+            <button onClick={() => setShowJoinModal(false)} className="mt-6 text-xs font-bold text-gray-600 uppercase hover:text-white transition-colors">Cancelar</button>
           </div>
         </div>
       )}
