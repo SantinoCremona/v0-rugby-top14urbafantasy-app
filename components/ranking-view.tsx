@@ -4,17 +4,14 @@ import { useState } from "react"
 import { Trophy, Shield, Medal, ChevronDown, Calendar } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
-// Agregamos la prop userClub que viene desde la Page
 export function RankingView({ initialRanking, userClub }: { initialRanking: any[], userClub: string }) {
   const supabase = createClient()
-  // Agregamos "CLUB" a los tipos de vista
   const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
   const [selectedFecha, setSelectedFecha] = useState(1)
   const [ranking, setRanking] = useState(initialRanking)
   const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(false)
 
-  // Función para obtener el escudo
   const getLogoPath = (clubName: string) => {
     const fileName = clubName?.toLowerCase().trim().replace(/\s+/g, '-') || 'casi'
     return `/escudos/${fileName}.png`
@@ -24,34 +21,38 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
     setLoading(true)
     setSelectedFecha(num)
     
-    // Suponiendo que tienes una tabla o vista 'puntos_usuario_fecha'
     const { data, error } = await supabase
       .from('puntos_usuario_fecha') 
-      .select('nombre_equipo, puntos_fecha, club') // Agregamos club aquí también
+      .select('nombre_equipo, puntos_fecha, club')
       .eq('fecha_num', num)
       .order('puntos_fecha', { ascending: false })
 
     if (!error && data) {
-      // Mapeamos para que coincida con la estructura de la tabla
+      // FIX: Nos aseguramos de que puntos_acumulados tome EL VALOR DE LA FECHA (puntos_fecha)
+      // y no el acumulado de la tabla perfiles.
       const mapped = data.map(d => ({
         nombre_equipo: d.nombre_equipo,
-        puntos_acumulados: d.puntos_fecha,
-        club: d.club // Mantenemos el club en el mapeo
+        puntos_acumulados: d.puntos_fecha, // Aquí estaba el posible conflicto
+        club: d.club
       }))
       setRanking(mapped)
+    } else {
+      // Si no hay datos para esa fecha, el ranking debe mostrarse vacío (0 puntos)
+      setRanking([])
     }
     setLoading(false)
   }
 
-  // Actualizamos toggleView para soportar CLUB
   const toggleView = (newView: "GENERAL" | "FECHA" | "CLUB") => {
     setView(newView)
     setVisibleCount(10)
-    if (newView === "GENERAL" || newView === "CLUB") setRanking(initialRanking)
-    else fetchRankingFecha(selectedFecha)
+    if (newView === "GENERAL" || newView === "CLUB") {
+        setRanking(initialRanking)
+    } else {
+        fetchRankingFecha(selectedFecha)
+    }
   }
 
-  // Lógica de filtrado: si es modo CLUB, filtramos localmente por el club del usuario
   const filteredRanking = view === "CLUB" 
     ? ranking.filter(item => item.club?.toUpperCase() === userClub?.toUpperCase())
     : ranking
@@ -60,7 +61,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
 
   return (
     <div className="space-y-6">
-      {/* SELECTOR DE MODO - Agregamos botón Mi Club */}
+      {/* SELECTOR DE MODO */}
       <div className="flex flex-wrap justify-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit mx-auto mb-10">
         <button 
           onClick={() => toggleView("GENERAL")}
@@ -88,14 +89,13 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         </button>
       </div>
 
-      {/* Cabecera de Club (Solo modo Club) */}
       {view === "CLUB" && (
         <div className="flex flex-col items-center mb-10 animate-in fade-in zoom-in duration-500">
           <div className="w-24 h-24 mb-4 bg-white/5 rounded-3xl p-4 border border-white/10 flex items-center justify-center">
             <img 
               src={getLogoPath(userClub)} 
               alt={userClub} 
-              className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+              className="w-full h-full object-contain"
               onError={(e) => { e.currentTarget.src = "/escudos/default.png" }}
             />
           </div>
@@ -107,7 +107,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
 
       {view === "FECHA" && (
         <div className="flex flex-wrap justify-center gap-3 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
-          {[1, 2, 3, 4].map((num) => (
+          {[1, 2, 3, 4, 5].map((num) => (
             <button
               key={num}
               onClick={() => fetchRankingFecha(num)}
@@ -131,7 +131,9 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
       </div>
 
       <div className="space-y-3">
-        {visibleRanking.map((equipo, index) => {
+        {loading ? (
+            <div className="text-center py-20 font-black text-emerald-500 animate-pulse uppercase text-xs tracking-widest">Cargando...</div>
+        ) : visibleRanking.map((equipo, index) => {
           const esPrimero = index === 0;
           const esPodio = index < 3;
 
@@ -183,7 +185,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
           )
         })}
 
-        {filteredRanking.length > visibleCount && (
+        {filteredRanking.length > visibleCount && !loading && (
           <button
             onClick={() => setVisibleCount(prev => prev + 20)}
             className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-black hover:text-black bg-white hover:border-white/20 transition-all flex items-center justify-center gap-2 group"
@@ -191,6 +193,12 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
             Ver resto del ranking 
             <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
           </button>
+        )}
+        
+        {!loading && visibleRanking.length === 0 && (
+          <div className="text-center py-20 text-gray-500 font-bold uppercase text-xs border border-dashed border-white/10 rounded-2xl">
+            No hay datos para esta selección
+          </div>
         )}
       </div>
     </div>
