@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const anton = Anton({ weight: "400", subsets: ["latin"], variable: "--font-anton" });
 
 export const metadata: Metadata = {
-  title: 'GRAN DT URBA - Fantasy Rugby',
+  title: 'Head Coach URBA - Fantasy Rugby',
   description: 'Fantasy Rugby del Top 14 de la URBA',
   generator: 'v0.app',
   icons: {
