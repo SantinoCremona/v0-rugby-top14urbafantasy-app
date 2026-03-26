@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { MainHeader } from "@/components/main-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Trophy, Plus, Users, X, Share2, Loader2, Shield, Hash, Star, ChevronLeft, Image as ImageIcon } from "lucide-react"
+import { Trophy, Plus, Users, X, Share2, Loader2, Shield, Hash, Star, ChevronLeft, Camera, Image as ImageIcon } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 interface League {
   id: string
   nombre: string
   codigo_invitacion: string
-  logo_url?: string // Nuevo campo
+  logo_url?: string
 }
 
 interface RankingMember {
@@ -22,13 +22,19 @@ interface RankingMember {
 
 export default function TorneosPage() {
   const supabase = createClient()
+  const fileInputRef = useRef<HTMLInputElement>(null) // Ref para el input de imagen
+  
   const [leagues, setLeagues] = useState<League[]>([])
   const [selectedLeague, setSelectedLeague] = useState<League | null>(null)
   const [ranking, setRanking] = useState<RankingMember[]>([])
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
   const [newLeagueName, setNewLeagueName] = useState("")
-  const [newLeagueLogo, setNewLeagueLogo] = useState("") // Nuevo estado para el logo
+  
+  // ESTADOS PARA LA IMAGEN REAL
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  
   const [joinCode, setJoinCode] = useState("")
   const [loading, setLoading] = useState(false)
   const [loadingRanking, setLoadingRanking] = useState(false)
@@ -37,6 +43,15 @@ export default function TorneosPage() {
   useEffect(() => {
     fetchLeagues()
   }, [])
+
+  // Limpiar estados al cerrar modal
+  useEffect(() => {
+    if (!showCreateModal) {
+      setSelectedFile(null)
+      setPreviewUrl(null)
+      setNewLeagueName("")
+    }
+  }, [showCreateModal])
 
   async function fetchLeagues() {
     setFetching(true)
@@ -56,6 +71,14 @@ export default function TorneosPage() {
       setLeagues(formatted)
     }
     setFetching(false)
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      setPreviewUrl(URL.createObjectURL(file))
+    }
   }
 
   const handleShareWhatsApp = (league: League) => {
@@ -89,6 +112,28 @@ export default function TorneosPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("Inicia sesión")
+
+      let publicUrl = null
+
+      // 1. SUBIR IMAGEN AL STORAGE SI EXISTE
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop()
+        const fileName = `${Math.random()}.${fileExt}`
+        const filePath = `${user.id}/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('logos-ligas')
+          .upload(filePath, selectedFile)
+
+        if (uploadError) throw uploadError
+
+        const { data: urlData } = supabase.storage
+          .from('logos-ligas')
+          .getPublicUrl(filePath)
+          
+        publicUrl = urlData.publicUrl
+      }
+
       const code = Math.random().toString(36).substring(2, 8).toUpperCase()
       
       const { data: liga, error: errorLiga } = await supabase
@@ -97,15 +142,13 @@ export default function TorneosPage() {
           nombre: newLeagueName, 
           codigo_invitacion: code, 
           creador_id: user.id,
-          logo_url: newLeagueLogo.trim() || null // Guardamos el logo
+          logo_url: publicUrl 
         }])
         .select().single()
 
       if (errorLiga) throw errorLiga
       await supabase.from('liga_miembros').insert([{ liga_id: liga.id, user_id: user.id }])
       
-      setNewLeagueName("")
-      setNewLeagueLogo("")
       setShowCreateModal(false)
       fetchLeagues()
     } catch (error: any) { alert(error.message) } finally { setLoading(false) }
@@ -138,8 +181,7 @@ export default function TorneosPage() {
             </button>
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div className="flex items-center gap-6">
-                {/* LOGO DINÁMICO EN EL DETALLE */}
-                <div className="w-20 h-20 bg-white rounded-[24px] overflow-hidden flex items-center justify-center shadow-2xl">
+                <div className="w-20 h-20 bg-white rounded-[24px] overflow-hidden flex items-center justify-center shadow-2xl border-4 border-white/5">
                    {selectedLeague.logo_url ? (
                      <img src={selectedLeague.logo_url} className="w-full h-full object-cover" alt="Logo" />
                    ) : (
@@ -203,7 +245,6 @@ export default function TorneosPage() {
                 leagues.map((league) => (
                   <div key={league.id} className="group bg-white/[0.02] border border-white/5 p-8 rounded-[32px] flex flex-col md:flex-row items-center justify-between hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300">
                     <div className="flex items-center gap-8 mb-6 md:mb-0">
-                      {/* LOGO DINÁMICO EN LA LISTA */}
                       <div className="w-16 h-16 bg-white rounded-2xl overflow-hidden flex items-center justify-center shadow-2xl group-hover:scale-105 transition-transform duration-300">
                         {league.logo_url ? (
                           <img src={league.logo_url} className="w-full h-full object-cover" alt="Logo" />
@@ -242,6 +283,35 @@ export default function TorneosPage() {
               <button onClick={() => {setShowCreateModal(false); setShowJoinModal(false)}} className="p-2 hover:bg-white/5 rounded-full transition-colors"><X className="w-6 h-6 text-white"/></button>
             </div>
             
+            <div className="flex flex-col items-center mb-8">
+              {/* BOTÓN DE SUBIDA / PREVIEW */}
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-28 h-28 bg-white/5 border-2 border-dashed border-white/10 rounded-[32px] overflow-hidden flex flex-col items-center justify-center hover:border-emerald-500 transition-all group relative"
+              >
+                {previewUrl ? (
+                  <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
+                ) : (
+                  <>
+                    <Camera className="w-8 h-8 text-gray-600 mb-2 group-hover:text-emerald-500 transition-colors" />
+                    <span className="text-[8px] font-black uppercase text-gray-600 tracking-widest">Foto</span>
+                  </>
+                )}
+                {previewUrl && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ImageIcon className="w-6 h-6 text-white" />
+                  </div>
+                )}
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                accept="image/*" 
+              />
+            </div>
+
             <div className="space-y-4 mb-8">
               <Input 
                 placeholder={showCreateModal ? "NOMBRE DE LA LIGA" : "CÓDIGO DE ACCESO"}
@@ -249,18 +319,6 @@ export default function TorneosPage() {
                 onChange={(e) => showCreateModal ? setNewLeagueName(e.target.value) : setJoinCode(e.target.value.toUpperCase())}
                 className="h-16 bg-white/5 border-white/10 rounded-2xl font-black text-center text-lg focus:border-white transition-all uppercase tracking-widest text-white placeholder:text-gray-700"
               />
-
-              {showCreateModal && (
-                <div className="relative">
-                  <Input 
-                    placeholder="URL DEL LOGO (OPCIONAL)"
-                    value={newLeagueLogo}
-                    onChange={(e) => setNewLeagueLogo(e.target.value)}
-                    className="h-14 bg-white/5 border-white/10 rounded-2xl font-bold text-sm pl-12 focus:border-emerald-500 transition-all text-white placeholder:text-gray-700"
-                  />
-                  <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600" />
-                </div>
-              )}
             </div>
 
             <Button onClick={showCreateModal ? handleCreateLeague : handleJoinLeague} disabled={loading} className={`w-full h-16 rounded-2xl font-black italic uppercase text-lg shadow-2xl transition-all ${showCreateModal ? "bg-white text-black hover:bg-gray-200" : "bg-emerald-500 text-black hover:bg-emerald-400"}`}>
