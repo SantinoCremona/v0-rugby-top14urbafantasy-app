@@ -21,28 +21,38 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
     setLoading(true)
     setSelectedFecha(num)
     
-    const { data, error } = await supabase
-      .from('puntos_usuario_fecha') 
-      .select('nombre_equipo, puntos_fecha, club')
-      .eq('fecha_num', num)
-      .order('puntos_fecha', { ascending: false })
+    try {
+      const { data, error } = await supabase
+        .from('puntos_usuario_fecha') // Tu View
+        .select('nombre_equipo, puntos_fecha, club')
+        .eq('fecha_num', num)
+        .order('puntos_fecha', { ascending: false })
 
-    if (!error && data) {
-      // FIX: Nos aseguramos de que puntos_acumulados tome EL VALOR DE LA FECHA (puntos_fecha)
-      // y no el acumulado de la tabla perfiles.
-      const mapped = data.map(d => ({
-        nombre_equipo: d.nombre_equipo,
-        puntos_acumulados: d.puntos_fecha, // Aquí estaba el posible conflicto
-        club: d.club
-      }))
-      setRanking(mapped)
-    } else {
-      // Si no hay datos para esa fecha, el ranking debe mostrarse vacío (0 puntos)
+      if (error) {
+        console.error("Error Supabase View:", error)
+        setRanking([])
+        return
+      }
+
+      if (data && data.length > 0) {
+        // MAPEAMOS 'puntos_fecha' (de la view) a 'puntos_acumulados' (del HTML)
+        const mapped = data.map(d => ({
+          nombre_equipo: d.nombre_equipo,
+          puntos_acumulados: d.puntos_fecha, 
+          club: d.club
+        }))
+        setRanking(mapped)
+      } else {
+        // Si la View devuelve un array vacío para esa fecha
+        setRanking([])
+      }
+    } catch (err) {
+      console.error("Error inesperado:", err)
       setRanking([])
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
-
   const toggleView = (newView: "GENERAL" | "FECHA" | "CLUB") => {
     setView(newView)
     setVisibleCount(10)
