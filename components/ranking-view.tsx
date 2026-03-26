@@ -110,7 +110,7 @@ export function RankingView({
             view === "FECHA" ? "bg-emerald-500 text-black shadow-lg" : "text-gray-500 hover:text-white"
           }`}
         >
-          Por Fecha
+          Fecha
         </button>
       </div>
 
