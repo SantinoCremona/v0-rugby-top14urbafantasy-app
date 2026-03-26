@@ -1,14 +1,23 @@
 import { createClient } from "@/lib/supabase/server"
 import { MainHeader } from "@/components/main-header"
 import { Shield, Users, Star } from "lucide-react"
-import { RankingView } from "@/components/ranking-view" // <-- Importamos el nuevo componente
+import { RankingView } from "@/components/ranking-view"
 
 export default async function RankingGeneralPage() {
   const supabase = await createClient()
 
+  // 1. AGREGADO: Obtenemos el usuario actual y su club para el filtro
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: perfilUsuario } = await supabase
+    .from('perfiles')
+    .select('club')
+    .eq('id', user?.id)
+    .single()
+
+  // 2. MODIFICADO: Agregamos 'club' al select para que RankingView pueda filtrar
   const { data: rankingData, error } = await supabase
     .from('perfiles')
-    .select('nombre_equipo, puntos_acumulados')
+    .select('nombre_equipo, puntos_acumulados, club')
     .order('puntos_acumulados', { ascending: false })
 
   if (error) console.error("Error fetching ranking:", error)
@@ -47,7 +56,11 @@ export default async function RankingGeneralPage() {
 
         {/* CONTENIDO DINÁMICO */}
         {ranking.length > 0 ? (
-          <RankingView initialRanking={ranking} />
+          /* AGREGADO: Pasamos la prop userClub al componente */
+          <RankingView 
+            initialRanking={ranking} 
+            userClub={perfilUsuario?.club || "CASI"} 
+          />
         ) : (
           <div className="mt-20 py-20 border border-dashed border-white/10 rounded-[40px] text-center">
             <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
