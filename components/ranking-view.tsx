@@ -86,11 +86,11 @@ export function RankingView({
 
   return (
     <div className="space-y-6">
-      {/* SELECTOR DE MODO */}
-      <div className="flex flex-wrap justify-center gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit mx-auto mb-10">
+      {/* SELECTOR DE MODO - AJUSTADO PARA MOBILE (UNA FILA) */}
+      <div className="flex flex-row overflow-x-auto no-scrollbar gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-full max-w-md mx-auto mb-10">
         <button 
           onClick={() => toggleView("GENERAL")}
-          className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+          className={`flex-1 min-w-fit px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
             view === "GENERAL" ? "bg-white text-black shadow-lg" : "text-gray-500 hover:text-white"
           }`}
         >
@@ -98,7 +98,7 @@ export function RankingView({
         </button>
         <button 
           onClick={() => toggleView("CLUB")}
-          className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+          className={`flex-1 min-w-fit px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
             view === "CLUB" ? "bg-white text-black shadow-lg" : "text-gray-500 hover:text-white"
           }`}
         >
@@ -106,11 +106,11 @@ export function RankingView({
         </button>
         <button 
           onClick={() => toggleView("FECHA")}
-          className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+          className={`flex-1 min-w-fit px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
             view === "FECHA" ? "bg-emerald-500 text-black shadow-lg" : "text-gray-500 hover:text-white"
           }`}
         >
-          Fecha
+          Por Fecha
         </button>
       </div>
 
@@ -162,9 +162,13 @@ export function RankingView({
         {loading ? (
             <div className="text-center py-20 font-black text-emerald-500 animate-pulse uppercase text-xs tracking-widest">Cargando...</div>
         ) : visibleRanking.map((equipo, index) => {
-          const esPrimero = index === 0;
-          const esPodio = index < 3;
+          const pos = index + 1;
           const esMiUsuario = equipo.user_id === currentUserId;
+
+          // COLORES DEL PODIO
+          const esOro = pos === 1;
+          const esPlata = pos === 2;
+          const esBronce = pos === 3;
 
           return (
             <div 
@@ -172,33 +176,46 @@ export function RankingView({
               className={`grid grid-cols-12 items-center px-6 py-5 rounded-2xl border transition-all duration-300 ${
                 esMiUsuario 
                   ? "bg-emerald-500/10 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]" 
-                  : esPrimero 
-                    ? "bg-white border-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]" 
-                    : "bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]"
+                  : esOro 
+                    ? "bg-yellow-500/10 border-yellow-500/50" 
+                    : esPlata
+                      ? "bg-slate-300/10 border-slate-300/50"
+                      : esBronce
+                        ? "bg-orange-500/10 border-orange-500/50"
+                        : "bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]"
               }`}
             >
               <div className="col-span-2 flex items-center gap-3">
-                <span className={`text-2xl font-black italic ${esMiUsuario ? "text-emerald-400" : esPrimero ? "text-black" : "text-white/40"}`}>
-                  #{index + 1}
+                <span className={`text-2xl font-black italic ${
+                  esMiUsuario ? "text-emerald-400" : 
+                  esOro ? "text-yellow-500" : 
+                  esPlata ? "text-slate-300" :
+                  esBronce ? "text-orange-500" : "text-white/40"
+                }`}>
+                  #{pos}
                 </span>
-                {esPrimero && <Trophy className="w-5 h-5 text-black fill-black" />}
-                {esMiUsuario && !esPrimero && <Star className="w-4 h-4 text-emerald-400 fill-emerald-400 animate-pulse" />}
+                {esOro && <Trophy className="w-5 h-5 text-yellow-500 fill-yellow-500" />}
+                {esMiUsuario && !esOro && <Star className="w-4 h-4 text-emerald-400 fill-emerald-400 animate-pulse" />}
               </div>
 
               <div className="col-span-7 md:col-span-8 flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                  esMiUsuario ? "bg-emerald-500 border-emerald-500 text-black" : esPrimero ? "bg-black border-black text-white" : "bg-white/5 border-white/10 text-white/30"
+                  esMiUsuario ? "bg-emerald-500 border-emerald-500 text-black" : 
+                  esOro ? "bg-yellow-500 border-yellow-500 text-black" :
+                  esPlata ? "bg-slate-300 border-slate-300 text-black" :
+                  esBronce ? "bg-orange-500 border-orange-500 text-black" :
+                  "bg-white/5 border-white/10 text-white/30"
                 }`}>
                   <Shield className="w-5 h-5" />
                 </div>
                 <div>
                   <span className={`text-base md:text-xl font-black uppercase italic leading-none block ${
-                    esMiUsuario ? "text-emerald-400" : esPrimero ? "text-black" : "text-white"
+                    esMiUsuario ? "text-emerald-400" : "text-white"
                   }`}>
                     {equipo.nombre_equipo || "XV SIN NOMBRE"} {esMiUsuario && "(VOS)"}
                   </span>
                   <span className={`text-[9px] font-bold uppercase tracking-widest ${
-                    esMiUsuario ? "text-emerald-500/60" : esPrimero ? "text-black/50" : "text-gray-600"
+                    esMiUsuario ? "text-emerald-500/60" : "text-gray-600"
                   }`}>
                     {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `HEAD COACH DE ${userClub}` : `HINCHA DE ${equipo.club || 'URBA'}`)}
                   </span>
@@ -207,7 +224,8 @@ export function RankingView({
 
               <div className="col-span-3 md:col-span-2 text-right">
                 <p className={`text-2xl md:text-4xl font-black italic tracking-tighter ${
-                  esMiUsuario ? "text-emerald-400" : esPrimero ? "text-black" : "text-emerald-400"
+                  esMiUsuario ? "text-emerald-400" : 
+                  esOro ? "text-yellow-500" : "text-emerald-400"
                 }`}>
                   {equipo.puntos_acumulados || 0}
                 </p>
