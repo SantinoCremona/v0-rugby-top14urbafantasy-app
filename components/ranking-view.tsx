@@ -1,10 +1,25 @@
 "use client"
 
 import { useState } from "react"
-import { Trophy, Shield, Medal, ChevronDown, Calendar } from "lucide-react"
+import { Trophy, Shield, Medal, ChevronDown, Star } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
-export function RankingView({ initialRanking, userClub }: { initialRanking: any[], userClub: string }) {
+interface RankingItem {
+  user_id: string
+  nombre_equipo: string
+  puntos_acumulados: number
+  club: string
+}
+
+export function RankingView({ 
+  initialRanking, 
+  userClub, 
+  currentUserId 
+}: { 
+  initialRanking: any[], 
+  userClub: string,
+  currentUserId?: string 
+}) {
   const supabase = createClient()
   const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
   const [selectedFecha, setSelectedFecha] = useState(1)
@@ -23,8 +38,8 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
     
     try {
       const { data, error } = await supabase
-        .from('puntos_usuario_fecha') // Tu View
-        .select('nombre_equipo, puntos_fecha')
+        .from('puntos_usuario_fecha') 
+        .select('nombre_equipo, puntos_fecha, user_id, club')
         .eq('fecha_num', num)
         .order('puntos_fecha', { ascending: false })
 
@@ -35,15 +50,14 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
       }
 
       if (data && data.length > 0) {
-        // MAPEAMOS 'puntos_fecha' (de la view) a 'puntos_acumulados' (del HTML)
         const mapped = data.map(d => ({
           nombre_equipo: d.nombre_equipo,
           puntos_acumulados: d.puntos_fecha, 
-          club: d.club
+          club: d.club,
+          user_id: d.user_id
         }))
         setRanking(mapped)
       } else {
-        // Si la View devuelve un array vacío para esa fecha
         setRanking([])
       }
     } catch (err) {
@@ -53,6 +67,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
       setLoading(false)
     }
   }
+
   const toggleView = (newView: "GENERAL" | "FECHA" | "CLUB") => {
     setView(newView)
     setVisibleCount(10)
@@ -99,6 +114,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         </button>
       </div>
 
+      {/* CABECERA DE CLUB */}
       {view === "CLUB" && (
         <div className="flex flex-col items-center mb-10 animate-in fade-in zoom-in duration-500">
           <div className="w-24 h-24 mb-4 bg-white/5 rounded-3xl p-4 border border-white/10 flex items-center justify-center">
@@ -115,6 +131,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         </div>
       )}
 
+      {/* SELECTOR DE FECHAS */}
       {view === "FECHA" && (
         <div className="flex flex-wrap justify-center gap-3 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
           {[1, 2, 3, 4, 5].map((num) => (
@@ -133,51 +150,55 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         </div>
       )}
 
-      {/* Header de Columnas */}
+      {/* HEADER COLUMNAS */}
       <div className="grid grid-cols-12 px-8 mb-4 text-[10px] font-black text-gray-600 uppercase tracking-[0.2em]">
         <div className="col-span-2">Posición</div>
         <div className="col-span-7 md:col-span-8">Equipo</div>
         <div className="col-span-3 md:col-span-2 text-right">Puntos {view === "FECHA" ? "Fecha" : "Totales"}</div>
       </div>
 
+      {/* LISTADO */}
       <div className="space-y-3">
         {loading ? (
             <div className="text-center py-20 font-black text-emerald-500 animate-pulse uppercase text-xs tracking-widest">Cargando...</div>
         ) : visibleRanking.map((equipo, index) => {
           const esPrimero = index === 0;
           const esPodio = index < 3;
+          const esMiUsuario = equipo.user_id === currentUserId;
 
           return (
             <div 
               key={index} 
               className={`grid grid-cols-12 items-center px-6 py-5 rounded-2xl border transition-all duration-300 ${
-                esPrimero 
-                ? "bg-white border-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]" 
-                : "bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]"
+                esMiUsuario 
+                  ? "bg-emerald-500/10 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]" 
+                  : esPrimero 
+                    ? "bg-white border-white text-black shadow-[0_0_30px_rgba(255,255,255,0.1)]" 
+                    : "bg-white/[0.02] border-white/5 hover:border-white/20 hover:bg-white/[0.04]"
               }`}
             >
               <div className="col-span-2 flex items-center gap-3">
-                <span className={`text-2xl font-black italic ${esPrimero ? "text-black" : "text-white/40"}`}>
+                <span className={`text-2xl font-black italic ${esMiUsuario ? "text-emerald-400" : esPrimero ? "text-black" : "text-white/40"}`}>
                   #{index + 1}
                 </span>
                 {esPrimero && <Trophy className="w-5 h-5 text-black fill-black" />}
-                {esPodio && !esPrimero && <Medal className="w-4 h-4 text-emerald-400" />}
+                {esMiUsuario && !esPrimero && <Star className="w-4 h-4 text-emerald-400 fill-emerald-400 animate-pulse" />}
               </div>
 
               <div className="col-span-7 md:col-span-8 flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                  esPrimero ? "bg-black border-black text-white" : "bg-white/5 border-white/10 text-white/30"
+                  esMiUsuario ? "bg-emerald-500 border-emerald-500 text-black" : esPrimero ? "bg-black border-black text-white" : "bg-white/5 border-white/10 text-white/30"
                 }`}>
                   <Shield className="w-5 h-5" />
                 </div>
                 <div>
                   <span className={`text-base md:text-xl font-black uppercase italic leading-none block ${
-                    esPrimero ? "text-black" : "text-white"
+                    esMiUsuario ? "text-emerald-400" : esPrimero ? "text-black" : "text-white"
                   }`}>
-                    {equipo.nombre_equipo || "XV SIN NOMBRE"}
+                    {equipo.nombre_equipo || "XV SIN NOMBRE"} {esMiUsuario && "(VOS)"}
                   </span>
                   <span className={`text-[9px] font-bold uppercase tracking-widest ${
-                    esPrimero ? "text-black/50" : "text-gray-600"
+                    esMiUsuario ? "text-emerald-500/60" : esPrimero ? "text-black/50" : "text-gray-600"
                   }`}>
                     {view === "FECHA" ? `RESULTADO FECHA ${selectedFecha}` : (view === "CLUB" ? `MANAGER DE ${userClub}` : `HINCHA DE ${equipo.club || 'URBA'}`)}
                   </span>
@@ -186,7 +207,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
 
               <div className="col-span-3 md:col-span-2 text-right">
                 <p className={`text-2xl md:text-4xl font-black italic tracking-tighter ${
-                  esPrimero ? "text-black" : "text-emerald-400"
+                  esMiUsuario ? "text-emerald-400" : esPrimero ? "text-black" : "text-emerald-400"
                 }`}>
                   {equipo.puntos_acumulados || 0}
                 </p>
@@ -196,15 +217,14 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
         })}
 
         {filteredRanking.length > visibleCount && !loading && (
-          <button
-            onClick={() => setVisibleCount(prev => prev + 20)}
-            className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-black hover:text-black bg-white hover:border-white/20 transition-all flex items-center justify-center gap-2 group"
+          <button 
+            onClick={() => setVisibleCount(prev => prev + 20)} 
+            className="w-full mt-6 py-6 border border-dashed border-white/10 rounded-[32px] text-[10px] font-black uppercase tracking-[0.3em] text-white hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 group"
           >
-            Ver resto del ranking 
-            <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
+            Ver resto del ranking <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
           </button>
         )}
-        
+
         {!loading && visibleRanking.length === 0 && (
           <div className="text-center py-20 text-gray-500 font-bold uppercase text-xs border border-dashed border-white/10 rounded-2xl">
             No hay datos para esta selección
