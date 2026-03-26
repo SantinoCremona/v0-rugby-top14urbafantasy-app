@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
     const joinCode = url.searchParams.get('join')
     
     // Cambiamos el destino al login
-    url.pathname = '/login'
+    url.pathname = '/'
     
     // Si traía un código, lo mantenemos en la URL del login para que 
     // al terminar el login, Next sepa a dónde volver.
