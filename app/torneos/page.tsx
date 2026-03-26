@@ -56,12 +56,18 @@ export default function TorneosPage() {
     setFetching(false)
   }
 
+  // --- FUNCIÓN PARA COMPARTIR POR WHATSAPP ---
+  const handleShareWhatsApp = (league: League) => {
+    const message = `¡Sumate a mi torneo "${league.nombre}" en Headcoach! 🏉\n\nCódigo de acceso: ${league.codigo_invitacion}\n\nIngresá acá: ${window.location.origin}/torneos`;
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
+
   const handleViewRanking = async (league: League) => {
   setSelectedLeague(league)
   setLoadingRanking(true)
   
   try {
-    // 1. Buscamos los miembros de esta liga
     const { data: miembros, error: errorMiembros } = await supabase
       .from('liga_miembros')
       .select('user_id')
@@ -69,15 +75,12 @@ export default function TorneosPage() {
 
     if (errorMiembros) throw errorMiembros;
 
-    // 2. Buscamos los datos de la View para esos usuarios
-    // Como la View ya tiene el nombre_equipo, la consulta es simple
     const { data: puntosData, error: errorPuntos } = await supabase
       .from('ranking_usuarios')
       .select('user_id, nombre_equipo, puntos_totales');
 
     if (errorPuntos) throw errorPuntos;
 
-    // 3. Cruzamos los datos
     const formattedRanking = (miembros || []).map((m: any) => {
       const datosUsuario = puntosData?.find(p => p.user_id === m.user_id);
       
@@ -159,9 +162,17 @@ export default function TorneosPage() {
                   {selectedLeague.nombre}
                 </h2>
               </div>
-              <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl backdrop-blur-md">
-                <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1 text-center">Código Invitación</p>
-                <p className="text-2xl font-black text-white tracking-widest uppercase">{selectedLeague.codigo_invitacion}</p>
+              <div className="flex flex-col items-center gap-3">
+                <div className="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl backdrop-blur-md">
+                  <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1 text-center">Código Invitación</p>
+                  <p className="text-2xl font-black text-white tracking-widest uppercase">{selectedLeague.codigo_invitacion}</p>
+                </div>
+                <Button 
+                  onClick={() => handleShareWhatsApp(selectedLeague)}
+                  className="w-full bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/20 rounded-xl h-10 font-black uppercase tracking-widest text-[10px] transition-all"
+                >
+                  <Share2 className="w-3.5 h-3.5 mr-2" /> Compartir con Amigos
+                </Button>
               </div>
             </div>
 
@@ -176,32 +187,49 @@ export default function TorneosPage() {
                    <p className="text-center py-20 text-gray-600 font-black uppercase tracking-widest">Sin miembros activos</p>
                 ) : (
                   ranking.map((res, idx) => {
-                    const esLider = idx === 0;
+                    const pos = idx + 1;
+                    const esOro = pos === 1;
+                    const esPlata = pos === 2;
+                    const esBronce = pos === 3;
+
                     return (
                       <div 
                         key={res.user_id} 
                         className={`flex items-center justify-between p-6 rounded-2xl border transition-all ${
-                          esLider 
-                          ? "bg-white text-black border-white shadow-[0_0_30px_rgba(255,255,255,0.05)]" 
-                          : "bg-white/[0.02] border-white/5"
+                          esOro ? "bg-yellow-500/10 border-yellow-500/50 shadow-[0_0_30px_rgba(234,179,8,0.05)]" :
+                          esPlata ? "bg-slate-300/10 border-slate-300/50" :
+                          esBronce ? "bg-orange-500/10 border-orange-500/50" :
+                          "bg-white/[0.02] border-white/5"
                         }`}
                       >
                         <div className="flex items-center gap-6">
-                          <span className={`text-2xl font-black italic ${esLider ? "text-black" : "text-white/20"}`}>
-                            #{idx + 1}
+                          <span className={`text-2xl font-black italic ${
+                            esOro ? "text-yellow-500" : 
+                            esPlata ? "text-slate-400" :
+                            esBronce ? "text-orange-600" : "text-white/20"
+                          }`}>
+                            #{pos}
                           </span>
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                            esLider ? "bg-black text-white border-black" : "bg-white/5 border-white/10 text-white"
+                            esOro ? "bg-yellow-500 text-black border-yellow-500" : 
+                            esPlata ? "bg-slate-400 text-black border-slate-400" :
+                            esBronce ? "bg-orange-600 text-black border-orange-600" :
+                            "bg-white/5 border-white/10 text-white"
                           }`}>
                             <Shield className="w-5 h-5" />
                           </div>
-                          <span className="text-lg md:text-2xl font-black italic uppercase tracking-tighter">
-                            {res.nombre_equipo}
+                          <div className="flex flex-col">
+                            <span className={`text-lg md:text-2xl font-black italic uppercase tracking-tighter ${esOro ? "text-yellow-500" : "text-white"}`}>
+                              {res.nombre_equipo}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          {esOro && <Trophy className="w-6 h-6 text-yellow-500 fill-yellow-500" />}
+                          <span className={`text-3xl font-black italic ${esOro ? "text-yellow-500" : "text-emerald-400"}`}>
+                            {res.puntos_totales}
                           </span>
                         </div>
-                        <span className={`text-3xl font-black italic ${esLider ? "text-black" : "text-emerald-400"}`}>
-                          {res.puntos_totales}
-                        </span>
                       </div>
                     )
                   })
@@ -227,7 +255,7 @@ export default function TorneosPage() {
                   onClick={() => setShowJoinModal(true)}
                   className="bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl px-6 h-14 font-black uppercase tracking-widest text-[11px] transition-all"
                 >
-                  <Share2 className="w-4 h-4 mr-2" /> Unirse
+                  <Users className="w-4 h-4 mr-2" /> Unirse
                 </Button>
                 <Button 
                   onClick={() => setShowCreateModal(true)}
@@ -264,12 +292,21 @@ export default function TorneosPage() {
                         </div>
                       </div>
                     </div>
-                    <Button 
-                      onClick={() => handleViewRanking(league)}
-                      className="w-full md:w-auto bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 rounded-2xl px-10 h-14 font-black uppercase tracking-widest text-[11px] transition-all"
-                    >
-                      Ver Tabla
-                    </Button>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <Button 
+                        onClick={() => handleShareWhatsApp(league)}
+                        variant="outline"
+                        className="bg-emerald-500/5 hover:bg-emerald-500 text-emerald-400 hover:text-black border-emerald-500/20 rounded-2xl w-14 h-14 p-0 transition-all"
+                      >
+                        <Share2 className="w-5 h-5" />
+                      </Button>
+                      <Button 
+                        onClick={() => handleViewRanking(league)}
+                        className="flex-1 md:flex-none bg-white/5 hover:bg-white text-white hover:text-black border border-white/10 rounded-2xl px-10 h-14 font-black uppercase tracking-widest text-[11px] transition-all"
+                      >
+                        Ver Tabla
+                      </Button>
+                    </div>
                   </div>
                 ))
               )}
