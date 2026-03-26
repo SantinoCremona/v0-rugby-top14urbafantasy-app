@@ -24,7 +24,7 @@ export function RankingView({ initialRanking, userClub }: { initialRanking: any[
     try {
       const { data, error } = await supabase
         .from('puntos_usuario_fecha') // Tu View
-        .select('nombre_equipo, puntos_fecha, club')
+        .select('nombre_equipo, puntos_fecha')
         .eq('fecha_num', num)
         .order('puntos_fecha', { ascending: false })
 
