@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Shield, Loader2, ArrowRight, Lock, Mail, User as UserIcon, Eye, EyeOff, AlertCircle } from "lucide-react"
+import Link from "next/link"
 
 // LISTA DE CLUBES TOP 12
 const CLUBS = [
@@ -229,7 +230,15 @@ export default function LoginPage() {
               {errorMsg}
             </div>
           )}
-
+          {/* Link de emergencia */}
+          <div className="flex justify-end mb-4">
+            <a 
+              href="/recuperar" 
+              className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-emerald-500 transition-colors"
+            >
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
           <Button
             type="submit"
             disabled={loading}
