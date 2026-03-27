@@ -16,14 +16,7 @@ export default function ComoJugarPage() {
       <MainHeader />
       
       <main className="max-w-4xl mx-auto px-6 py-12 pb-24">
-        {/* BOTÓN VOLVER */}
-        <button 
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-500 hover:text-emerald-400 transition-colors mb-8 group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Volver a la cancha</span>
-        </button>
+     
 
         <div className="space-y-16">
           {/* HEADER SECCIÓN */}
