@@ -244,15 +244,7 @@ export default function LoginPage() {
             )}
           </Button>
         </form>
-        {/* LINK DE RECUPERACIÓN (Agregá esto) */}
-        <div className="flex justify-end pr-2">
-          <Link 
-            href="/recuperar" 
-            className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-emerald-500 transition-colors"
-          >
-            ¿Olvidaste tu contraseña?
-          </Link>
-        </div>
+
 
         <div className="mt-8 text-center border-t border-white/10 pt-6">
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-3">
