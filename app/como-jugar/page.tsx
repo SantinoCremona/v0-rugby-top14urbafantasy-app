@@ -33,7 +33,7 @@ export default function ComoJugarPage() {
               <Clock className="w-8 h-8 text-emerald-500" />
               <h3 className="text-xl font-black italic uppercase">Calendario</h3>
               <p className="text-sm text-gray-400 leading-relaxed font-medium">
-                El mercado abre los <span className="text-white font-bold">Lunes</span>. Tenés tiempo hasta los <span className="text-white font-bold">Viernes a las 23:30hs</span> para confirmar tu XV. Durante el sábado y domingo, el mercado permanece <span className="text-rose-500 font-bold italic underline uppercase">cerrado</span>.
+                El mercado abre los <span className="text-white font-bold">Lunes</span>. Tenés tiempo hasta los <span className="text-white font-bold">Sabados a las 11:00hs</span> para confirmar tu XV. Durante el sábado y domingo, el mercado permanece <span className="text-rose-500 font-bold italic underline uppercase">cerrado</span>.
               </p>
             </div>
 
