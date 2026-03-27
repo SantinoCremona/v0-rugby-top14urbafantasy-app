@@ -126,7 +126,7 @@ export default function LoginPage() {
       
       <div className="absolute inset-0 z-0">
         <img 
-          src="/urbafoto-login.jpeg" 
+          src="/urbafoto-login.webp" 
           alt="Rugby Background"
           className="w-full h-full object-cover scale-105 animate-pulse-slow" 
         />
