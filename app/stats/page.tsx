@@ -1,4 +1,4 @@
-import DreamTeam from './components/dreameam';
+import DreamTeam from './components/DreamTeam';
 
 export default function Home() {
   return (
