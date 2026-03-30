@@ -1,4 +1,4 @@
-import { Star, Shield, Zap } from "lucide-react"
+import { Star, Zap, Shield } from "lucide-react"
 
 interface Jugador {
   nombre: string;
@@ -30,26 +30,21 @@ export default function DreamTeam({ jugadores }: DreamTeamProps) {
           key={idx} 
           className="relative group bg-[#0F0F11] border border-white/5 rounded-[24px] p-1 overflow-hidden transition-all duration-500 hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)]"
         >
-          {/* Badge de Posición Flotante */}
           <div className="absolute top-3 left-3 z-10 bg-emerald-500 text-black font-black text-[9px] px-2 py-0.5 rounded-full uppercase italic tracking-tighter">
             {j.posicion}
           </div>
 
           <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-white/[0.03] to-transparent rounded-[20px]">
-            {/* Contenedor del Escudo */}
             <div className="relative w-16 h-16 flex-shrink-0 bg-black rounded-2xl border border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-              <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               <img 
-                src={`/escudos/${j.club.toLowerCase().trim().replace(/\s+/g, '-')}.md.png`} // Ajustado a tu lógica de nombres
+                src={`/escudos/${j.club.toLowerCase().trim().replace(/\s+/g, '-')}.png`} 
                 alt={j.club}
-                className="w-10 h-10 object-contain z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]"
-                onError={(e) => { (e.currentTarget.style.display = 'none') }}
+                className="w-10 h-10 object-contain z-10"
+                onError={(e: any) => { e.currentTarget.style.display = 'none' }}
               />
-              {/* Brillo de fondo para la carta top 1-3 */}
               {idx < 3 && <div className="absolute inset-0 bg-emerald-500/10 blur-xl rounded-full" />}
             </div>
 
-            {/* Info del Jugador */}
             <div className="flex-1 min-w-0">
               <h3 className="font-black text-lg text-white uppercase italic leading-none truncate tracking-tighter group-hover:text-emerald-400 transition-colors">
                 {j.nombre}
@@ -60,7 +55,6 @@ export default function DreamTeam({ jugadores }: DreamTeamProps) {
               </div>
             </div>
 
-            {/* Puntaje Destacado */}
             <div className="text-right pl-4 border-l border-white/5">
               <div className="flex items-center justify-end gap-1">
                 <Zap className="w-3 h-3 text-emerald-500 fill-emerald-500" />
@@ -71,8 +65,6 @@ export default function DreamTeam({ jugadores }: DreamTeamProps) {
               <p className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-1">Puntos</p>
             </div>
           </div>
-
-          {/* Decoración inferior estilo carta tech */}
           <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       ))}

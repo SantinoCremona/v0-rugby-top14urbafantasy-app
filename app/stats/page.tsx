@@ -41,15 +41,6 @@ export default async function StatsPage() {
     <div className="min-h-screen bg-[#0A0A0B] text-white">
       <MainHeader />
       
-      {/* BANNER DINÁMICO DE MERCADO (ESTILO DASHBOARD) */}
-      {mercadoAbierto && (
-        <div className="bg-emerald-500 py-2 overflow-hidden border-y border-black relative z-10 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-          <div className="whitespace-nowrap animate-marquee font-black uppercase italic text-black text-[10px] tracking-[0.2em]">
-            MERCADO ABIERTO • ARMÁ TU EQUIPO PARA LA FECHA {fechaActiva} • ELIGE A TUS CRACKS • 
-            MERCADO ABIERTO • ARMÁ TU EQUIPO PARA LA FECHA {fechaActiva} • ELIGE A TUS CRACKS •
-          </div>
-        </div>
-      )}
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         
@@ -120,7 +111,7 @@ export default async function StatsPage() {
                       <span className="text-xl font-black text-white/10 italic w-6">{(idx + 1).toString().padStart(2, '0')}</span>
                       <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center bg-black rounded-xl border border-white/10 group-hover:border-emerald-500/50 transition-colors">
                         <img 
-                          src={`/escudos/${item.club.toLowerCase().trim().replace(/\s+/g, '-')}.png`} 
+                          src={`/public/escudos/${item.club.toLowerCase().trim().replace(/\s+/g, '-')}.png`} 
                           alt={item.club}
                           className="w-7 h-7 object-contain opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all"
                           onError={(e) => { (e.currentTarget.style.display = 'none') }}
@@ -151,9 +142,7 @@ export default async function StatsPage() {
                 <p className="text-[10px] text-gray-700 font-black uppercase tracking-[0.6em] leading-none">
                   Headcoach Analytics
                 </p>
-                <p className="text-[8px] text-gray-800 font-medium uppercase mt-2">
-                  Digital Business • UCEMA
-                </p>
+        
               </div>
             </div>
           </div>
