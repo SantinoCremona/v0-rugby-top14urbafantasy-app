@@ -52,7 +52,7 @@ export default async function StatsPage() {
             <div className="flex items-center gap-3 px-2">
                <Trophy className="w-6 h-6 text-emerald-500" />
                <h2 className="text-3xl font-black uppercase italic tracking-tighter">
-                 XV Ideal <span className="text-gray-600 font-bold text-2xl ml-2 italic">F{fechaActiva - 1}</span>
+                 Dream Team <span className="text-gray-600 font-bold text-2xl ml-2 italic">Fecha{fechaActiva - 1}</span>
                </h2>
             </div>
 
