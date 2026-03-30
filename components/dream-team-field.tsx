@@ -7,7 +7,7 @@ interface PlayerDream {
   posicion: string
   club: string
   puntos: number
-  ranking_pos: number // Fundamental para desempatar Izq/Der
+  ranking_pos: number 
 }
 
 interface DreamTeamFieldProps {
@@ -15,39 +15,39 @@ interface DreamTeamFieldProps {
 }
 
 const fieldRows = [
-  { players: [{ label: "FULLBACK", positionType: "Fullback" }] },
+  { players: [{ label: "FULLBACK", type: "Fullback", rank: 1 }] },
   {
     players: [
-      { label: "WING IZQ", positionType: "Wing" },
-      { label: "CENTRO EXT", positionType: "Centro" },
-      { label: "CENTRO INT", positionType: "Centro" },
-      { label: "WING DER", positionType: "Wing" },
+      { label: "WING IZQ", type: "Wing", rank: 1 },
+      { label: "CENTRO EXT", type: "Centro", rank: 1 },
+      { label: "CENTRO INT", type: "Centro", rank: 2 },
+      { label: "WING DER", type: "Wing", rank: 2 },
     ]
   },
   {
     players: [
-      { label: "APERTURA", positionType: "Apertura" },
-      { label: "MEDIO", positionType: "Medio" }, // Ajustado a tu View
+      { label: "APERTURA", type: "Apertura", rank: 1 },
+      { label: "MEDIO", type: "Medio", rank: 1 }, 
     ]
   },
   {
     players: [
-      { label: "ALA IZQ", positionType: "Ala" },
-      { label: "OCTAVO", positionType: "N8" }, // Ajustado a tu View
-      { label: "ALA DER", positionType: "Ala" },
+      { label: "ALA IZQ", type: "Ala", rank: 1 },
+      { label: "OCTAVO", type: "N8", rank: 1 },
+      { label: "ALA DER", type: "Ala", rank: 2 },
     ]
   },
   {
     players: [
-      { label: "2DA IZQ", positionType: "Segunda" },
-      { label: "2DA DER", positionType: "Segunda" },
+      { label: "2DA IZQ", type: "Segunda", rank: 1 },
+      { label: "2DA DER", type: "Segunda", rank: 2 },
     ]
   },
   {
     players: [
-      { label: "PILAR IZQ", positionType: "Pilar" },
-      { label: "HOOKER", positionType: "Hooker" },
-      { label: "PILAR DER", positionType: "Pilar" },
+      { label: "PILAR IZQ", type: "Pilar", rank: 1 },
+      { label: "HOOKER", type: "Hooker", rank: 1 },
+      { label: "PILAR DER", type: "Pilar", rank: 2 },
     ]
   },
 ]
@@ -60,26 +60,12 @@ export function DreamTeamField({ jugadores }: DreamTeamFieldProps) {
     return `/escudos/${fileName}.png`;
   };
 
-  // --- LÓGICA DE MAPEO DINÁMICO ---
-  const getPlayerBySlot = (slot: { label: string, positionType: string }) => {
-    // 1. Filtramos todos los jugadores que coincidan con el tipo de posición
-    const candidatos = jugadores.filter(
-      j => j.posicion.toLowerCase() === slot.positionType.toLowerCase()
+  // --- LÓGICA DE ASIGNACIÓN DIRECTA ---
+  const getPlayerForSlot = (type: string, rank: number) => {
+    return jugadores.find(j => 
+      j.posicion.toLowerCase() === type.toLowerCase() && 
+      j.ranking_pos === rank
     );
-
-    // 2. Si hay más de uno (Pilares, Segundas, Alas, Centros, Wings)
-    // Usamos el ranking_pos para decidir la ubicación
-    if (candidatos.length > 1) {
-      if (slot.label.includes("IZQ") || slot.label.includes("EXT")) {
-        return candidatos.find(c => c.ranking_pos === 1);
-      }
-      if (slot.label.includes("DER") || slot.label.includes("INT")) {
-        return candidatos.find(c => c.ranking_pos === 2);
-      }
-    }
-
-    // 3. Si es posición única, retornamos el primero
-    return candidatos[0];
   };
 
   return (
@@ -106,7 +92,7 @@ export function DreamTeamField({ jugadores }: DreamTeamFieldProps) {
             {fieldRows.map((row, rowIndex) => (
               <div key={rowIndex} className="flex justify-center gap-1 md:gap-6">
                 {row.players.map((slot) => {
-                  const player = getPlayerBySlot(slot)
+                  const player = getPlayerForSlot(slot.type, slot.rank)
                   const hasPlayer = !!player
 
                   return (
@@ -135,13 +121,13 @@ export function DreamTeamField({ jugadores }: DreamTeamFieldProps) {
                         </div>
                       </div>
 
-                      <div className="mt-2 flex flex-col items-center text-center">
+                      <div className="mt-2 flex flex-col items-center text-center h-10">
                         {hasPlayer ? (
                           <>
-                            <span className="text-[9px] md:text-[10px] text-white font-black uppercase italic tracking-tight drop-shadow-md">
+                            <span className="text-[9px] md:text-[10px] text-white font-black uppercase italic tracking-tight drop-shadow-md leading-none">
                               {player.nombre.split(" ").slice(-1)[0]}
                             </span>
-                            <span className="text-[7px] text-emerald-400 font-bold uppercase tracking-tighter">
+                            <span className="text-[7px] text-emerald-400 font-bold uppercase tracking-tighter mt-1">
                               {player.club}
                             </span>
                           </>
