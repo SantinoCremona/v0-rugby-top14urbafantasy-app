@@ -37,11 +37,8 @@ export default async function StatsPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 px-2">
           <div>
             <h1 className="font-black text-6xl md:text-8xl italic uppercase tracking-tighter leading-[0.8]">
-              Stats <span className="text-white/10">Center</span>
+              Dream<span className="text-white/10">Fans</span>
             </h1>
-            <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.4em] mt-6">
-              Data Intelligence • Temporada 2026
-            </p>
           </div>
         </div>
 
@@ -65,7 +62,7 @@ export default async function StatsPage() {
           <div className="lg:col-span-4 space-y-8">
             <div className="flex items-center gap-3 px-2">
               <Shield className="w-6 h-6 text-emerald-500" />
-              <h2 className="text-3xl font-black uppercase italic tracking-tighter">Hinchas</h2>
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter">Fans Ranking</h2>
             </div>
             <div className="bg-[#111113]/50 border border-white/5 rounded-[40px] p-8">
               <div className="space-y-4">
