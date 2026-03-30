@@ -43,7 +43,7 @@ export function DreamTeamCards({ jugadores }: { jugadores: DreamPlayer[] }) {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-3">
       {jugadoresOrdenados.map((player, idx) => (
         <div key={idx} className="bg-[#111113] border border-white/5 rounded-[28px] p-5 flex items-center gap-4 group hover:border-emerald-500/50 transition-all">
           <div className="w-14 h-14 flex-shrink-0 bg-black rounded-2xl border border-white/10 flex items-center justify-center relative overflow-hidden">
