@@ -47,21 +47,34 @@ export function PlayerSelectionPopup({
     return `/escudos/${fileName}.png`
   }
 
+  // --- CAMBIO CLAVE AQUÍ ---
   useEffect(() => {
     if (isOpen) {
-      async function fetchFixture() {
+      async function fetchCurrentData() {
         setLoadingFixture(true)
-        const { data } = await supabase
+        
+        // 1. Primero consultamos qué fecha está activa en la configuración
+        const { data: config } = await supabase
+          .from('config_juego')
+          .select('fecha_activa')
+          .single()
+
+        const fechaParaFiltrar = config?.fecha_activa || 3 // Fallback a 3 por las dudas
+
+        // 2. Ahora traemos el fixture de ESA fecha específica
+        const { data: fixtureData } = await supabase
           .from('fixture')
           .select('local, visitante, fecha_num')
-          .eq('fecha_num', 3) 
+          .eq('fecha_num', fechaParaFiltrar) 
         
-        if (data) setFixture(data)
+        if (fixtureData) setFixture(fixtureData)
         setLoadingFixture(false)
       }
-      fetchFixture()
+
+      fetchCurrentData()
     }
   }, [isOpen, supabase])
+  // --- FIN DEL CAMBIO ---
 
   if (!isOpen) return null
 
