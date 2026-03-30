@@ -9,6 +9,20 @@ interface DreamPlayer {
   puntos: number
 }
 
+// Definimos el orden lógico del Rugby (Pilar a Fullback)
+const ORDEN_POSICIONES: Record<string, number> = {
+  "Pilar": 1,
+  "Hooker": 2,
+  "Segunda": 3,
+  "Ala": 4,
+  "N8": 5,
+  "Medio": 6,
+  "Apertura": 7,
+  "Centro": 8,
+  "Wing": 9,
+  "Fullback": 10
+};
+
 export function DreamTeamCards({ jugadores }: { jugadores: DreamPlayer[] }) {
   if (!jugadores || jugadores.length === 0) {
     return (
@@ -21,9 +35,16 @@ export function DreamTeamCards({ jugadores }: { jugadores: DreamPlayer[] }) {
     )
   }
 
+  // Ordenamos los jugadores antes de mapearlos
+  const jugadoresOrdenados = [...jugadores].sort((a, b) => {
+    const ordenA = ORDEN_POSICIONES[a.posicion] || 99;
+    const ordenB = ORDEN_POSICIONES[b.posicion] || 99;
+    return ordenA - ordenB;
+  });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {jugadores.map((player, idx) => (
+      {jugadoresOrdenados.map((player, idx) => (
         <div key={idx} className="bg-[#111113] border border-white/5 rounded-[28px] p-5 flex items-center gap-4 group hover:border-emerald-500/50 transition-all">
           <div className="w-14 h-14 flex-shrink-0 bg-black rounded-2xl border border-white/10 flex items-center justify-center relative overflow-hidden">
             <img 
@@ -32,7 +53,6 @@ export function DreamTeamCards({ jugadores }: { jugadores: DreamPlayer[] }) {
               className="w-9 h-9 object-contain z-10"
               onError={(e) => { (e.currentTarget.style.display = 'none') }}
             />
-            {idx < 3 && <div className="absolute inset-0 bg-emerald-500/10 blur-xl" />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -50,7 +70,6 @@ export function DreamTeamCards({ jugadores }: { jugadores: DreamPlayer[] }) {
               <Zap className="w-3 h-3 fill-emerald-500" />
               <span className="text-2xl">{player.puntos}</span>
             </div>
-            {idx < 3 && <Star className="w-3 h-3 text-emerald-500 fill-emerald-500 ml-auto mt-1" />}
           </div>
         </div>
       ))}
