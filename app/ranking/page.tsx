@@ -44,8 +44,6 @@ export default async function RankingGeneralPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Star className="w-4 h-4 text-emerald-400 fill-emerald-400" />
-              <span className="text-[10px] text-emerald-400 font-black uppercase tracking-[0.3em]">En Vivo</span>
             </div>
             <h1 className="font-black text-6xl md:text-7xl italic uppercase tracking-tighter leading-none">
               Ranking <span className="text-white/20">General</span>
