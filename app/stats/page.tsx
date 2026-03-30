@@ -36,7 +36,7 @@ export default async function StatsPage() {
       <main className="max-w-7xl mx-auto px-4 py-12">
         <div className="mb-16">
           <h1 className="font-black text-6xl md:text-8xl italic uppercase tracking-tighter leading-[0.8]">
-            Stats <span className="text-white/10">Center</span>
+            Dream <span className="text-white/10">Team</span>
           </h1>
         </div>
 

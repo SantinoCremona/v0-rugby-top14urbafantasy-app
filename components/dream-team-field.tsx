@@ -1,13 +1,13 @@
 "use client"
 
-import { Shield, Trophy } from "lucide-react"
+import { Shield } from "lucide-react"
 
 interface PlayerDream {
   nombre: string
   posicion: string
   club: string
   puntos: number
-  posicion_en_campo?: string // Usaremos esto para ubicarlo
+  ranking_pos: number // Fundamental para desempatar Izq/Der
 }
 
 interface DreamTeamFieldProps {
@@ -15,39 +15,39 @@ interface DreamTeamFieldProps {
 }
 
 const fieldRows = [
-  { players: [{ label: "FULLBACK", type: "Fullback" }] },
+  { players: [{ label: "FULLBACK", positionType: "Fullback" }] },
   {
     players: [
-      { label: "WING IZQ", type: "Wing" },
-      { label: "CENTRO EXT", type: "Centro" },
-      { label: "CENTRO INT", type: "Centro" },
-      { label: "WING DER", type: "Wing" },
+      { label: "WING IZQ", positionType: "Wing" },
+      { label: "CENTRO EXT", positionType: "Centro" },
+      { label: "CENTRO INT", positionType: "Centro" },
+      { label: "WING DER", positionType: "Wing" },
     ]
   },
   {
     players: [
-      { label: "APERTURA", type: "Apertura" },
-      { label: "MEDIO SCRUM", type: "Medio" },
+      { label: "APERTURA", positionType: "Apertura" },
+      { label: "MEDIO", positionType: "Medio" }, // Ajustado a tu View
     ]
   },
   {
     players: [
-      { label: "ALA IZQ", type: "Ala" },
-      { label: "OCTAVO", type: "N8" },
-      { label: "ALA DER", type: "Ala" },
+      { label: "ALA IZQ", positionType: "Ala" },
+      { label: "OCTAVO", positionType: "N8" }, // Ajustado a tu View
+      { label: "ALA DER", positionType: "Ala" },
     ]
   },
   {
     players: [
-      { label: "2DA IZQ", type: "Segunda" },
-      { label: "2DA DER", type: "Segunda" },
+      { label: "2DA IZQ", positionType: "Segunda" },
+      { label: "2DA DER", positionType: "Segunda" },
     ]
   },
   {
     players: [
-      { label: "PILAR IZQ", type: "Pilar" },
-      { label: "HOOKER", type: "Hooker" },
-      { label: "PILAR DER", type: "Pilar" },
+      { label: "PILAR IZQ", positionType: "Pilar" },
+      { label: "HOOKER", positionType: "Hooker" },
+      { label: "PILAR DER", positionType: "Pilar" },
     ]
   },
 ]
@@ -60,10 +60,26 @@ export function DreamTeamField({ jugadores }: DreamTeamFieldProps) {
     return `/escudos/${fileName}.png`;
   };
 
-  // Mapeamos los jugadores por posición para ubicarlos en la cancha
-  // Nota: La View debe devolver la posición exacta o el tipo para matchear
-  const getPlayerByLabel = (label: string) => {
-    return jugadores.find(j => j.posicion.toUpperCase() === label.toUpperCase());
+  // --- LÓGICA DE MAPEO DINÁMICO ---
+  const getPlayerBySlot = (slot: { label: string, positionType: string }) => {
+    // 1. Filtramos todos los jugadores que coincidan con el tipo de posición
+    const candidatos = jugadores.filter(
+      j => j.posicion.toLowerCase() === slot.positionType.toLowerCase()
+    );
+
+    // 2. Si hay más de uno (Pilares, Segundas, Alas, Centros, Wings)
+    // Usamos el ranking_pos para decidir la ubicación
+    if (candidatos.length > 1) {
+      if (slot.label.includes("IZQ") || slot.label.includes("EXT")) {
+        return candidatos.find(c => c.ranking_pos === 1);
+      }
+      if (slot.label.includes("DER") || slot.label.includes("INT")) {
+        return candidatos.find(c => c.ranking_pos === 2);
+      }
+    }
+
+    // 3. Si es posición única, retornamos el primero
+    return candidatos[0];
   };
 
   return (
@@ -90,7 +106,7 @@ export function DreamTeamField({ jugadores }: DreamTeamFieldProps) {
             {fieldRows.map((row, rowIndex) => (
               <div key={rowIndex} className="flex justify-center gap-1 md:gap-6">
                 {row.players.map((slot) => {
-                  const player = getPlayerByLabel(slot.label)
+                  const player = getPlayerBySlot(slot)
                   const hasPlayer = !!player
 
                   return (
@@ -111,6 +127,7 @@ export function DreamTeamField({ jugadores }: DreamTeamFieldProps) {
                               src={getLogoPath(player.club)} 
                               alt={player.club}
                               className="w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                              onError={(e) => { (e.currentTarget.style.display = 'none') }}
                             />
                           ) : (
                             <Shield className="w-5 h-5 text-white/10" />
