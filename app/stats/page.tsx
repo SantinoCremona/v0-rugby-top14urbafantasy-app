@@ -60,8 +60,16 @@ export default async function StatsPage() {
                   <div key={idx} className="flex items-center justify-between p-3 md:p-4 bg-white/[0.03] rounded-2xl md:rounded-3xl border border-transparent hover:border-emerald-500/20 transition-all">
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-black text-white/10 italic w-4">{(idx + 1)}</span>
-                      <span className="font-black uppercase italic text-[10px] md:text-sm tracking-tighter truncate max-w-[100px]">{item.club}</span>
-                    </div>
+                      <img 
+                        src={getLogoPath(player.club)} 
+                        alt={player.club}
+                        className="w-9 h-9 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.15)] group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fallback = e.currentTarget.parentElement?.querySelector('.fallback-text');
+                          if (fallback) (fallback as HTMLElement).style.display = 'block';
+                        }}
+                      />                    
                     <span className="text-lg md:text-xl font-black text-emerald-500 italic leading-none">{item.cantidad_hinchas}</span>
                   </div>
                 ))}
