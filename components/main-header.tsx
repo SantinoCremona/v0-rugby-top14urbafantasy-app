@@ -11,6 +11,8 @@ const navItems = [
   { href: "/ranking", label: "RANKING", icon: Trophy },
   { href: "/torneos", label: "TORNEOS", icon: Users },
   { href: "/como-jugar", label: "COMO JUGAR", icon: BookOpen }, // <-- NUEVO ITEM
+  { href: "/stats", label: "DREAM FANS", icon: NULL }, // <-- NUEVO ITEM
+
 ]
 
 export function MainHeader() {
