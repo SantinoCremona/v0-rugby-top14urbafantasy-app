@@ -60,7 +60,7 @@ export default async function StatsPage() {
                   <div key={idx} className="flex items-center justify-between p-3 md:p-4 bg-white/[0.03] rounded-2xl md:rounded-3xl border border-transparent hover:border-emerald-500/20 transition-all">
                     <div className="flex items-center gap-3">
                     <span className="text-xs font-black text-white/10 italic w-4">{(idx + 1)}</span>
-                    <span className="font-black text-xs md:text-lg text-white uppercase truncate">{item.club}</span>                  
+                    <span className="font-black text-xs md:text-sm text-white uppercase truncate">{item.club}</span>                  
                     </div>                   
                     <span className="text-lg md:text-xl font-black text-emerald-500 italic leading-none">{item.cantidad_hinchas}</span>
                   </div>
