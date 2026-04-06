@@ -39,7 +39,7 @@ export default function ComoJugarPage() {
               <DollarSign className="w-8 h-8 text-emerald-500" />
               <h3 className="text-xl font-black italic uppercase">Presupuesto</h3>
               <p className="text-sm text-gray-400 leading-relaxed font-medium">
-                Contás con <span className="text-white font-bold">$10.000</span> virtuales. Podés elegir un máximo de <span className="text-white font-bold">4 jugadores por club</span>. Te conviene fichar jugadores marcados como <span className="text-emerald-500 font-bold uppercase italic">TITULAR</span>.
+                Contás con <span className="text-white font-bold">$10.000</span> virtuales. Podés elegir un máximo de <span className="text-white font-bold">4 jugadores por club</span>. Solo se muestran para seleccion los que van de <span className="text-emerald-500 font-bold uppercase italic">TITULAR</span>.
               </p>
             </div>
           </div>
@@ -56,9 +56,9 @@ export default function ComoJugarPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
-                { tier: "ELITE", precio: "$800", desc: "Top 3 (Simples) / Top 6 (Dobles) de la fecha." },
-                { tier: "TITULAR", precio: "$700", desc: "Rendimiento sólido y consistente." },
-                { tier: "GANGA", precio: "$500", desc: "Resto del ranking. ¡Oportunidad de compra!" }
+                { tier: "TOPE", precio: "$800", desc: "Top 3 (Simples) / Top 6 (Dobles) de la fecha." },
+                { tier: "SOLIDO", precio: "$700", desc: "Rendimiento sólido y consistente." },
+                { tier: "OPORTUNIDAD", precio: "$500", desc: "Resto del ranking. ¡Oportunidad de compra!" }
               ].map((item) => (
                 <div key={item.tier} className="bg-white/5 p-6 rounded-[30px] border border-white/5">
                   <h4 className="text-emerald-500 font-black italic uppercase text-lg">{item.tier}</h4>
@@ -132,6 +132,41 @@ export default function ComoJugarPage() {
               </div>
             </div>
           </div>
+          {/* LIGAS Y NIVELACIÓN */}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="bg-white/[0.02] border border-white/10 p-8 rounded-[40px] space-y-4 border-dashed">
+
+              <Users className="w-8 h-8 text-gray-400" />
+
+              <h3 className="text-xl font-black italic uppercase">Torneos Privados</h3>
+
+              <p className="text-[11px] text-gray-500 uppercase leading-relaxed font-bold">
+
+                Creá tu propio torneo y compartí el código de invitación por wpp con amigos o seguidores. Es la mejor forma de competir mano a mano con tu grupo cercano.
+
+              </p>
+
+            </div>
+
+
+            <div className="bg-white/[0.02] border border-white/10 p-8 rounded-[40px] space-y-4 border-dashed">
+
+              <Info className="w-8 h-8 text-gray-400" />
+
+              <h3 className="text-xl font-black italic uppercase">Puntos Base</h3>
+
+              <p className="text-[11px] text-gray-500 uppercase leading-relaxed font-bold">
+
+                ¿Te uniste tarde? ¡No hay drama! El sistema te asigna automáticamente los <span className="text-white">puntos de nivelación</span> (el puntaje mínimo histórico) para que no arranques de cero.
+
+              </p>
+
+            </div>
+
+          </div>
+
 
           {/* SECCIÓN FINAL */}
           <footer className="text-center pt-10">
