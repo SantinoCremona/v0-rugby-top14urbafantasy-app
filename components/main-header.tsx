@@ -10,8 +10,8 @@ const navItems = [
   { href: "/dashboard", label: "MI EQUIPO", icon: LayoutDashboard },
   { href: "/ranking", label: "RANKING", icon: Trophy },
   { href: "/torneos", label: "TORNEOS", icon: Users },
-  { href: "/como-jugar", label: "COMO JUGAR", icon: BookOpen }, // <-- NUEVO ITEM
   { href: "/stats", label: "DREAM FANS", icon: BarChart3 }, // <-- NUEVO ITEM
+  { href: "/como-jugar", label: "COMO JUGAR", icon: BookOpen }, // <-- NUEVO ITEM
 
 ]
 
