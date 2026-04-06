@@ -3,7 +3,7 @@
 import { MainHeader } from "@/components/main-header"
 import { 
   Clock, DollarSign, Trophy, CheckCircle2, 
-  ShieldAlert, Target, Star, ArrowLeft, Trash2, Users, Info
+  ShieldAlert, Target, Star, ArrowLeft, Trash2, Users, Info, TrendingUp, RefreshCcw
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
@@ -16,8 +16,6 @@ export default function ComoJugarPage() {
       <MainHeader />
       
       <main className="max-w-4xl mx-auto px-6 py-12 pb-24">
-     
-
         <div className="space-y-16">
           {/* HEADER SECCIÓN */}
           <div className="text-center space-y-4">
@@ -46,21 +44,35 @@ export default function ComoJugarPage() {
             </div>
           </div>
 
-          {/* CONTROLES DE CAMPO */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white/5 border border-white/10 p-8 rounded-[40px] flex items-start gap-4">
-              <Trash2 className="w-8 h-8 text-rose-500 flex-shrink-0" />
+          {/* NUEVA SECCIÓN: MERCADO DINÁMICO */}
+          <div className="bg-emerald-500/10 border border-emerald-500/20 p-8 md:p-12 rounded-[48px] space-y-8">
+            <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+              <TrendingUp className="w-16 h-16 text-emerald-500" />
               <div>
-                <h4 className="text-sm font-black uppercase mb-1">Vaciar Equipo</h4>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-tight">Borra todo tu equipo y te permite volver a seleccionar a todods tus jugadores.</p>
+                <h3 className="text-3xl font-black italic uppercase">Mercado en Tiempo Real</h3>
+                <p className="text-gray-400 font-medium">Los precios se recalculan cada lunes según el rendimiento de la última fecha y el resultado del club.</p>
               </div>
             </div>
-            <div className="bg-white/5 border border-white/10 p-8 rounded-[40px] flex items-start gap-4">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500 flex-shrink-0" />
-              <div>
-                <h4 className="text-sm font-black uppercase mb-1">Confirmar XV</h4>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-tight">Crucial: Si no apretás este botón antes del cierre del mercado, tu equipo o tus cambios no se guardarán en la base de datos.</p>
-              </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { tier: "ELITE", precio: "$800", desc: "Top 3 (Simples) / Top 6 (Dobles) de la fecha." },
+                { tier: "TITULAR", precio: "$700", desc: "Rendimiento sólido y consistente." },
+                { tier: "GANGA", precio: "$500", desc: "Resto del ranking. ¡Oportunidad de compra!" }
+              ].map((item) => (
+                <div key={item.tier} className="bg-white/5 p-6 rounded-[30px] border border-white/5">
+                  <h4 className="text-emerald-500 font-black italic uppercase text-lg">{item.tier}</h4>
+                  <p className="text-2xl font-black mb-2">{item.precio}</p>
+                  <p className="text-[10px] text-gray-500 uppercase font-bold leading-tight">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4 bg-white/5 p-6 rounded-[30px] border border-dashed border-white/20">
+              <RefreshCcw className="w-6 h-6 text-emerald-500 flex-shrink-0" />
+              <p className="text-xs font-bold uppercase text-gray-300">
+                <span className="text-white font-black">VOLATILIDAD:</span> Un jugador que hoy vale <span className="text-emerald-500">$800</span> puede caer a <span className="text-rose-500">$500</span> la semana siguiente si su equipo pierde o tiene un mal desempeño. ¡Atento al fixture!
+              </p>
             </div>
           </div>
 
@@ -82,11 +94,12 @@ export default function ComoJugarPage() {
                   {[
                     ["Base por jugar", "+10"],
                     ["Try Apoyado", "+5"],
-                    ["Try Penal (Scrum/Maul)", "+3 a los Forwards"],
-                    ["Try de Primera Fase", "+3 a los Backs"],
+                    ["Asistencia de Try", "+3"],
+                    ["Turnover ganado", "+2"],
+                    ["Scrum ganado", "+1"],
+                    ["Line ganado", "+1 (Solo Fwd)"],
                     ["Penal / Conversión", "+3 / +2"],
                     ["Victoria / MVP", "+2 / +5"],
-                    ["Bonus Ofensivo/Defensivo", "+2 / +1"]
                   ].map(([label, pts]) => (
                     <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
                       <span className="text-gray-400">{label}</span>
@@ -105,10 +118,10 @@ export default function ComoJugarPage() {
                 <ul className="space-y-4">
                   {[
                     ["Tarjeta Amarilla / Roja", "-5 / -10"],
+                    ["Turnover perdido", "-2 (Solo Fwd)"],
                     ["Derrota del Equipo", "-2"],
                     ["Kick Errado (Penal/Conv)", "-2"],
                     ["Equipo Incompleto", "-5 por slot"],
-                    ["Derrota por Bonus", "-2"]
                   ].map(([label, pts]) => (
                     <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
                       <span className="text-gray-400">{label}</span>
@@ -120,25 +133,7 @@ export default function ComoJugarPage() {
             </div>
           </div>
 
-          {/* LIGAS Y NIVELACIÓN */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white/[0.02] border border-white/10 p-8 rounded-[40px] space-y-4 border-dashed">
-              <Users className="w-8 h-8 text-gray-400" />
-              <h3 className="text-xl font-black italic uppercase">Torneos Privados</h3>
-              <p className="text-[11px] text-gray-500 uppercase leading-relaxed font-bold">
-                Creá tu propio torneo y compartí el código de invitación por wpp con amigos o seguidores. Es la mejor forma de competir mano a mano con tu grupo cercano.
-              </p>
-            </div>
-
-            <div className="bg-white/[0.02] border border-white/10 p-8 rounded-[40px] space-y-4 border-dashed">
-              <Info className="w-8 h-8 text-gray-400" />
-              <h3 className="text-xl font-black italic uppercase">Puntos Base</h3>
-              <p className="text-[11px] text-gray-500 uppercase leading-relaxed font-bold">
-                ¿Te uniste tarde? ¡No hay drama! El sistema te asigna automáticamente los <span className="text-white">puntos de nivelación</span> (el puntaje mínimo histórico) para que no arranques de cero.
-              </p>
-            </div>
-          </div>
-
+          {/* SECCIÓN FINAL */}
           <footer className="text-center pt-10">
             <Button 
               onClick={() => router.push('/dashboard')}
