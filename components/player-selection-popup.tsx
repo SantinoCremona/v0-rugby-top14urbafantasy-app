@@ -80,7 +80,8 @@ export function PlayerSelectionPopup({
 
   const filteredPlayers = players.filter(p => 
     p.posicion === positionType && 
-    (clubFilter === "TODOS" || p.club.toUpperCase() === clubFilter.toUpperCase())
+    (clubFilter === "TODOS" || p.club.toUpperCase() === clubFilter.toUpperCase()) &&
+    p.estado?.toUpperCase() === "TITULAR" // <-- ESTO FILTRA SOLO LOS TITULARES
   )
 
   const getTrendIcon = (tendencia: string) => {
