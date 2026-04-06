@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { User, LogOut, Menu, X, Shield, Trophy, Users, LayoutDashboard, ArrowRight, BookOpen } from "lucide-react"
+import { User, LogOut, Menu, X, Shield, Trophy, Users, LayoutDashboard, ArrowRight, BookOpen, BarChart3 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 const navItems = [
@@ -11,7 +11,7 @@ const navItems = [
   { href: "/ranking", label: "RANKING", icon: Trophy },
   { href: "/torneos", label: "TORNEOS", icon: Users },
   { href: "/como-jugar", label: "COMO JUGAR", icon: BookOpen }, // <-- NUEVO ITEM
-  { href: "/stats", label: "DREAM FANS", icon: NULL }, // <-- NUEVO ITEM
+  { href: "/stats", label: "DREAM FANS", icon: BarChart3 }, // <-- NUEVO ITEM
 
 ]
 
