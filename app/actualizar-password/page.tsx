@@ -25,7 +25,7 @@ export default function UpdatePasswordPage() {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (error) {
           alert("El enlace ha expirado o es inválido. Pedí uno nuevo.")
-          router.push("/login")
+          router.push("/")
         }
       }
       setVerifying(false)
@@ -49,7 +49,7 @@ export default function UpdatePasswordPage() {
       alert("¡Contraseña actualizada con éxito! Ya podés entrar.")
       // Cerramos sesión para limpiar el estado y mandamos al login
       await supabase.auth.signOut()
-      router.push("/login")
+      router.push("/")
     }
     setLoading(false)
   }
