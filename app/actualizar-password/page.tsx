@@ -12,13 +12,7 @@ export default function UpdatePasswordPage() {
   const router = useRouter()
   const [newPassword, setNewPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  useEffect(() => {
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "PASSWORD_RECOVERY") {
-        console.log("Sesión de recuperación lista")
-      }
-    })
-  }, [])
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
