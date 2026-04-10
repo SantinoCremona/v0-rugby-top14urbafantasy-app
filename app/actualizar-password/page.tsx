@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // Importamos useEffect
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -12,20 +12,55 @@ export default function UpdatePasswordPage() {
   const router = useRouter()
   const [newPassword, setNewPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [verifying, setVerifying] = useState(true)
+
+  // ESTE ES EL CAMBIO CLAVE: Intercambiar el código de la URL por una sesión
+  useEffect(() => {
+    const exchangeCodeForSession = async () => {
+      // Buscamos el ?code= en la URL
+      const query = new URLSearchParams(window.location.search)
+      const code = query.get("code")
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          alert("El enlace ha expirado o es inválido. Pedí uno nuevo.")
+          router.push("/login")
+        }
+      }
+      setVerifying(false)
+    }
+
+    exchangeCodeForSession()
+  }, [supabase, router])
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
+
+    // Ahora que el useEffect ya hizo el "exchange", esto va a funcionar
+    const { error } = await supabase.auth.updateUser({ 
+      password: newPassword 
+    })
 
     if (error) {
-      alert("Error: " + error.message)
+      alert("Error al actualizar: " + error.message)
     } else {
-      alert("¡Contraseña actualizada con éxito!")
+      alert("¡Contraseña actualizada con éxito! Ya podés entrar.")
+      // Cerramos sesión para limpiar el estado y mandamos al login
+      await supabase.auth.signOut()
       router.push("/login")
     }
     setLoading(false)
+  }
+
+  // Mientras verifica el código, mostramos un estado de carga sutil
+  if (verifying) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0B] flex items-center justify-center">
+        <Loader2 className="animate-spin w-10 h-10 text-emerald-500" />
+      </div>
+    )
   }
 
   return (
@@ -46,7 +81,11 @@ export default function UpdatePasswordPage() {
               className="h-16 bg-white/5 border-white/10 rounded-2xl pl-12 font-bold focus:border-emerald-500 transition-all uppercase"
             />
           </div>
-          <Button disabled={loading} className="w-full h-16 rounded-2xl bg-emerald-500 text-black font-black italic uppercase text-lg hover:bg-emerald-400 transition-all shadow-xl">
+          <Button 
+            type="submit"
+            disabled={loading} 
+            className="w-full h-16 rounded-2xl bg-emerald-500 text-black font-black italic uppercase text-lg hover:bg-emerald-400 transition-all shadow-xl"
+          >
             {loading ? <Loader2 className="animate-spin w-6 h-6" /> : "ACTUALIZAR Y ENTRAR"}
           </Button>
         </form>
