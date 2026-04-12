@@ -40,7 +40,7 @@ export default async function StatsPage() {
                <h2 className="text-2xl md:text-4xl font-black uppercase italic tracking-tighter">
                  <span className="text-emerald-500">Dream</span> Team
                </h2>
-               <span className="text-gray-500 font-black italic text-sm md:text-xl uppercase tracking-widest">Fecha{fechaActiva - 1}</span>
+               <span className="text-gray-500 font-black italic text-sm md:text-xl uppercase tracking-widest">Fecha{fechaActiva }</span>
             </div>
 
             <div className="bg-[#111113]/50 border border-white/5 rounded-[32px] md:rounded-[40px] p-4 md:p-10 shadow-2xl">
