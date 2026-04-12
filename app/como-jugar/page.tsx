@@ -76,62 +76,71 @@ export default function ComoJugarPage() {
             </div>
           </div>
 
-          {/* TABLA DE PUNTUACIÓN ACTUALIZADA */}
-          <div className="bg-[#141416] border border-white/10 rounded-[48px] overflow-hidden shadow-2xl">
-            <div className="bg-white/5 px-8 py-8 border-b border-white/10 text-center">
-              <Target className="w-6 h-6 mx-auto mb-2 text-gray-500" />
-              <h3 className="text-2xl font-black italic uppercase tracking-[0.1em]">Sistema de Puntuación</h3>
-            </div>
-            
-            <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-16">
-              {/* SUMA */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-emerald-400" />
-                  <h4 className="text-xs font-black text-emerald-400 uppercase tracking-widest">Aciertos (Suman)</h4>
-                </div>
-                <ul className="space-y-4">
-                  {[
-                    ["Base por jugar", "+10"],
-                    ["Try Apoyado", "+5"],
-                    ["Asistencia de Try", "+3"],
-                    ["Turnover ganado", "+2"],
-                    ["Scrum ganado", "+1"],
-                    ["Line ganado", "+1 (Solo Fwd)"],
-                    ["Penal / Conversión", "+3 / +2"],
-                    ["Victoria / MVP", "+2 / +5"],
-                  ].map(([label, pts]) => (
-                    <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
-                      <span className="text-gray-400">{label}</span>
-                      <span className="text-white font-black italic">{pts}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          {/* TABLA DE PUNTUACIÓN ACTUALIZADA - HEADCOACH v1.0 */}
+<div className="bg-[#141416] border border-white/10 rounded-[48px] overflow-hidden shadow-2xl">
+  <div className="bg-white/5 px-8 py-8 border-b border-white/10 text-center">
+    <Target className="w-6 h-6 mx-auto mb-2 text-gray-500" />
+    <h3 className="text-2xl font-black italic uppercase tracking-[0.1em]">Sistema de Puntuación</h3>
+    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-2">Reglamento Consolidado v1.0</p>
+  </div>
+  
+  <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-16">
+    {/* SUMA */}
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Star className="w-4 h-4 text-emerald-400" />
+        <h4 className="text-xs font-black text-emerald-400 uppercase tracking-widest">Aciertos (Suman)</h4>
+      </div>
+      <ul className="space-y-4">
+        {[
+          ["Base por jugar", "+10"],
+          ["Try Apoyado", "+5"],
+          ["Try de 1ra Fase", "+3 (Extra Backs)"],
+          ["Asistencia de Try", "+3"],
+          ["Try Penal", "+3 (Solo Fwd)"],
+          ["Dominio Scrum y Line", "+5 (Solo Fwd)"],
+          ["Penal / Conversión", "+3 / +2"],
+          ["Victoria / MVP", "+2 / +5"],
+          ["Bonus Ofensivo/Defensivo", "+1"],
+          ["Performance (Admin)", "+1 a +10"],
 
-              {/* RESTA */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-rose-500" />
-                  <h4 className="text-xs font-black text-rose-500 uppercase tracking-widest">Penalizaciones (Restan)</h4>
-                </div>
-                <ul className="space-y-4">
-                  {[
-                    ["Tarjeta Amarilla / Roja", "-5 / -10"],
-                    ["Turnover perdido", "-2 (Solo Fwd)"],
-                    ["Derrota del Equipo", "-2"],
-                    ["Kick Errado (Penal/Conv)", "-2"],
-                    ["Equipo Incompleto", "-5 por slot"],
-                  ].map(([label, pts]) => (
-                    <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
-                      <span className="text-gray-400">{label}</span>
-                      <span className="text-rose-500 font-black italic">{pts}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
+        ].map(([label, pts]) => (
+          <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
+            <span className="text-gray-400">{label}</span>
+            <span className="text-white font-black italic">{pts}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {/* RESTA */}
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <ShieldAlert className="w-4 h-4 text-rose-500" />
+        <h4 className="text-xs font-black text-rose-500 uppercase tracking-widest">Penalizaciones (Restan)</h4>
+      </div>
+      <ul className="space-y-4">
+        {[
+          ["Tarjeta Amarilla", "-5"],
+          ["Tarjeta Roja", "-10"],
+          ["Derrota del Equipo", "-2"],
+          ["Kick Errado (Penal/Conv)", "-2"],
+        ].map(([label, pts]) => (
+          <li key={label} className="flex justify-between items-center border-b border-white/5 pb-2 text-[11px] font-bold uppercase tracking-tighter">
+            <span className="text-gray-400">{label}</span>
+            <span className="text-rose-500 font-black italic">{pts}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+  
+  <div className="bg-white/5 p-4 text-center border-t border-white/10">
+    <p className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em]">
+      Puntajes validados por la mesa técnica de HeadCoach
+    </p>
+  </div>
+</div>
           {/* LIGAS Y NIVELACIÓN */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
