@@ -329,13 +329,13 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         <Button 
           onClick={() => handleToggleCaptain(managingPlayer.pos)}
           className={`w-full h-14 rounded-2xl font-black uppercase italic transition-all flex items-center justify-center gap-2 ${
-            managingPlayer.player.is_captain 
+            managingPlayer.player.es_capitan 
             ? "bg-white text-black hover:bg-gray-200" 
             : "bg-yellow-400 hover:bg-yellow-500 text-black shadow-[0_4px_14px_rgba(250,204,21,0.3)]"
           }`}
         >
           <Trophy className="w-5 h-5" />
-          {managingPlayer.player.is_captain ? "Quitar Capitanía" : "Hacer Capitán (x2)"}
+          {managingPlayer.player.es_capitan ? "Quitar Capitanía" : "Hacer Capitán (x2)"}
         </Button>
 
         {/* BOTÓN QUITAR (ESTILO ROJO) */}
