@@ -145,10 +145,23 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                               }}
                             />
                             
-                            {/* NUEVO: BADGE DE CAPITÁN (Lado Izquierdo) */}
-                        {/* @ts-ignore - Usamos is_captain que viene del Map */}
+                            {/* NUEVO BADGE DE CAPITÁN CORREGIDO Y COMPLETO */}
                         {player.es_capitan && (
-                          <div className="absolute -top-1 -left-1 z-30 w-7 h-7 flex items-center justify-center bg-yellow-400 text-black rounded-full font-black text-[12px] border-2 border-[#143D1A] shadow-xl animate-in fade-in zoom-in">
+                          <div 
+                            className={`
+                              absolute z-50 
+                              -top-1.5 -left-1.5 // <--- Movelos así: un toque más afuera (top/left) para que no se corte
+                              w-8 h-8              // <--- Un toque más grande para que sea imponente
+                              flex items-center justify-center 
+                              bg-yellow-400 text-black 
+                              rounded-full font-black text-[13px] italic 
+                              border-[3px] border-[#143D1A] // <--- Borde grueso del color de la cancha para darle aire
+                              shadow-[0_4px_14px_rgba(250,204,21,0.5)] // <--- Sombra de glow amarilla
+                              
+                              // --- Animación de pulso opcional para el Hype ---
+                              animate-pulse 
+                            `}
+                          >
                             C
                           </div>
                         )}
