@@ -126,21 +126,31 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                           </div>
                         )}
 
+                        {/* BUSCÁ ESTA PARTE DENTRO DEL RETURN */}
                         {hasPlayer ? (
                           <button
-                            onClick={() => onRemovePlayer(slot.position)}
-                            className="group relative w-14 h-14 md:w-16 md:h-16 bg-black/40 border-2 border-white/30 rounded-full flex items-center justify-center transition-all hover:bg-red-600 hover:border-white shadow-2xl overflow-hidden backdrop-blur-sm"
+                            // CAMBIO: Ahora el click abre el menú de gestión en lugar de borrar
+                            onClick={() => onSlotClick(slot.position, slot.positionType, slot.label)}
+                            className="group relative w-14 h-14 md:w-16 md:h-16 bg-black/40 border-2 border-white/30 rounded-full flex items-center justify-center transition-all hover:border-yellow-400 shadow-2xl overflow-hidden backdrop-blur-sm"
                           >
+                            {/* LOGO DEL CLUB */}
                             <img 
                               src={getLogoPath(player.club)} 
                               alt={player.club}
-                              className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.4)] group-hover:hidden"
+                              className="w-10 h-10 md:w-12 md:h-12 object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                                 e.currentTarget.parentElement!.innerHTML = `<span class="text-[10px] font-black text-white/70">${player.club?.substring(0,3)}</span>`;
                               }}
                             />
-                            <X className="w-8 h-8 text-white hidden group-hover:block" />
+                            
+                            {/* INDICADOR DE CAPITÁN (DENTRO DEL CÍRCULO) */}
+                            {/* @ts-ignore - Agregamos esto para ver la C de capitán */}
+                            {player.is_captain && (
+                              <div className="absolute inset-0 border-4 border-yellow-400 rounded-full flex items-center justify-center bg-yellow-400/10">
+                                <span className="text-yellow-400 font-black text-2xl italic drop-shadow-[0_0_8px_rgba(0,0,0,0.8)]">C</span>
+                              </div>
+                            )}
                           </button>
                         ) : (
                           <button
