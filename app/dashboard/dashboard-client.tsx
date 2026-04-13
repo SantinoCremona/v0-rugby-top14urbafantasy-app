@@ -298,28 +298,69 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         </div>
       </main>
 
-      {/* POPUP DE GESTIÓN (CAPITÁN / QUITAR) */}
-      {managingPlayer && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-6" onClick={() => setManagingPlayer(null)}>
-          <div className="bg-[#141416] border-4 border-white/10 rounded-[40px] w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-            <div className="text-center mb-8">
-              <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">{managingPlayer.player.nombre}</h3>
-              <p className="text-emerald-400 font-bold uppercase text-[10px] tracking-[0.2em]">{managingPlayer.player.posicion} | {managingPlayer.player.club}</p>
-            </div>
-            <div className="grid gap-4">
-              <Button onClick={() => handleToggleCaptain(managingPlayer.pos)}
-                className="h-16 bg-yellow-400 hover:bg-yellow-500 text-black font-black uppercase italic rounded-2xl border-b-4 border-yellow-700 active:border-b-0 transition-all">
-                {managingPlayer.player.es_capitan ? "Quitar Capitanía" : "Hacer Capitán (x2 Puntos)"}
-              </Button>
-              <Button onClick={() => { handleRemovePlayer(managingPlayer.pos); setManagingPlayer(null); }}
-                className="h-16 bg-white/5 hover:bg-red-600 hover:text-white text-gray-400 font-black uppercase italic rounded-2xl transition-all">
-                Quitar del XV
-              </Button>
-              <button onClick={() => setManagingPlayer(null)} className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">Volver</button>
-            </div>
-          </div>
+      {/* POPUP DE GESTIÓN (CAPITÁN / QUITAR) - ESTILO UNIFICADO */}
+{managingPlayer && (
+  <div 
+    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" 
+    onClick={() => setManagingPlayer(null)}
+  >
+    <div 
+      className="bg-[#141416] border border-white/10 rounded-[32px] w-full max-w-[340px] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200" 
+      onClick={e => e.stopPropagation()}
+    >
+      {/* HEADER DEL POPUP */}
+      <div className="bg-white/5 p-6 border-b border-white/5 text-center">
+        <h3 className="text-xl font-black italic uppercase tracking-tighter text-white leading-none mb-2">
+          {managingPlayer.player.nombre}
+        </h3>
+        <div className="flex items-center justify-center gap-2">
+          <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+            {managingPlayer.player.posicion}
+          </span>
+          <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">
+            {managingPlayer.player.club}
+          </span>
         </div>
-      )}
+      </div>
+
+      {/* CUERPO DE ACCIONES */}
+      <div className="p-6 space-y-3">
+        {/* BOTÓN CAPITÁN */}
+        <Button 
+          onClick={() => handleToggleCaptain(managingPlayer.pos)}
+          className={`w-full h-14 rounded-2xl font-black uppercase italic transition-all flex items-center justify-center gap-2 ${
+            managingPlayer.player.is_captain 
+            ? "bg-white text-black hover:bg-gray-200" 
+            : "bg-yellow-400 hover:bg-yellow-500 text-black shadow-[0_4px_14px_rgba(250,204,21,0.3)]"
+          }`}
+        >
+          <Trophy className="w-5 h-5" />
+          {managingPlayer.player.is_captain ? "Quitar Capitanía" : "Hacer Capitán (x2)"}
+        </Button>
+
+        {/* BOTÓN QUITAR (ESTILO ROJO) */}
+        <Button 
+          onClick={() => {
+            handleRemovePlayer(managingPlayer.pos);
+            setManagingPlayer(null);
+          }}
+          className="w-full h-14 bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/20 rounded-2xl font-black uppercase italic transition-all flex items-center justify-center gap-2"
+        >
+          <Trash2 className="w-5 h-5" />
+          Quitar del XV
+        </Button>
+
+        {/* CERRAR */}
+        <button 
+          onClick={() => setManagingPlayer(null)} 
+          className="w-full py-2 text-gray-500 font-bold uppercase text-[10px] tracking-[0.2em] pt-4 hover:text-white transition-colors"
+        >
+          Volver a la cancha
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       <PlayerSelectionPopup
         isOpen={isPopupOpen}
