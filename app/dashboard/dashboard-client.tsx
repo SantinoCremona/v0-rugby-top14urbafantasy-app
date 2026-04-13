@@ -16,7 +16,7 @@ const INITIAL_BUDGET = 10000
 
 interface PlayerWithPoints extends Player {
   puntos_actuales?: number
-  is_captain?: boolean // Agregado para el Capitán
+  es_capitan?: boolean // Agregado para el Capitán
 }
 
 interface DashboardClientProps {
@@ -54,7 +54,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             const puntosDeEsteJugador = puntosData?.find(pd => pd.jugador_id === playerInfo.id)?.puntos || 0
             newMap.set(parseInt(item.posicion_en_campo), {
               ...playerInfo,
-              is_captain: item.is_captain || false, // Cargamos estado del capitán
+              es_capitan: item.es_capitan || false, // Cargamos estado del capitán
               puntos_actuales: puntosDeEsteJugador
             })
           }
@@ -71,7 +71,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
   
   // Cálculo total: los puntos del capitán valen x2
   const puntosEnCanchaTotal = Array.from(selectedPlayers.values())
-    .reduce((sum, p) => sum + ((p.puntos_actuales || 0) * (p.is_captain ? 2 : 1)), 0)
+    .reduce((sum, p) => sum + ((p.puntos_actuales || 0) * (p.es_capitan ? 2 : 1)), 0)
 
   const clubCounts = Array.from(selectedPlayers.values()).reduce((acc, p) => {
     acc[p.club] = (acc[p.club] || 0) + 1
@@ -83,11 +83,11 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
     setSelectedPlayers((prev) => {
       const newMap = new Map(prev);
       // Solo puede haber un capitán: quitamos a todos primero
-      newMap.forEach((p, pos) => newMap.set(pos, { ...p, is_captain: false }));
+      newMap.forEach((p, pos) => newMap.set(pos, { ...p, es_capitan: false }));
       
       const player = prev.get(position);
       if (player) {
-        newMap.set(position, { ...player, is_captain: true });
+        newMap.set(position, { ...player, es_capitan: true });
       }
       return newMap;
     });
@@ -143,7 +143,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         jugador_id: player.id,
         posicion_en_campo: pos.toString(),
         fecha_num: fechaActiva,
-        is_captain: player.is_captain || false // Guardamos el estado del capitán
+        es_capitan: player.es_capitan || false // Guardamos el estado del capitán
       }))
 
       if (updates.length > 0) {
@@ -269,7 +269,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               <RugbyField
                 selectedPlayers={new Map(
                   Array.from(selectedPlayers.entries()).map(([pos, player]) => [
-                    pos, { ...player, puntos: player.puntos_actuales || 0, is_captain: player.is_captain }
+                    pos, { ...player, puntos: player.puntos_actuales || 0, es_capitan: player.es_capitan }
                   ])
                 )}
                 onSlotClick={handleSlotClick}
@@ -309,7 +309,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             <div className="grid gap-4">
               <Button onClick={() => handleToggleCaptain(managingPlayer.pos)}
                 className="h-16 bg-yellow-400 hover:bg-yellow-500 text-black font-black uppercase italic rounded-2xl border-b-4 border-yellow-700 active:border-b-0 transition-all">
-                {managingPlayer.player.is_captain ? "Quitar Capitanía" : "Hacer Capitán (x2 Puntos)"}
+                {managingPlayer.player.es_capitan ? "Quitar Capitanía" : "Hacer Capitán (x2 Puntos)"}
               </Button>
               <Button onClick={() => { handleRemovePlayer(managingPlayer.pos); setManagingPlayer(null); }}
                 className="h-16 bg-white/5 hover:bg-red-600 hover:text-white text-gray-400 font-black uppercase italic rounded-2xl transition-all">
