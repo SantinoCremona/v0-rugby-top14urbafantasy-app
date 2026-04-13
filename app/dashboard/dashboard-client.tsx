@@ -16,6 +16,7 @@ const INITIAL_BUDGET = 10000
 
 interface PlayerWithPoints extends Player {
   puntos_actuales?: number
+  is_captain?: boolean // Agregado para el Capitán
 }
 
 interface DashboardClientProps {
@@ -34,6 +35,9 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
   const [targetPosition, setTargetPosition] = useState<number | null>(null)
   const [targetPositionType, setTargetPositionType] = useState<string>("")
   const [loading, setLoading] = useState(false)
+  
+  // Nuevo estado para el menú de gestión (Capitán/Quitar)
+  const [managingPlayer, setManagingPlayer] = useState<{pos: number, player: PlayerWithPoints} | null>(null);
 
   useEffect(() => {
     async function cargarEquipoYVincularPuntos() {
@@ -50,6 +54,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
             const puntosDeEsteJugador = puntosData?.find(pd => pd.jugador_id === playerInfo.id)?.puntos || 0
             newMap.set(parseInt(item.posicion_en_campo), {
               ...playerInfo,
+              is_captain: item.is_captain || false, // Cargamos estado del capitán
               puntos_actuales: puntosDeEsteJugador
             })
           }
@@ -63,27 +68,40 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
   const totalSpent = Array.from(selectedPlayers.values()).reduce((sum, p) => sum + p.precio, 0)
   const remainingBudget = INITIAL_BUDGET - totalSpent
   const playersCount = selectedPlayers.size
+  
+  // Cálculo total: los puntos del capitán valen x2
   const puntosEnCanchaTotal = Array.from(selectedPlayers.values())
-    .reduce((sum, p) => sum + (p.puntos_actuales || 0), 0)
+    .reduce((sum, p) => sum + ((p.puntos_actuales || 0) * (p.is_captain ? 2 : 1)), 0)
 
   const clubCounts = Array.from(selectedPlayers.values()).reduce((acc, p) => {
     acc[p.club] = (acc[p.club] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 
-  // --- FUNCIÓN DE BORRADO AUTOMÁTICO ---
+  // Función para manejar la capitanía
+  const handleToggleCaptain = (position: number) => {
+    setSelectedPlayers((prev) => {
+      const newMap = new Map(prev);
+      // Solo puede haber un capitán: quitamos a todos primero
+      newMap.forEach((p, pos) => newMap.set(pos, { ...p, is_captain: false }));
+      
+      const player = prev.get(position);
+      if (player) {
+        newMap.set(position, { ...player, is_captain: true });
+      }
+      return newMap;
+    });
+    setManagingPlayer(null);
+  }
+
   const handleClearField = async () => {
     if (!mercadoAbierto || loading) return
-    
-    // El cartel que pediste
     if (!confirm("¿Estás seguro que querés vaciar tu XV? Esta acción se guardará automáticamente.")) return
 
     setLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-
-      // Borramos directamente de la base de datos
       const { error } = await supabase
         .from('equipos_usuarios')
         .delete()
@@ -91,8 +109,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         .eq('fecha_num', fechaActiva)
 
       if (error) throw error
-
-      // Limpiamos la pantalla
       setSelectedPlayers(new Map())
       alert("XV vaciado y guardado correctamente.")
     } catch (e) {
@@ -126,7 +142,8 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         user_id: user.id,
         jugador_id: player.id,
         posicion_en_campo: pos.toString(),
-        fecha_num: fechaActiva
+        fecha_num: fechaActiva,
+        is_captain: player.is_captain || false // Guardamos el estado del capitán
       }))
 
       if (updates.length > 0) {
@@ -136,7 +153,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         if (insertError) throw insertError
       }
 
-      alert("¡XV Titular confirmado correctamente!")
+      alert("¡XV Titular confirmado correctamente con capitán!");
       window.location.reload()
 
     } catch (e: any) {
@@ -149,9 +166,16 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
 
   const handleSlotClick = (position: number, positionType: string) => {
     if (!mercadoAbierto) return 
-    setTargetPosition(position)
-    setTargetPositionType(positionType)
-    setIsPopupOpen(true)
+    const existing = selectedPlayers.get(position);
+    if (existing) {
+      // Si el slot está ocupado, abrimos menú de Capitán/Quitar
+      setManagingPlayer({ pos: position, player: existing });
+    } else {
+      // Si está vacío, abrimos selección normal
+      setTargetPosition(position)
+      setTargetPositionType(positionType)
+      setIsPopupOpen(true)
+    }
   }
 
   const handleSelectPlayer = (player: PlayerWithPoints) => {
@@ -177,10 +201,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white selection:bg-white selection:text-black">
       <MainHeader />
-      
       <main className="max-w-7xl mx-auto px-4 py-6 md:py-10 pb-24 md:pb-12">
-        
-        {/* ENCABEZADO */}
         <div className="mb-10 text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
             <span className="bg-white text-black px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
@@ -193,7 +214,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           </h1>
         </div>
 
-        {/* ALERTAS */}
         {!mercadoAbierto && (
           <div className="bg-red-950/30 border border-red-500/50 text-red-200 p-4 rounded-2xl mb-8 flex items-center gap-3 text-sm">
             <Lock className="w-5 h-5 text-red-500" />
@@ -201,7 +221,6 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           </div>
         )}
 
-        {/* DASHBOARD MOBILE */}
         <div className="grid grid-cols-4 gap-2 mb-6 md:hidden">
           <div className="bg-[#1A3A2A] border border-white/10 rounded-2xl p-2 flex flex-col items-center justify-center text-center">
             <span className="text-[7px] font-black text-emerald-400 uppercase tracking-tighter mb-1 leading-none">Puntos</span>
@@ -232,15 +251,10 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               <p className="text-6xl font-black tracking-tighter italic relative z-10">{puntosEnCanchaTotal}</p>
               <Trophy className="absolute -right-6 -bottom-6 w-28 h-28 text-black/5" />
             </div>
-
             <div className="bg-[#141416] border border-white/10 p-6 rounded-[32px]">
               <div className="flex items-center justify-between mb-6">
-                <div className="p-2 bg-white/5 rounded-xl text-gray-400">
-                  <Wallet className="w-5 h-5" />
-                </div>
-                <span className="text-white font-black text-xs">
-                  {((remainingBudget/INITIAL_BUDGET)*100).toFixed(0)}% Disp.
-                </span>
+                <div className="p-2 bg-white/5 rounded-xl text-gray-400"><Wallet className="w-5 h-5" /></div>
+                <span className="text-white font-black text-xs">{((remainingBudget/INITIAL_BUDGET)*100).toFixed(0)}% Disp.</span>
               </div>
               <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mb-1">Presupuesto</p>
               <p className={`text-3xl font-black ${remainingBudget < 0 ? 'text-red-500' : 'text-white'}`}>
@@ -255,7 +269,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               <RugbyField
                 selectedPlayers={new Map(
                   Array.from(selectedPlayers.entries()).map(([pos, player]) => [
-                    pos, { id: player.id, nombre: player.nombre, club: player.club, puntos: player.puntos_actuales || 0 }
+                    pos, { ...player, puntos: player.puntos_actuales || 0, is_captain: player.is_captain }
                   ])
                 )}
                 onSlotClick={handleSlotClick}
@@ -263,26 +277,17 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
               />
             </div>
 
-            {/* BOTONES ABAJO DE LA CANCHA */}
             <div className="mt-6 flex flex-col md:flex-row gap-3">
-              <Button 
-                onClick={handleSaveTeam} 
-                disabled={loading || !mercadoAbierto || remainingBudget < 0}
-                className="flex-1 h-16 bg-emerald-500 hover:bg-emerald-600 text-black rounded-2xl font-black uppercase italic flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-[0_10px_20px_rgba(16,185,129,0.2)]"
-              >
+              <Button onClick={handleSaveTeam} disabled={loading || !mercadoAbierto || remainingBudget < 0}
+                className="flex-1 h-16 bg-emerald-500 hover:bg-emerald-600 text-black rounded-2xl font-black uppercase italic flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 shadow-[0_10px_20px_rgba(16,185,129,0.2)]">
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
                 {loading ? "Guardando..." : "Confirmar XV Titular"}
               </Button>
-
-              <Button 
-                onClick={handleClearField}
-                disabled={!mercadoAbierto || loading}
-                className="h-16 px-6 bg-red-600 hover:bg-red-700 text-white border-none rounded-2xl transition-all disabled:opacity-30 active:scale-95 flex items-center justify-center shadow-[0_10px_20px_rgba(220,38,38,0.2)]"
-              >
+              <Button onClick={handleClearField} disabled={!mercadoAbierto || loading}
+                className="h-16 px-6 bg-red-600 hover:bg-red-700 text-white border-none rounded-2xl transition-all disabled:opacity-30 active:scale-95 flex items-center justify-center shadow-[0_10px_20px_rgba(220,38,38,0.2)]">
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Trash2 className="w-6 h-6" />}
               </Button>
             </div>
-
             {remainingBudget < 0 && (
               <div className="mt-4 bg-red-950 border border-red-500 text-red-200 p-4 rounded-2xl flex items-center gap-3 text-sm animate-pulse">
                 <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -293,17 +298,38 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         </div>
       </main>
 
+      {/* POPUP DE GESTIÓN (CAPITÁN / QUITAR) */}
+      {managingPlayer && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-6" onClick={() => setManagingPlayer(null)}>
+          <div className="bg-[#141416] border-4 border-white/10 rounded-[40px] w-full max-w-sm p-8 shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-8">
+              <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white">{managingPlayer.player.nombre}</h3>
+              <p className="text-emerald-400 font-bold uppercase text-[10px] tracking-[0.2em]">{managingPlayer.player.posicion} | {managingPlayer.player.club}</p>
+            </div>
+            <div className="grid gap-4">
+              <Button onClick={() => handleToggleCaptain(managingPlayer.pos)}
+                className="h-16 bg-yellow-400 hover:bg-yellow-500 text-black font-black uppercase italic rounded-2xl border-b-4 border-yellow-700 active:border-b-0 transition-all">
+                {managingPlayer.player.is_captain ? "Quitar Capitanía" : "Hacer Capitán (x2 Puntos)"}
+              </Button>
+              <Button onClick={() => { handleRemovePlayer(managingPlayer.pos); setManagingPlayer(null); }}
+                className="h-16 bg-white/5 hover:bg-red-600 hover:text-white text-gray-400 font-black uppercase italic rounded-2xl transition-all">
+                Quitar del XV
+              </Button>
+              <button onClick={() => setManagingPlayer(null)} className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-2">Volver</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <PlayerSelectionPopup
-      isOpen={isPopupOpen}
-      onClose={() => setIsPopupOpen(false)}
-      positionType={targetPositionType}
-      // QUITAMOS EL FILTRO DE CLUB AQUÍ PARA QUE APAREZCAN TODOS
-      players={players.filter(p => !Array.from(selectedPlayers.values()).some(sp => sp.id === p.id))}
-      onSelectPlayer={handleSelectPlayer}
-      remainingBudget={remainingBudget}
-      // PASAMOS LOS CONTEOS PARA QUE EL POPUP SEPA EL LÍMITE
-      clubCounts={clubCounts} 
-    />
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        positionType={targetPositionType}
+        players={players.filter(p => !Array.from(selectedPlayers.values()).some(sp => sp.id === p.id))}
+        onSelectPlayer={handleSelectPlayer}
+        remainingBudget={remainingBudget}
+        clubCounts={clubCounts} 
+      />
     </div>
   )
 }
