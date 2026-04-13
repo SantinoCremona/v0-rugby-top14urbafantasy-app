@@ -3,7 +3,7 @@
 import { Plus, X } from "lucide-react"
 
 interface RugbyFieldProps {
-  selectedPlayers: Map<number, { id: number; nombre: string; club?: string; puntos?: number }>
+  selectedPlayers: Map<number, { id: number; nombre: string; club?: string; puntos?: number; es_capitan?: boolean }>
   onSlotClick: (position: number, positionType: string, label: string) => void
   onRemovePlayer: (position: number) => void
 }
@@ -145,27 +145,12 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                               }}
                             />
 
-                            {/* NUEVO BADGE DE CAPITÁN CORREGIDO Y COMPLETO */}
-                        {player.es_capitan && (
-                          <div 
-                            className={`
-                              absolute 
-                              -top-1.5 -left-1.5 z-30// <--- Movelos así: un toque más afuera (top/left) para que no se corte
-                              w-8 h-8              // <--- Un toque más grande para que sea imponente
-                              flex items-center justify-center 
-                              bg-yellow-400 text-black 
-                              rounded-full font-black text-[13px] italic 
-                              border-[3px] border-[#143D1A] // <--- Borde grueso del color de la cancha para darle aire
-                              shadow-[0_4px_14px_rgba(250,204,21,0.5)] // <--- Sombra de glow amarilla
-                              
-                              // --- Animación de pulso opcional para el Hype ---
-                              animate-pulse 
-                            `}
-                          >
+                            {/* BADGE DE CAPITÁN C (USANDO es_capitan Y CORREGIDO) */}
+                        {hasPlayer && esCapitan && (
+                          <div className="absolute -top-1.5 -left-1.5 z-40 w-8 h-8 flex items-center justify-center bg-yellow-400 text-black rounded-full font-black text-[13px] italic border-[3px] border-[#143D1A] shadow-[0_4px_14px_rgba(250,204,21,0.5)] animate-pulse">
                             C
                           </div>
                         )}
-
                         </button>
                         ) : (
                           <button
