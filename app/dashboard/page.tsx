@@ -35,7 +35,7 @@ export default async function DashboardPage() {
     const { data: teamData } = await supabase
       .from('equipos_usuarios')
       // AGREGAMOS: is_captain en el select
-      .select('posicion_en_campo, jugador_id, is_captain') 
+      .select('posicion_en_campo, jugador_id, es_capitan') 
       .eq('user_id', user.id)
       .eq('fecha_num', fechaActual) 
     
@@ -57,7 +57,7 @@ export default async function DashboardPage() {
         const puntosBase = pData?.puntos || 0;
         
         // Si el jugador es capitán, sumamos el doble
-        const puntosFinales = item.is_captain ? puntosBase * 2 : puntosBase;
+        const puntosFinales = item.es_capitan ? puntosBase * 2 : puntosBase;
         
         return acc + puntosFinales;
       }, 0);
