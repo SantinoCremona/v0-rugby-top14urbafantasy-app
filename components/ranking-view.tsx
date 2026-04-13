@@ -21,7 +21,7 @@ export function RankingView({
   currentUserId?: string 
 }) {
   const supabase = createClient()
-  const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
+  const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("FECHA")
   const [selectedFecha, setSelectedFecha] = useState(4)
   const [ranking, setRanking] = useState(initialRanking)
   const [visibleCount, setVisibleCount] = useState(10)
