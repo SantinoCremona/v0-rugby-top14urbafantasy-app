@@ -125,7 +125,14 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                             {puntos}
                           </div>
                         )}
-
+                        {/* NUEVO: BADGE DE CAPITÁN (Lado Izquierdo) */}
+                        {/* @ts-ignore - Usamos is_captain que viene del Map */}
+                        {player.es_capitan && (
+                          <div className="absolute -top-1 -left-1 z-30 w-7 h-7 flex items-center justify-center bg-yellow-400 text-black rounded-full font-black text-[12px] border-2 border-[#143D1A] shadow-xl animate-in fade-in zoom-in">
+                            C
+                          </div>
+                        )}
+                            
                         {/* BUSCÁ ESTA PARTE DENTRO DEL RETURN */}
                         {hasPlayer ? (
                           <button
@@ -146,7 +153,7 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                             
                             {/* INDICADOR DE CAPITÁN (DENTRO DEL CÍRCULO) */}
                             {/* @ts-ignore - Agregamos esto para ver la C de capitán */}
-                            {player.is_captain && (
+                            {player.es_capitan && (
                               <div className="absolute inset-0 border-4 border-yellow-400 rounded-full flex items-center justify-center bg-yellow-400/10">
                                 <span className="text-yellow-400 font-black text-2xl italic drop-shadow-[0_0_8px_rgba(0,0,0,0.8)]">C</span>
                               </div>
