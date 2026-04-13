@@ -17,8 +17,9 @@ export default function RecuperarPage() {
     e.preventDefault()
     setLoading(true)
     
+    // IMPORTANTE: El redirectTo debe apuntar a tu página de actualización
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/actualizar-password`,
+      redirectTo: `${window.location.origin}/actualizar-contrasena`,
     })
 
     if (error) {
@@ -32,17 +33,17 @@ export default function RecuperarPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-white flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white/[0.02] border border-white/10 p-10 rounded-[40px] shadow-2xl text-center">
-        <Link href="/" className="flex items-center gap-2 text-[10px] font-black uppercase text-gray-500 hover:text-white mb-8 transition-colors">
+        <Link href="/login" className="flex items-center justify-center gap-2 text-[10px] font-black uppercase text-gray-500 hover:text-white mb-8 transition-colors">
           <ChevronLeft className="w-4 h-4" /> Volver al Login
         </Link>
 
-        <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-4">
+        <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-4 leading-none">
           Recuperar <span className="text-white/20">Acceso</span>
         </h1>
 
         {!sent ? (
-          <form onSubmit={handleReset} className="space-y-6">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest leading-relaxed">
+          <form onSubmit={handleReset} className="space-y-6 text-left">
+            <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed text-center">
               Ingresá tu mail y te mandaremos un link para resetear tu XV.
             </p>
             <div className="relative">
@@ -53,7 +54,7 @@ export default function RecuperarPage() {
                 placeholder="TU@MAIL.COM" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-16 bg-white/5 border-white/10 rounded-2xl pl-12 font-bold focus:border-emerald-500 transition-all uppercase"
+                className="h-16 bg-white/5 border-white/10 rounded-2xl pl-12 font-bold focus:border-emerald-500 transition-all uppercase placeholder:text-gray-700"
               />
             </div>
             <Button disabled={loading} className="w-full h-16 rounded-2xl bg-white text-black font-black italic uppercase text-lg hover:bg-emerald-500 transition-all shadow-xl">
@@ -61,10 +62,11 @@ export default function RecuperarPage() {
             </Button>
           </form>
         ) : (
-          <div className="space-y-6 animate-in fade-in zoom-in duration-300">
+          <div className="space-y-6 animate-in fade-in zoom-in duration-300 py-10">
             <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto" />
             <p className="text-white font-bold uppercase tracking-widest text-sm">
-              ¡Mail enviado! Revisá tu bandeja de entrada (y el spam).
+              ¡Mail enviado!<br/>
+              <span className="text-gray-500 text-xs">Revisá tu bandeja de entrada y spam.</span>
             </p>
           </div>
         )}
