@@ -335,7 +335,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
           }`}
         >
           <Trophy className="w-5 h-5" />
-          {managingPlayer.player.es_capitan ? "Quitar Capitanía" : "Hacer Capitán (x2)"}
+          {managingPlayer.player.is_capitan ? "Quitar Capitanía" : "Hacer Capitán (x2)"}
         </Button>
 
         {/* BOTÓN QUITAR (ESTILO ROJO) */}
