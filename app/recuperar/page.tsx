@@ -19,7 +19,7 @@ export default function RecuperarPage() {
     
     // IMPORTANTE: El redirectTo debe apuntar a tu página de actualización
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/actualizar-contrasena`,
+      redirectTo: `${window.location.origin}/actualizar-password`,
     })
 
     if (error) {
