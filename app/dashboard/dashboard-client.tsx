@@ -153,7 +153,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         if (insertError) throw insertError
       }
 
-      alert("¡XV Titular confirmado correctamente con capitán!");
+      alert("¡XV Titular confirmado correctamente!");
       window.location.reload()
 
     } catch (e: any) {
