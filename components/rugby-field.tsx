@@ -149,8 +149,8 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                         {player.es_capitan && (
                           <div 
                             className={`
-                              absolute z-50 
-                              -top-1.5 -left-1.5 // <--- Movelos así: un toque más afuera (top/left) para que no se corte
+                              absolute 
+                              -top-1.5 -left-1.5 z-30// <--- Movelos así: un toque más afuera (top/left) para que no se corte
                               w-8 h-8              // <--- Un toque más grande para que sea imponente
                               flex items-center justify-center 
                               bg-yellow-400 text-black 
