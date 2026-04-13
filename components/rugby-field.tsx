@@ -145,8 +145,6 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                               }}
                             />
 
-                        <div className="relative">
-
                             {/* NUEVO BADGE DE CAPITÁN CORREGIDO Y COMPLETO */}
                         {player.es_capitan && (
                           <div 
@@ -167,7 +165,6 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                             C
                           </div>
                         )}
-                        </div>
 
                         </button>
                         ) : (
