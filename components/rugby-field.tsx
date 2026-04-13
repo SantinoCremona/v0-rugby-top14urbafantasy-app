@@ -107,34 +107,41 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                 {row.players.map((slot) => {
                   const player = selectedPlayers.get(slot.position)
                   const hasPlayer = !!player
-                  const puntos = player?.puntos ?? 0
+                  
+                  // LOGICA X2 PARA EL BADGE USANDO es_capitan
+                  const puntosBase = player?.puntos ?? 0
+                  const esCapitan = player?.es_capitan ?? false
+                  const puntosVisuales = esCapitan ? puntosBase * 2 : puntosBase
 
                   return (
                     <div key={slot.position} className="flex flex-col items-center w-20 md:w-24 group/slot">
-                      <div className="relative">
+                      <div className="relative overflow-visible">
                         
-                        {/* BADGE DE PUNTOS */}
+                        {/* BADGE DE PUNTOS (CON X2 SI ES CAPITÁN) */}
                         {hasPlayer && (
                           <div className={`
-                            absolute -top-1 -right-1 z-30
+                            absolute -top-1 -right-1 z-40
                             w-7 h-7 flex items-center justify-center
                             rounded-full font-black text-[11px] italic border-2 border-[#143D1A]
                             shadow-2xl transition-transform group-hover/slot:scale-110
-                            ${puntos >= 0 ? 'bg-white text-black' : 'bg-red-500 text-white'}
+                            ${puntosVisuales >= 0 ? 'bg-white text-black' : 'bg-red-500 text-white'}
                           `}>
-                            {puntos}
+                            {puntosVisuales}
                           </div>
                         )}
-                    
-                            
-                        {/* BUSCÁ ESTA PARTE DENTRO DEL RETURN */}
+
+                        {/* BADGE DE CAPITÁN C (USANDO es_capitan Y CORREGIDO) */}
+                        {hasPlayer && esCapitan && (
+                          <div className="absolute -top-1.5 -left-1.5 z-40 w-8 h-8 flex items-center justify-center bg-yellow-400 text-black rounded-full font-black text-[13px] italic border-[3px] border-[#143D1A] shadow-[0_4px_14px_rgba(250,204,21,0.5)] animate-pulse">
+                            C
+                          </div>
+                        )}
+
                         {hasPlayer ? (
                           <button
-                            // CAMBIO: Ahora el click abre el menú de gestión en lugar de borrar
                             onClick={() => onSlotClick(slot.position, slot.positionType, slot.label)}
-                            className="group relative w-14 h-14 md:w-16 md:h-16 bg-black/40 border-2 border-white/30 rounded-full flex items-center justify-center transition-all hover:border-yellow-400 shadow-2xl overflow-hidden backdrop-blur-sm"
+                            className="group relative w-14 h-14 md:w-16 md:h-16 bg-black/40 border-2 border-white/30 rounded-full flex items-center justify-center transition-all hover:border-yellow-400 shadow-2xl overflow-visible backdrop-blur-sm"
                           >
-                            {/* LOGO DEL CLUB */}
                             <img 
                               src={getLogoPath(player.club)} 
                               alt={player.club}
@@ -144,14 +151,7 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                                 e.currentTarget.parentElement!.innerHTML = `<span class="text-[10px] font-black text-white/70">${player.club?.substring(0,3)}</span>`;
                               }}
                             />
-
-                            {/* BADGE DE CAPITÁN C (USANDO es_capitan Y CORREGIDO) */}
-                        {hasPlayer && esCapitan && (
-                          <div className="absolute -top-1.5 -left-1.5 z-40 w-8 h-8 flex items-center justify-center bg-yellow-400 text-black rounded-full font-black text-[13px] italic border-[3px] border-[#143D1A] shadow-[0_4px_14px_rgba(250,204,21,0.5)] animate-pulse">
-                            C
-                          </div>
-                        )}
-                        </button>
+                          </button>
                         ) : (
                           <button
                             onClick={() => onSlotClick(slot.position, slot.positionType, slot.label)}
@@ -162,7 +162,6 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                         )}
                       </div>
 
-                      {/* NOMBRES: Apellido con Sombra */}
                       <div className="mt-2.5 flex flex-col items-center text-center">
                         {hasPlayer ? (
                           <>
@@ -186,9 +185,7 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
             ))}
           </div>
         </div>
-
-        <div className="relative border-t-2 border-white/50 py-3 text-center bg-black/20">
-        </div>
+        <div className="relative border-t-2 border-white/50 py-3 text-center bg-black/20"></div>
       </div>
     </div>
   )
