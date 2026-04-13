@@ -132,7 +132,7 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
 
                         {/* BADGE DE CAPITÁN C (USANDO es_capitan Y CORREGIDO) */}
                         {hasPlayer && esCapitan && (
-                          <div className="absolute -top-1.5 -left-1.5 z-40 w-8 h-8 flex items-center justify-center bg-yellow-400 text-black rounded-full font-black text-[13px] italic border-[3px] border-[#143D1A] shadow-[0_4px_14px_rgba(250,204,21,0.5)] animate-pulse">
+                          <div className="absolute -top-1.5 -left-1.5 z-40 w-8 h-8 flex items-center justify-center bg-yellow-400 text-black rounded-full font-black text-[13px] italic border-[3px] border-[#143D1A] shadow-[0_4px_14px_rgba(250,204,21,0.5)] ">
                             C
                           </div>
                         )}
