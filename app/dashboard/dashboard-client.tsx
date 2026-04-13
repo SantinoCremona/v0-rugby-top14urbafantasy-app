@@ -329,7 +329,7 @@ export function DashboardClient({ players, savedTeam, rankingPos, mercadoAbierto
         <Button 
           onClick={() => handleToggleCaptain(managingPlayer.pos)}
           className={`w-full h-14 rounded-2xl font-black uppercase italic transition-all flex items-center justify-center gap-2 ${
-            managingPlayer.player.es_capitan 
+            managingPlayer.player.is_capitan 
             ? "bg-white text-black hover:bg-gray-200" 
             : "bg-yellow-400 hover:bg-yellow-500 text-black shadow-[0_4px_14px_rgba(250,204,21,0.3)]"
           }`}
