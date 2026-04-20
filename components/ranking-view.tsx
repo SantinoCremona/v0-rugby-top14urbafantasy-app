@@ -22,7 +22,7 @@ export function RankingView({
 }) {
   const supabase = createClient()
   const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
-  const [selectedFecha, setSelectedFecha] = useState(4)
+  const [selectedFecha, setSelectedFecha] = useState(5) // Cambiado a 5 por defecto
   const [ranking, setRanking] = useState(initialRanking)
   const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(false)
@@ -32,14 +32,15 @@ export function RankingView({
     return `/escudos/${fileName}.png`
   }
 
+  // AGREGADO: Lógica para traer ranking por fecha con x2 y mínimos
   const fetchRankingFecha = async (num: number) => {
     setLoading(true)
     setSelectedFecha(num)
     
     try {
       const { data, error } = await supabase
-        .from('puntos_usuario_fecha') 
-        .select('nombre_equipo, puntos_fecha, user_id')
+        .from('ranking_por_fecha') // Usamos la view que creamos
+        .select('user_id, nombre_equipo, puntos_fecha, club')
         .eq('fecha_num', num)
         .order('puntos_fecha', { ascending: false })
 
@@ -49,16 +50,14 @@ export function RankingView({
         return
       }
 
-      if (data && data.length > 0) {
+      if (data) {
         const mapped = data.map(d => ({
-          nombre_equipo: d.nombre_equipo,
-          puntos_acumulados: d.puntos_fecha, 
+          nombre_equipo: d.nombre_equipo || "XV SIN NOMBRE",
+          puntos_acumulados: d.puntos_fecha, // El componente usa puntos_acumulados
           club: d.club,
           user_id: d.user_id
         }))
         setRanking(mapped)
-      } else {
-        setRanking([])
       }
     } catch (err) {
       console.error("Error inesperado:", err)
@@ -86,7 +85,7 @@ export function RankingView({
 
   return (
     <div className="space-y-6">
-      {/* SELECTOR DE MODO - AJUSTADO PARA MOBILE (UNA FILA) */}
+      {/* SELECTOR DE MODO */}
       <div className="flex flex-row overflow-x-auto no-scrollbar gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-full max-w-md mx-auto mb-10">
         <button 
           onClick={() => toggleView("GENERAL")}
@@ -165,7 +164,6 @@ export function RankingView({
           const pos = index + 1;
           const esMiUsuario = equipo.user_id === currentUserId;
 
-          // COLORES DEL PODIO
           const esOro = pos === 1;
           const esPlata = pos === 2;
           const esBronce = pos === 3;
@@ -241,12 +239,6 @@ export function RankingView({
           >
             Ver resto del ranking <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
           </button>
-        )}
-
-        {!loading && visibleRanking.length === 0 && (
-          <div className="text-center py-20 text-gray-500 font-bold uppercase text-xs border border-dashed border-white/10 rounded-2xl">
-            No hay datos para esta selección
-          </div>
         )}
       </div>
     </div>
