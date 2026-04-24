@@ -3,7 +3,7 @@
 import { Plus, X } from "lucide-react"
 
 interface RugbyFieldProps {
-  selectedPlayers: Map<number, { id: number; nombre: string; club?: string; puntos?: number; es_capitan?: boolean}>
+  selectedPlayers: Map<number, { id: number; nombre: string; club?: string; puntos?: number; es_capitan?: boolean; estado?: string}>
   onSlotClick: (position: number, positionType: string, label: string) => void
   onRemovePlayer: (position: number) => void
 }
@@ -169,6 +169,12 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                             <span className="text-[10px] md:text-[11px] text-white font-black uppercase italic tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                               {player.nombre.split(" ").slice(-1)[0]}
                             </span>
+                            {/* PEQUEÑO INDICADOR DE ESTADO DEBAJO DEL NOMBRE SI ES FINISHER */}
+                            {player.estado?.toUpperCase() === 'FINISHER' && (
+                              <span className="text-[7px] bg-yellow-400 text-black px-1 font-black rounded-sm mt-0.5">
+                                FINISHER
+                              </span>
+                            )}
                             <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-widest mt-0.5 drop-shadow-md">
                               {player.club}
                             </span>
