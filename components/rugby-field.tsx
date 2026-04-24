@@ -171,7 +171,7 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
                             </span>
                             {/* PEQUEÑO INDICADOR DE ESTADO DEBAJO DEL NOMBRE SI ES FINISHER */}
                             {player.estado?.toUpperCase() === 'FINISHER' && (
-                              <span className="text-[7px] bg-red-400 text-black px-1 font-black rounded-sm mt-0.5 rounded-full">
+                              <span className="text-[7px] bg-red-400 text-black px-1 font-black rounded-sm mt-0.5">
                                 NO VA DE TITULAR
                               </span>
                             )}
