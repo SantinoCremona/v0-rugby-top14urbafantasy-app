@@ -53,22 +53,10 @@ export function RugbyField({ selectedPlayers, onSlotClick, onRemovePlayer }: Rug
     const fileName = clubName.toLowerCase().trim().replace(/\s+/g, '-');
     return `/escudos/${fileName}.png`;
   };
-// --- LÓGICA DE DETECCIÓN DE FINISHERS ---
-  const finishersInTitular = Array.from(selectedPlayers.values()).filter(
-    (p) => p.estado?.toUpperCase() === 'FINISHER'
-  );
+
   
   return (
     <div className="w-full max-w-2xl mx-auto p-2">
-      {/* BANNER DE ALERTA TÁCTICA: Aparece solo si hay finishers en el XV */}
-      {finishersInTitular.length > 0 && (
-        <div className="mb-4 bg-yellow-400 border-2 border-black p-3 rounded-sm flex items-center gap-3 shadow-[4px_4px_0px_#000] animate-pulse">
-          <AlertTriangle className="w-6 h-6 text-black flex-shrink-0" />
-          <p className="text-black font-black text-xs md:text-sm uppercase italic leading-tight">
-            Atento Coach: <span className="underline">{finishersInTitular.map(p => p.nombre).join(', ')}</span> no va(n) de titular.
-          </p>
-        </div>
-      )}
       {/* CAMPO DE JUEGO PRINCIPAL: VERDE INGLÉS */}
       <div className="relative bg-[#143D1A] border-4 border-white/30 overflow-hidden shadow-2xl rounded-sm">
         
