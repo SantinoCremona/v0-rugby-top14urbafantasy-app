@@ -3,7 +3,7 @@
 import { Plus, X } from "lucide-react"
 
 interface RugbyFieldProps {
-  selectedPlayers: Map<number, { id: number; nombre: string; club?: string; puntos?: number; es_capitan?: boolean ; estado?: string }>
+  selectedPlayers: Map<number, { id: number; nombre: string; club?: string; puntos?: number; es_capitan?: boolean}>
   onSlotClick: (position: number, positionType: string, label: string) => void
   onRemovePlayer: (position: number) => void
 }
