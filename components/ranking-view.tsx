@@ -133,7 +133,7 @@ export function RankingView({
       {/* SELECTOR DE FECHAS */}
       {view === "FECHA" && (
         <div className="flex flex-wrap justify-center gap-3 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
-          {[1, 2, 3, 4, 5, 6].map((num) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((num) => (
             <button
               key={num}
               onClick={() => fetchRankingFecha(num)}
