@@ -22,7 +22,7 @@ export function RankingView({
 }) {
   const supabase = createClient()
   const [view, setView] = useState<"GENERAL" | "FECHA" | "CLUB">("GENERAL")
-  const [selectedFecha, setSelectedFecha] = useState(16) // Cambiado a 5 por defecto
+  const [selectedFecha, setSelectedFecha] = useState(17) // Cambiado a 5 por defecto
   const [ranking, setRanking] = useState(initialRanking)
   const [visibleCount, setVisibleCount] = useState(10)
   const [loading, setLoading] = useState(false)
@@ -133,7 +133,7 @@ export function RankingView({
       {/* SELECTOR DE FECHAS */}
       {view === "FECHA" && (
         <div className="flex flex-wrap justify-center gap-3 mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,15,16].map((num) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,15,16, 17, 18, 19, 20].map((num) => (
             <button
               key={num}
               onClick={() => fetchRankingFecha(num)}
